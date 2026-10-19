@@ -77,3 +77,15 @@ npm run build              # 出 dist/
 - 服务器：`/home/cmx/unixwin-portal`（同仓库）；部署 `sudo bash /home/cmx/deploy-unixwin.sh`；占位页备份在 `~/unixwin-site-staging-placeholder/`
 - CI：push 到 main 自动构建（.github/workflows/build.yml），改完看 Actions 绿勾
 - 本文档由 ZCode 生成于 P0 交付时；完成后请勾选/删除对应条目并提交
+
+## 5. 2026-10-19 追加：Agents 目录 + 基准页（已构建推送，staging 待部署）
+
+已上线页面：`/agents/`（卡片目录 + 9 个 agent 详情页，每页含换壳脚本/验证/回滚/坑/来源）与 `/benchmarks/`（fork 专项 2026-10-18 复测 + 启动延迟表，数据驱动 `src/data/agents.json` / `src/data/benchmarks.json`）。
+
+**待对方 agent 回传材料后校准（dump 目录：服务器 /home/cmx/inbound/unixwin-dump-20261019/）：**
+- [ ] 「全平台零 fork」的准确表述（三层执行模型：哪些操作不 fork、外部命令边界如何、三平台各自实现）→ 上首页 hero 与基准页标题
+- [ ] 最新基准产物入库（recheck_fork_*.tsv、nvm）→ data/bench/，基准页来源指向仓库文件
+- [ ] FACTS.json 权威数字裁决（命令数/测试数/套件率/版本，README 三处不一致）
+- [ ] 内联 coreutils 完整名单（现在页面只举例 mkdir/touch/cat/sed/grep/wc）
+
+**侧边栏决策（调研结论：nuxt.com/nodejs.org 先例）**：营销页无栏 + 内容页侧栏；自写 Sidebar.astro/SidebarGroup/SidebarLink/TocRight/DocsLayout 五件套，nav.json 升级为树形；暂不上 Starlight（整站迁移成本 > 收益，50+ 文档页后再议）。

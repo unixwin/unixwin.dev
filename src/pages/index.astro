@@ -500,17 +500,21 @@ const softwareAppJsonLd = {
     line-height: 1.08;
     letter-spacing: 0.06em;
     margin: 0 0 1.1rem;
-    background: linear-gradient(92deg, var(--accent), var(--accent-2));
+    /* day 墨色渐变 / night accent 渐变，两端色由 tokens 提供 */
+    background: linear-gradient(92deg, var(--h1-grad-a), var(--h1-grad-b));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
   .hero-tagline {
-    font-size: 1.18rem;
-    line-height: 1.65;
+    font-family: var(--font-display); /* archify 基因：首句衬线展示字 */
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.002em;
     margin: 0 0 0.5rem;
-    max-width: 34em;
+    max-width: 32em;
   }
 
   .hero-tagline-en {
@@ -557,13 +561,11 @@ const softwareAppJsonLd = {
     text-decoration: none;
   }
 
+  /* 主按钮：day 黑底白字（archify --btn-*），night accent 底深字——两态走同一组 token */
   .cta-primary {
-    background: var(--accent);
-    color: var(--bg);
-    border: 1px solid var(--accent);
-    box-shadow:
-      0 1px 2px color-mix(in srgb, var(--accent) 30%, transparent),
-      0 8px 20px -8px color-mix(in srgb, var(--accent) 55%, transparent);
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: 1px solid var(--btn-bg);
   }
 
   .cta-primary::before {
@@ -572,8 +574,8 @@ const softwareAppJsonLd = {
   }
 
   .cta-primary:hover {
-    background: color-mix(in srgb, var(--accent) 92%, var(--text));
-    border-color: color-mix(in srgb, var(--accent) 92%, var(--text));
+    background: var(--btn-hover);
+    border-color: var(--btn-hover);
     transform: translateY(-1px);
   }
 
@@ -600,10 +602,8 @@ const softwareAppJsonLd = {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
-    box-shadow:
-      0 1px 2px color-mix(in srgb, var(--text) 6%, transparent),
-      0 16px 32px -12px color-mix(in srgb, var(--text) 12%, transparent),
-      0 32px 80px -24px color-mix(in srgb, var(--accent) 18%, transparent);
+    /* 浮起件才允许大阴影：inset 描边 + 远投大模糊（archify 浮起式） */
+    box-shadow: var(--shadow), var(--shadow-float);
   }
 
   .term-bar {
@@ -630,7 +630,7 @@ const softwareAppJsonLd = {
   }
 
   .td-g {
-    background: var(--accent);
+    background: var(--accent-2); /* teal：day 下替代 accent 橙读作“绿”点 */
   }
 
   .term-title {
@@ -849,9 +849,10 @@ const softwareAppJsonLd = {
   }
 
   main.container > :global(.section) :global(.section-title) {
+    font-family: var(--font-display); /* archify 基因：Section 大标题衬线（中文回落系统宋体） */
     font-size: 1.8rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    letter-spacing: 0;
     line-height: 1.25;
     margin: 0 0 1.4rem;
   }
@@ -947,7 +948,7 @@ const softwareAppJsonLd = {
   .product-cell:hover {
     transform: translateY(-4px);
     border-color: var(--accent);
-    box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--accent) 30%, transparent);
+    box-shadow: var(--shadow-float); /* hover 才浮起，且阴影改淡为远投大模糊 */
   }
 
   .product-cell > :global(.product-card) {
@@ -1082,7 +1083,7 @@ const softwareAppJsonLd = {
   .why-card:hover {
     transform: translateY(-3px);
     border-color: var(--accent);
-    box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--accent) 30%, transparent);
+    box-shadow: var(--shadow-float);
   }
 
   .why-num {

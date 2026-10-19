@@ -531,17 +531,21 @@ const softwareAppJsonLd = {
     line-height: 1.08;
     letter-spacing: 0.06em;
     margin: 0 0 1.1rem;
-    background: linear-gradient(92deg, var(--accent), var(--accent-2));
+    /* day ink gradient / night accent gradient, stops provided by tokens */
+    background: linear-gradient(92deg, var(--h1-grad-a), var(--h1-grad-b));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
   .hero-tagline {
-    font-size: 1.18rem;
-    line-height: 1.65;
+    font-family: var(--font-display); /* archify gene: serif display lead-in */
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.002em;
     margin: 0 0 0.5rem;
-    max-width: 34em;
+    max-width: 32em;
   }
 
   .hero-tagline-en {
@@ -588,13 +592,11 @@ const softwareAppJsonLd = {
     text-decoration: none;
   }
 
+  /* Primary CTA: day black-on-white (archify --btn-*), night accent bg — one token set for both */
   .cta-primary {
-    background: var(--accent);
-    color: var(--bg);
-    border: 1px solid var(--accent);
-    box-shadow:
-      0 1px 2px color-mix(in srgb, var(--accent) 30%, transparent),
-      0 8px 20px -8px color-mix(in srgb, var(--accent) 55%, transparent);
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: 1px solid var(--btn-bg);
   }
 
   .cta-primary::before {
@@ -603,8 +605,8 @@ const softwareAppJsonLd = {
   }
 
   .cta-primary:hover {
-    background: color-mix(in srgb, var(--accent) 92%, var(--text));
-    border-color: color-mix(in srgb, var(--accent) 92%, var(--text));
+    background: var(--btn-hover);
+    border-color: var(--btn-hover);
     transform: translateY(-1px);
   }
 
@@ -631,10 +633,8 @@ const softwareAppJsonLd = {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
-    box-shadow:
-      0 1px 2px color-mix(in srgb, var(--text) 6%, transparent),
-      0 16px 32px -12px color-mix(in srgb, var(--text) 12%, transparent),
-      0 32px 80px -24px color-mix(in srgb, var(--accent) 18%, transparent);
+    /* floating chrome only: inset ring + far diffuse shadow (archify float style) */
+    box-shadow: var(--shadow), var(--shadow-float);
   }
 
   .term-bar {
@@ -661,7 +661,7 @@ const softwareAppJsonLd = {
   }
 
   .td-g {
-    background: var(--accent);
+    background: var(--accent-2); /* teal reads as the "green" dot in day */
   }
 
   .term-title {
@@ -879,9 +879,10 @@ const softwareAppJsonLd = {
   }
 
   main.container > :global(.section) :global(.section-title) {
+    font-family: var(--font-display); /* archify gene: serif section headings */
     font-size: 1.8rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    letter-spacing: 0;
     line-height: 1.25;
     margin: 0 0 1.4rem;
   }
@@ -977,7 +978,7 @@ const softwareAppJsonLd = {
   .product-cell:hover {
     transform: translateY(-4px);
     border-color: var(--accent);
-    box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--accent) 30%, transparent);
+    box-shadow: var(--shadow-float); /* float only on hover, diffuse far shadow */
   }
 
   /* Inlined ProductCard (English labels) rendered transparent inside the cell */
@@ -1153,7 +1154,7 @@ const softwareAppJsonLd = {
   .why-card:hover {
     transform: translateY(-3px);
     border-color: var(--accent);
-    box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--accent) 30%, transparent);
+    box-shadow: var(--shadow-float);
   }
 
   .why-num {

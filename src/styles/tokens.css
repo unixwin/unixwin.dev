@@ -3,13 +3,18 @@
    多套主题，仅通过 <html data-theme="..."> 切换，变量名完全统一。
    组件与页面 CSS 只允许引用这里的变量，禁止硬编码颜色。
 
-   公共变量（16 个核心 + 3 个扩展，每套主题必须全量定义）：
+   公共变量（16 个核心 + 扩展，day/night 必须全量定义，候选主题沿用默认）：
      --bg --bg-elev --bg-code --text --muted --accent --accent-2 --link
      --border --danger --warn --radius --shadow --font-sans --font-mono
-     扩展：--font-body（该主题正文字体）--glass-bg --glass-blur（玻璃卡）
+     扩展：--font-body（正文）--font-display（衬线展示字体）
+           --glass-bg --glass-blur（玻璃卡）
+           --btn-bg --btn-fg --btn-hover（主按钮三态）
+           --shadow-float（浮起大阴影）--h1-grad-a --h1-grad-b（H1 渐变两端）
 
-   day / night（全站默认亮/暗对）配色改编自 astrowind（MIT, © 2023 onWidget），
-   见项目根 THIRD_PARTY_NOTICES.md。
+   day / night 设计基因量化移植自 archify.si（暖纸白/暖黑 + 墨色文字 +
+   单一橙红 accent + 黑底白字主按钮 + inset 描边阴影 + 墨色 H1 渐变 +
+   Fraunces 衬线展示字体）；原 astrowind（MIT, © 2023 onWidget）取色自
+   2026-10 起替换，防 FOUC 脚本的 astrowind 出处见 THIRD_PARTY_NOTICES.md。
    terminal / clean / neon 为早期候选页保留（仅 /theme/clean/、/theme/neon/ 使用）。
    ========================================================================== */
 
@@ -35,6 +40,15 @@
   --font-body: var(--font-mono);
   --glass-bg: rgba(17, 24, 50, 0.72);
   --glass-blur: 8px;
+  /* ---- archify 基因扩展的候选主题默认值（day/night 各自覆盖）：
+     主按钮 accent 底、H1 accent 渐变、浮起阴影、display 回落正文 sans ---- */
+  --btn-bg: var(--accent);
+  --btn-fg: var(--bg);
+  --btn-hover: color-mix(in srgb, var(--accent) 88%, var(--text));
+  --shadow-float: 0 30px 80px -40px color-mix(in srgb, var(--accent) 30%, transparent);
+  --h1-grad-a: var(--accent);
+  --h1-grad-b: var(--accent-2);
+  --font-display: var(--font-sans);
 }
 
 [data-theme='clean'] {
@@ -85,56 +99,75 @@
 }
 
 /* --------------------------------------------------------------------------
-   day — 亮色专业（全站默认）。配色改编自 astrowind（MIT, © 2023 onWidget）：
-   白/浅灰底 + 深墨文字 + 品牌蓝强调，slate 中性阶。
+   day — 暖纸白（全站默认）。设计基因量化移植自 archify.si：
+   暖灰白纸底 + 墨色文字 + 单一橙红 accent（teal 作次色），阴影收敛为
+   inset 描边、浮起才给大阴影；主按钮黑底白字；H1 用墨色渐变。
    -------------------------------------------------------------------------- */
 [data-theme='day'] {
   color-scheme: light;
-  --bg: #ffffff;
-  --bg-elev: #f8fafc;
-  --bg-code: #f1f5f9;
-  --text: #0f172a;
-  --muted: #64748b;
-  --accent: #2563eb;
-  --accent-2: #0ea5e9;
-  --link: #2563eb;
-  --border: #e2e8f0;
+  --bg: #f5f6f3;                            /* 暖纸白（archify --bg） */
+  --bg-elev: #ffffff;                       /* 卡片面（archify --surface） */
+  --bg-code: #eceee9;                       /* 下沉面 / 代码底（archify --sunken） */
+  --text: #121417;                          /* 墨色（archify --text） */
+  --muted: rgba(18, 20, 23, 0.62);          /* 墨色 62%（archify --text-3） */
+  --accent: #e2500e;                        /* 单一橙红（archify --accent） */
+  --accent-2: #0f766e;                      /* teal 次色（archify signal） */
+  --link: #b83e08;                          /* 亮底链接用深一档橙（对比 5.2:1） */
+  --border: rgba(18, 20, 23, 0.09);         /* 线条一级（archify --line-1） */
   --danger: #dc2626;
   --warn: #d97706;
-  --radius: 12px;
-  --shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  --radius: 12px;                           /* 介于 archify 按钮 10 / 卡片 16 之间 */
+  --shadow: inset 0 0 0 1px rgba(18, 20, 23, 0.1);   /* 描边式阴影（archify 主用） */
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
+  /* display 衬线（Fraunces 自托管，latin 子集）；中文回落系统衬线 */
+  --font-display: 'Fraunces', Georgia, 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', SimSun, serif;
   /* day：无衬线正文 + 等宽代码 */
   --font-body: var(--font-sans);
-  /* 吸顶导航玻璃条：白底微透 + 轻模糊 */
-  --glass-bg: rgba(255, 255, 255, 0.8);
+  /* 吸顶导航玻璃条：暖纸底微透 + 轻模糊（archify --plate 基底） */
+  --glass-bg: rgba(251, 251, 249, 0.85);
   --glass-blur: 6px;
+  /* ---- archify 基因扩展（day/night 各自全量定义） ---- */
+  --btn-bg: #121417;                        /* 主按钮：黑底白字（archify --btn-bg） */
+  --btn-fg: #ffffff;
+  --btn-hover: #000000;
+  --shadow-float: 0 30px 80px -40px rgba(226, 80, 14, 0.3);  /* 浮起大阴影 */
+  --h1-grad-a: #0b0c0e;                     /* H1 墨色渐变两端（archify H1） */
+  --h1-grad-b: rgba(18, 20, 23, 0.72);
 }
 
 /* --------------------------------------------------------------------------
-   night — 专业暗色（day 的暗色搭档，非终端绿风）。同为 astrowind 改编：
-   深海军蓝底 + slate 浅灰文字 + 亮一档的蓝色强调。
+   night — 暖黑（day 的暗色搭档）。与 day 同一套 archify 基因：
+   暖黑底 + 暖白文字 + 亮一档的橙红 accent，主按钮 accent 底深字。
    -------------------------------------------------------------------------- */
 [data-theme='night'] {
   color-scheme: dark;
-  --bg: #0b1120;
-  --bg-elev: #111a2e;
-  --bg-code: #0d1526;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #60a5fa;
-  --accent-2: #38bdf8;
-  --link: #60a5fa;
-  --border: #1e293b;
+  --bg: #131417;                            /* 暖黑（非蓝黑） */
+  --bg-elev: #1a1c20;
+  --bg-code: #0f1013;
+  --text: #ececea;                          /* 暖白 */
+  --muted: rgba(236, 236, 234, 0.62);
+  --accent: #ff6a2b;                        /* 橙红亮一档，暗底可读 */
+  --accent-2: #2dd4bf;
+  --link: #ff8a4d;                          /* 暗底链接亮一档（对比 7.9:1） */
+  --border: rgba(236, 236, 234, 0.09);
   --danger: #f87171;
   --warn: #fbbf24;
   --radius: 12px;
-  --shadow: 0 8px 24px rgba(2, 6, 23, 0.55);
+  --shadow: inset 0 0 0 1px rgba(236, 236, 234, 0.12);
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
   /* night：与 day 相同的字体系，仅配色变化 */
+  --font-display: 'Fraunces', Georgia, 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', SimSun, serif;
   --font-body: var(--font-sans);
-  --glass-bg: rgba(17, 26, 46, 0.75);
+  --glass-bg: rgba(19, 20, 23, 0.8);
   --glass-blur: 10px;
+  /* ---- archify 基因扩展：night 主按钮 accent 底 + 深字（对比 6.4:1） ---- */
+  --btn-bg: var(--accent);
+  --btn-fg: #131417;
+  --btn-hover: #ff814c;
+  --shadow-float: 0 30px 80px -40px rgba(255, 106, 43, 0.28);
+  /* night H1 保持 accent 渐变 */
+  --h1-grad-a: var(--accent);
+  --h1-grad-b: var(--accent-2);
 }

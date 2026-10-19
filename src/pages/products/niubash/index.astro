@@ -350,8 +350,8 @@ const productJsonLd = {
 
 <style>
   .doc-head h1 {
-    border-bottom: 3px solid #38e07b;
-    border-image: linear-gradient(90deg, #38e07b, transparent 70%) 1;
+    border-bottom: 3px solid var(--accent); /* 原 terminal 期硬编码 #38e07b，统一收进 token */
+    border-image: linear-gradient(90deg, var(--accent), transparent 70%) 1;
     padding-bottom: 0.5rem;
   }
 
@@ -379,10 +379,10 @@ const productJsonLd = {
   .p-badge {
     display: inline-flex;
     align-items: center;
-    border: 1px solid #38e07b;
+    border: 1px solid var(--accent);
     border-radius: calc(var(--radius) * 0.75);
-    background: color-mix(in srgb, #38e07b 12%, transparent);
-    color: #38e07b;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
     font-family: var(--font-mono);
     font-size: 0.7rem;
     letter-spacing: 0.03em;
@@ -417,7 +417,7 @@ const productJsonLd = {
 
   .p-card {
     border: 1px solid var(--border);
-    border-top: 3px solid #38e07b;
+    border-top: 3px solid var(--accent);
     border-radius: var(--radius);
     background: var(--bg-elev);
     padding: 0.95rem 1.05rem;
@@ -463,7 +463,7 @@ const productJsonLd = {
   }
 
   .first-run {
-    border-left: 3px solid #38e07b;
+    border-left: 3px solid var(--accent);
     padding-left: 0.9rem;
     color: var(--muted);
   }

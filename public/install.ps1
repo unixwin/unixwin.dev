@@ -65,6 +65,35 @@ function Install-Niubash {
         return
     }
 
+    # Integrity: verify against the release's own .sha256 sidecar before executing.
+    try {
+        Write-Host '  Verifying SHA256...' -ForegroundColor DarkGray
+        $HashUrl = "$Url.sha256"
+        $HashFile = Join-Path $env:TEMP "$Asset.sha256"
+        Invoke-WebRequest -Uri $HashUrl -OutFile $HashFile -UseBasicParsing
+        $Expected = (Get-Content $HashFile -TotalCount 1).Split()[0].Trim().ToLowerInvariant()
+        Remove-Item -LiteralPath $HashFile -Force -ErrorAction SilentlyContinue
+        $Actual = (Get-FileHash -LiteralPath $Dest -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($Actual -ne $Expected) {
+            Write-Host ''
+            Write-Host '  SHA256 MISMATCH - the download is corrupt or tampered.' -ForegroundColor Red
+            Write-Host "    expected: $Expected" -ForegroundColor Red
+            Write-Host "    actual:   $Actual" -ForegroundColor Red
+            Write-Host "  Aborting. Report this at https://github.com/$Repo/issues" -ForegroundColor DarkGray
+            Remove-Item -LiteralPath $Dest -Force -ErrorAction SilentlyContinue
+            return
+        }
+        Write-Host '  SHA256 OK' -ForegroundColor Green
+    } catch {
+        # 校验链路失败不静默放过：报告并中止（fail-closed，不执行未校验的二进制）
+        Write-Host ''
+        Write-Host "  Could not verify SHA256: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host '  Aborting instead of running an unverified binary.' -ForegroundColor Yellow
+        Write-Host "  Download manually from: $ReleasesPage" -ForegroundColor DarkGray
+        Remove-Item -LiteralPath $Dest -Force -ErrorAction SilentlyContinue
+        return
+    }
+
     Write-Host '  Installing...' -ForegroundColor DarkGray
     $proc = Start-Process -FilePath $Dest -Wait -PassThru
     $code = $proc.ExitCode

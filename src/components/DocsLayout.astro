@@ -289,9 +289,10 @@ const showPager = !isDocsHome && (prev !== null || next !== null) && index >= 0;
      颜色一律引用 tokens；day/night 双档由变量自带。
      ========================================================================== */
   .docs-main h1 {
+    font-family: var(--font-display); /* archify 基因：文档页最高级标题用衬线（中文回落系统宋体） */
     font-size: 2.2rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-weight: 600;
+    letter-spacing: 0;
     line-height: 1.25;
     margin: 0 0 1rem;
   }

@@ -22,3 +22,13 @@
   适配改动：变量命名对齐本站 tokens 体系（`--bg/--text/--accent/...`）、切换仅限
   day↔night 两态、localStorage 键为 `unixwin-theme`、静态站无客户端路由故未移植
   `astro:after-swap` 监听。
+
+## Fraunces
+
+- 项目：<https://fonts.google.com/specimen/Fraunces>（仓库：
+  <https://github.com/undercasetype/Fraunces>）
+- 许可：SIL Open Font License 1.1
+- 用途：`public/fonts/fraunces-latin-wght-{normal,italic}.woff2`——Google Fonts
+  官方 latin 子集可变字体（未修改），经 `@font-face`（`src/styles/global.css`）
+  自托管，作为 day/night 主题 `--font-display` 衬线展示字体。
+  设计基因参考站：archify.si（其 `/fonts/fonts.css` 同源分发文件）。

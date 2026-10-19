@@ -1,0 +1,26 @@
+# gnu GNU bash, version 5.3.0(1)-release (x86_64-pc-linux-gnu)
+# uname Linux 6.18.33.2-microsoft-standard-WSL2 x86_64 6.18.33.2-microsoft-standard-WSL2
+01-startup-empty	OK	8	7	8	3	0
+04-loop-true-builtin-x2000	OK	17	16	17	3	0
+02-startup-fndef	OK	7	7	7	5	0
+05-arith-x5000	OK	17	14	25	5	0
+06-strconcat-x5000	OK	40	30	44	5	0
+07-fncall-noop-x5000	OK	37	34	46	5	0
+08-cmdsub-true-x1000	OK	583	569	605	5	0
+09-external-uname-x300	OK	422	352	443	5	0
+10-pathmiss-x100	OK	30	26	35	5	0
+11-pipeline-yes-head	OK	12	10	14	5	0
+12-pipe-echo-read-x2000	OK	1925	1822	2061	5	0
+13-readloop-gen-x2000	OK	42	39	45	5	0
+14-glob-srcrels-x100	OK	59	51	65	5	0
+15-expansion-x5000	OK	65	62	73	5	0
+16-parse-flat8000	OK	22	21	30	5	0
+17-parse-flat8000-n	OK	16	13	18	5	0
+18-nested-brace-nst1-d200	OK	8	7	12	5	0
+19-nested-brace-nst2-d200	OK	8	7	8	5	0
+20-as-fn-mkdir-p-rep40	OK	10	8	13	5	0
+21-configure-head1374-n	OK	10	9	12	3	0
+22-configure-full-n	OK	56	55	76	3	0
+23-nvm-parse-n	OK	24	23	26	3	0
+24-nvm-load	OK	50	48	51	3	0
+25-yes-head-read	OK	332	305	397	3	0

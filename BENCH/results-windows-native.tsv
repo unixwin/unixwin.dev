@@ -1,0 +1,5 @@
+bin	cwd	env	status	ms	stdout	stderr	detail
+main-exe-41de8319-win	/mnt/d/repo/rubash	clean	TIMEOUT	60046ms	0B	0B	
+main-exe-41de8319-win	/mnt/d/repo/rubash	polluted	TIMEOUT	60013ms	0B	0B	
+main-exe-41de8319-win	/mnt/c/Users/cmx/AppData/Local/Temp/nvm-hang-verify/tmp	clean	RC127	90ms	0B	65B	rubash.exe: benchmarks/24-nvm-load.sh: No such file or directory 
+main-exe-41de8319-win	/mnt/c/Users/cmx/AppData/Local/Temp/nvm-hang-verify/tmp	polluted	RC127	95ms	0B	65B	rubash.exe: benchmarks/24-nvm-load.sh: No such file or directory 

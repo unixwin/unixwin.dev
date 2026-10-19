@@ -1,0 +1,59 @@
+{
+  "as_of": "2026-10-19",
+  "adjudicator": "总控审计（主会话）——每项给口径与证据；与 README 冲突处以下列裁决为准",
+  "org": {
+    "name": "unixwin",
+    "repos_total": 15,
+    "repos_public": 11,
+    "repos_public_list": ["unixwin.dev", "rubash", "niubash", "wpm-source", "WinuxCmd", "niu-git", "wpm-artifacts", "oh-my-niu", "winuxcmd-i18n", "wpm-gui", ".github"],
+    "evidence": "gh repo list unixwin --limit 30（2026-10-19）"
+  },
+  "products": {
+    "rubash": {"version": "v1.4.0", "release_url": "https://github.com/unixwin/rubash/releases/tag/v1.4.0", "crates_io": "1.4.0", "note": "嵌入 API 稳定化为 1.5.0 目标（docs/design/1.5.0-workspace-and-engine-api.md，PR rubash#814）"},
+    "niubash": {"version": "v1.4.0", "release_url": "https://github.com/unixwin/niubash/releases/tag/v1.4.0"},
+    "WinuxCmd": {"version": "v1.1.15", "release_url": "https://github.com/unixwin/WinuxCmd/releases/tag/v1.1.15"},
+    "niu-git": {"version": "v2.56.0.1", "note": "无 release 页，tag 即版本", "evidence": "gh api repos/unixwin/niu-git/tags"},
+    "wpm": {"note": "wpm 随 winuxcmd.exe 内建（winuxcmd wpm），无独立版本；wpm-source 为索引仓无版本概念"},
+    "oh-my-niu": {"version": "v2.0.0", "evidence": "tag v2.0.0 与 bundle.toml version 一致"}
+  },
+  "rubash": {
+    "builtins_true_count": 62,
+    "builtins_note": "GNU Bash 5.3 的 61 个全覆盖 + 扩展 env；另有 fast-path 5、管线 arm 12、替换 arm 8",
+    "builtins_evidence": "docs/builtins.md（单一事实来源，由 src/executor/builtin_names.rs 文档同步测试守护）",
+    "readme_40plus_verdict": "README:142 的 '40+' 是旧口径，以 62 为准（README 待修，非门户数字）",
+    "gnu_suite": {
+      "pass": "83/83",
+      "byte_identical": "82 suites (0 diff)",
+      "residual": "nameref 1 行 = GNU 自身 coproc reap 竞态（docs/nameref-suite-residual-gnu-race-20261012.md）",
+      "measurement": "2026-10-12 full re-run @ master 764b9dde（true-baseline，WINUXSH_ROOT pin scrub）",
+      "continuous": "每 PR 的 GNU goldens CI 门持续复验（最新绿 run 39191237754）",
+      "beyond_gnu": {"modernish": "166/166 rc-vector", "mvdan_sh": "559 snippets", "bash_completion": "452/452", "git_completion": "140/140", "oh_my_bash": "252/252 functions (22 libs)"}
+    },
+    "ci_hard_gates": {
+      "lib_nextest": "608 passed / 0 failed",
+      "marker_golden": "16 passed / 0 failed",
+      "gnu_goldens": "74 passed / 0 failed",
+      "total": "698 passed / 0 failed",
+      "run": "https://github.com/unixwin/rubash/actions/runs/39191237754（master b79e678a）",
+      "note": "cli_tests lane 28/465 为 continue-on-error informational，不计硬门"
+    },
+    "winuxcmd_external_referenced": 176
+  },
+  "niubash": {
+    "ci": {"workspace": "1026 passed / 0 failed / 34 ignored（55 个测试二进制）", "run": "https://github.com/unixwin/niubash/actions/runs/39191023176（master 7b4ee734）", "cross_check_note": "unix/macos cross-check 为 informational（continue-on-error，494/20），unix cfg 门控工作落地后转硬门——README/CI 内已注明"},
+    "eco_corpus": {"assets_archived": 6336, "verdict_split": "4,891 OK / 350 slow / 224 GNU-also-fail / 101 hangs / 698 never-fetched", "timing_baseline": "437 real oh-my-bash/bash-it assets（166 themes），median of 3", "theme_budget": "healthy 11-35ms，budget 120ms，5x over = hard fail", "evidence": "niubash/README.md:83-104"}
+  },
+  "winuxcmd": {
+    "product_size": "3.79 MB / 176 commands / 1,924 options / ~19ms cold start（README:32,:74，PGO 口径）",
+    "differential_corpus": {"cases": 178, "composition": "131 corpus cases over 67 commands + 47 regressions", "readme_claim_84_verdict": "README:39 的 '84 commands' 与 baseline.json 实键 67 不符，以文件实数 67 为准（README 待修）", "pass_rate": "93%（165 pass / 13 tracked platform diffs）", "evidence": "WinuxCmd/tests/differential/baseline.json + README:5"}
+  },
+  "niugit": {"git_startup": "niu-git ~14ms vs Git Bash 45-103ms（实测范围口径，niubash/README.md:32）", "org_desc_75_100_verdict": "组织仓描述的 '75-100ms' 与 README '45-103ms' 不一致，以 README 实测口径 45-103ms 为准", "tls": "MSVC + CMake + schannel（无 OpenSSL、无捆绑 shell/perl，TLS 走 Windows 证书库）", "evidence": "niu-git README.md / AGENTS.md"},
+  "telemetry": {"status": "none", "evidence": "git grep -il 'telemetry|analytics|sentry|posthog' niubash origin/master -- '*.rs' '*.toml' = 零命中（2026-10-19）"},
+  "unverified_do_not_publish": [
+    "PGO for rubash（未找到 PGO 配置证据；WinuxCmd 的 PGO 口径见其 README:74）",
+    "Microsoft Store（MSIX 材料在 niubash/docs/store/，未发布）",
+    "winget（PR microsoft/winget-pkgs#444854 验证中，未合）",
+    "recheck_fork_20261018-*.tsv（门户提示词提及，全盘未找到——以 BENCH/bgwait-20261018 系列替代）"
+  ],
+  "readme_lag_note": "README 修正项（40+→62、84→67、中英 README 对齐、组织仓描述 75-100→45-103）已记录，属仓库待办非门户阻塞"
+}

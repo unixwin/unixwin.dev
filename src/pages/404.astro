@@ -1,0 +1,97 @@
+---
+/**
+ * 404 — terminal 主题终端风「command not found」。
+ * 静态构建时无法预知错误路径，用内联脚本在运行时回填 location.pathname。
+ */
+import BaseLayout from '../components/BaseLayout.astro';
+import ThemeSwitcher from '../components/ThemeSwitcher.astro';
+---
+
+<BaseLayout
+  title="404 · command not found"
+  description="UNIXWIN：页面不存在（command not found）。"
+  theme="terminal"
+  path="/404"
+>
+  <main class="container nf">
+    <div class="codeblock nf-panel">
+      <p class="nf-line"><span class="nf-prompt">$</span> open <span id="nf-path" class="nf-path">/unknown</span></p>
+      <p class="nf-error">bash: command not found: <span class="nf-path-inline" id="nf-path-inline">/unknown</span></p>
+      <p class="nf-hint">exit code 127 · 这个页面不存在。试试：</p>
+      <ul class="nf-suggestions">
+        <li><a href="/">cd /</a> — 回首页</li>
+        <li><a href="/#products">ls /products</a> — 产品矩阵</li>
+        <li><a href="/changelog/">cat /changelog</a> — 更新日志</li>
+      </ul>
+    </div>
+  </main>
+
+  <ThemeSwitcher current="terminal" />
+</BaseLayout>
+
+<script is:inline>
+  (function () {
+    var p = location.pathname + location.search;
+    var a = document.getElementById('nf-path');
+    var b = document.getElementById('nf-path-inline');
+    if (a) a.textContent = p;
+    if (b) b.textContent = p;
+  })();
+</script>
+
+<style>
+  .nf {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+  }
+
+  .nf-panel {
+    width: min(640px, 100%);
+    padding: 1.8rem 2rem;
+    box-shadow: var(--shadow);
+  }
+
+  .nf-line {
+    color: var(--text);
+    margin: 0 0 0.4rem;
+  }
+
+  .nf-prompt {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .nf-path,
+  .nf-path-inline {
+    color: var(--accent-2);
+  }
+
+  .nf-error {
+    color: var(--danger);
+    margin: 0 0 1.2rem;
+  }
+
+  .nf-hint {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .nf-suggestions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .nf-suggestions a {
+    color: var(--link);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+  }
+</style>

@@ -1,0 +1,302 @@
+---
+/**
+ * 更新日志聚合页 — /changelog/（terminal 主题）
+ * 数据源：src/data/changelogs.json（npm run fetch:github 生成）。
+ * 按日期倒序聚合所有仓库版本；顶部产品过滤 chips（?repo= 链接，纯装饰）；
+ * 分组配色：Added/新增=绿(accent) Changed/性能=蓝(accent-2) Fixed/修复=橙(warn)
+ *          Removed/移除、Security/安全、Deprecated=红(danger) 其余=muted。
+ */
+import BaseLayout from '../../components/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import ThemeSwitcher from '../../components/ThemeSwitcher.astro';
+import Badge from '../../components/Badge.astro';
+import changelogs from '../../data/changelogs.json';
+import products from '../../data/products.json';
+
+interface Entry {
+  repo: string;
+  productId: string;
+  productName: string;
+  accent: string;
+  version: string;
+  date: string;
+  unreleased: boolean;
+  sections: Record<string, string[]>;
+}
+
+const productByRepo = new Map(products.map((p) => [p.repo.split('/').pop(), p]));
+// 兜底主色取自 products.json 首条（数据驱动，避免硬编码颜色）
+const defaultAccent = products[0]?.accent ?? 'var(--accent)';
+
+const entries: Entry[] = [];
+for (const repo of changelogs.repos ?? []) {
+  const product = productByRepo.get(repo.repo);
+  for (const v of repo.versions ?? []) {
+    entries.push({
+      repo: repo.repo,
+      productId: product?.id ?? repo.repo,
+      productName: product?.name ?? repo.repo,
+      accent: product?.accent ?? defaultAccent,
+      version: v.version,
+      date: v.date ?? '',
+      unreleased: Boolean(v.unreleased),
+      sections: v.sections ?? {},
+    });
+  }
+}
+
+// 排序：Unreleased 最前 → 日期倒序 → 无日期垫底
+entries.sort((a, b) => {
+  if (a.unreleased !== b.unreleased) return a.unreleased ? -1 : 1;
+  const da = /^\d{4}-\d{2}-\d{2}$/.test(a.date) ? a.date : '';
+  const db = /^\d{4}-\d{2}-\d{2}$/.test(b.date) ? b.date : '';
+  if (da && db) return da === db ? a.repo.localeCompare(b.repo) : da < db ? 1 : -1;
+  if (da) return -1;
+  if (db) return 1;
+  return 0;
+});
+
+// 分组名 → tone
+function toneOf(group: string): string {
+  const g = group.toLowerCase();
+  if (g === '' ) return 'other';
+  if (/added|新增|new/.test(g)) return 'added';
+  if (/changed|change|性能|优化|perf/.test(g)) return 'changed';
+  if (/fixed|fix|修复|bugfix/.test(g)) return 'fixed';
+  if (/removed|remove|移除|删除/.test(g)) return 'removed';
+  if (/deprecated|弃用/.test(g)) return 'removed';
+  if (/security|安全/.test(g)) return 'security';
+  return 'other';
+}
+
+const groupOrder = ['Added', '新增', 'Changed', '性能', 'Fixed', '修复', 'Removed', '移除', 'Deprecated', 'Security', '安全'];
+function groupSort(a: string, b: string): number {
+  const ia = groupOrder.indexOf(a);
+  const ib = groupOrder.indexOf(b);
+  if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  return a.localeCompare(b);
+}
+
+const isEmpty = entries.length === 0;
+const repoNames = [...new Set((changelogs.repos ?? []).map((r) => r.repo))];
+const fetchedAt = changelogs.fetchedAt ? new Date(changelogs.fetchedAt).toISOString().slice(0, 10) : '';
+---
+
+<BaseLayout
+  title="更新日志"
+  description="UNIXWIN 全家桶更新日志聚合：niubash、WinuxCmd、rubash、niu-git、oh-my-niu。"
+  theme="terminal"
+  path="/changelog/"
+>
+  <SiteHeader />
+
+  <main class="container">
+    <section class="cl-head">
+      <h1>更新日志</h1>
+      <p class="cl-sub">
+        {fetchedAt ? `聚合自各仓库 CHANGELOG · 拉取于 ${fetchedAt}` : '尚未拉取数据'}
+      </p>
+
+      <!-- 产品过滤 chips（?repo= 纯装饰，服务端不做过滤） -->
+      <div class="chips" role="navigation" aria-label="按产品过滤">
+        <a class="chip" href="/changelog/">全部</a>
+        {repoNames.map((name) => (
+          <a class="chip" href={`/changelog/?repo=${name}`}>{productByRepo.get(name)?.name ?? name}</a>
+        ))}
+      </div>
+    </section>
+
+    {
+      isEmpty ? (
+        <div class="empty codeblock">
+          <p>$ npm run fetch:github</p>
+          <p class="empty-hint">changelogs.json 尚无数据 —— 运行 <code>npm run fetch:github</code> 生成。</p>
+        </div>
+      ) : (
+        <ol class="timeline">
+          {entries.map((e) => (
+            <li class="entry" style={`--entry-accent: ${e.accent};`}>
+              <details>
+                <summary>
+                  <span class="entry-repo" style={`--repo-accent: ${e.accent};`}>{e.productName}</span>
+                  <span class="entry-version">{e.unreleased ? 'Unreleased' : e.version}</span>
+                  {e.unreleased && <Badge tone="warn">未发布</Badge>}
+                  <span class="entry-date">{e.date || '日期未知'}</span>
+                </summary>
+                <div class="entry-body">
+                  {Object.keys(e.sections)
+                    .sort(groupSort)
+                    .map((group) => (
+                      <div class={`group group-${toneOf(group)}`}>
+                        <h3>{group === '' ? '更新' : group}</h3>
+                        <ul>
+                          {e.sections[group].map((line) => (
+                            <li>{line}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                </div>
+              </details>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </main>
+
+  <SiteFooter />
+  <ThemeSwitcher current="terminal" />
+</BaseLayout>
+
+<style>
+  .cl-head {
+    padding: 3rem 0 1rem;
+  }
+
+  .cl-head h1 {
+    margin-bottom: 0.2rem;
+  }
+
+  .cl-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .chips {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.2rem 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-decoration: none;
+  }
+
+  .chip:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .empty {
+    color: var(--accent);
+    padding: 1.4rem 1.6rem;
+  }
+
+  .empty p {
+    margin: 0;
+  }
+
+  .empty-hint {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-top: 0.4rem;
+  }
+
+  .timeline {
+    list-style: none;
+    margin: 1.2rem 0 3rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .entry {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--entry-accent, var(--accent));
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+
+  .entry summary {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    font-family: var(--font-mono);
+  }
+
+  .entry summary::-webkit-details-marker {
+    color: var(--muted);
+  }
+
+  .entry-repo {
+    color: var(--repo-accent, var(--accent));
+    font-weight: 700;
+  }
+
+  .entry-version {
+    color: var(--text);
+  }
+
+  .entry-date {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .entry-body {
+    border-top: 1px solid var(--border);
+    padding: 1rem 1.3rem 1.2rem;
+    background: var(--bg-code);
+  }
+
+  .group {
+    margin-bottom: 1rem;
+  }
+
+  .group:last-child {
+    margin-bottom: 0;
+  }
+
+  .group h3 {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 0.4rem;
+  }
+
+  .group ul {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  .group li {
+    font-size: 0.88rem;
+    margin-bottom: 0.35rem;
+    color: var(--text);
+  }
+
+  .group-added h3 { color: var(--accent); }
+  .group-changed h3 { color: var(--accent-2); }
+  .group-fixed h3 { color: var(--warn); }
+  .group-removed h3 { color: var(--danger); }
+  .group-security h3 { color: var(--danger); }
+  .group-other h3 { color: var(--muted); }
+
+  .group-added li { border-left: 2px solid var(--accent); }
+  .group-changed li { border-left: 2px solid var(--accent-2); }
+  .group-fixed li { border-left: 2px solid var(--warn); }
+  .group-removed li,
+  .group-security li { border-left: 2px solid var(--danger); }
+  .group-other li { border-left: 2px solid var(--border); }
+
+  .group li {
+    padding-left: 0.55rem;
+    list-style: none;
+  }
+</style>

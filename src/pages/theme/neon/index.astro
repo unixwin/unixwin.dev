@@ -1,0 +1,184 @@
+---
+/**
+ * 主题候选 C（neon）预览页 — /theme/neon/
+ * 与首页同结构骨架；文案为占位（TODO-CONTENT），供后续代理精修。
+ * neon 特性：玻璃卡（backdrop-filter）+ 渐变点缀 + 16px 圆角，全部经 tokens 生效。
+ */
+import BaseLayout from '../../../components/BaseLayout.astro';
+import SiteHeader from '../../../components/SiteHeader.astro';
+import SiteFooter from '../../../components/SiteFooter.astro';
+import ThemeSwitcher from '../../../components/ThemeSwitcher.astro';
+import StatsBand from '../../../components/StatsBand.astro';
+import ProductCard from '../../../components/ProductCard.astro';
+import Section from '../../../components/Section.astro';
+import Badge from '../../../components/Badge.astro';
+import products from '../../../data/products.json';
+import facts from '../../../data/facts.json';
+import repoMeta from '../../../data/repo-meta.json';
+
+const ordered = [...products].sort((a, b) => a.order - b.order);
+
+const stats = [
+  { label: 'bash 测试套件', value: facts.bashSuites },
+  { label: '字节级一致性', value: facts.byteIdentical },
+  { label: 'Unix 命令', value: facts.commands },
+  { label: '命令选项', value: facts.options },
+  { label: 'niu-git 启动', value: facts.gitStartup },
+  { label: 'shell 冷启动', value: facts.shellColdStart },
+];
+---
+
+<BaseLayout
+  title="主题候选 C · 霓虹 neon — UNIXWIN"
+  description="UNIXWIN 官网主题候选 C（neon）：紫青霓虹、玻璃卡片方案预览。"
+  theme="neon"
+  path="/theme/neon/"
+>
+  <SiteHeader />
+
+  <main class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <p class="hero-kicker"><Badge tone="info">主题候选 C · neon</Badge></p>
+      <h1 class="hero-wordmark">UNIXWIN</h1>
+      <!-- TODO-CONTENT：neon 主题 hero 文案待精修 -->
+      <p class="hero-tagline">AI-native 的真·Bash：真语法、真 Unix 命令、原生三平台。</p>
+      <p class="hero-tagline-en">AI-native bash family — real bash syntax, real Unix commands, native Windows / Linux / macOS.</p>
+      <div class="hero-cta">
+        <a class="cta cta-primary" href="#products">查看产品</a>
+        <a class="cta cta-ghost" href="https://github.com/unixwin" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <div id="facts">
+      <StatsBand items={stats} />
+    </div>
+
+    <!-- Products -->
+    <Section id="products" title="产品矩阵" kicker="six projects · one family">
+      <div class="product-grid">
+        {ordered.map((p) => (
+          <ProductCard product={p} stars={repoMeta.repos?.[p.id]?.stars} />
+        ))}
+      </div>
+    </Section>
+
+    <!-- Theme candidates -->
+    <Section id="themes" title="主题候选" kicker="a / b / c — pick one">
+      <div class="theme-grid">
+        <a class="theme-tile" href="/">A · 终端 terminal</a>
+        <a class="theme-tile" href="/theme/clean/">B · 亮色 clean</a>
+        <a class="theme-tile is-current" href="/theme/neon/">C · 霓虹 neon（当前）</a>
+      </div>
+    </Section>
+  </main>
+
+  <SiteFooter />
+  <ThemeSwitcher current="neon" />
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: 4rem 0 2.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .hero-kicker {
+    margin: 0;
+  }
+
+  .hero-wordmark {
+    font-size: clamp(2.6rem, 8vw, 4.6rem);
+    letter-spacing: 0.06em;
+    margin: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-tagline {
+    font-size: 1.15rem;
+    margin: 0.4rem 0 0;
+  }
+
+  .hero-tagline-en {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 0.9rem;
+    margin-top: 1.4rem;
+    flex-wrap: wrap;
+  }
+
+  .cta {
+    border-radius: var(--radius);
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .cta:hover {
+    text-decoration: none;
+  }
+
+  .cta-primary {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    color: var(--bg);
+    border: 1px solid transparent;
+  }
+
+  .cta-ghost {
+    color: var(--text);
+    border: 1px solid var(--border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+  }
+
+  .cta-ghost:hover {
+    border-color: var(--accent);
+  }
+
+  #facts {
+    scroll-margin-top: 5rem;
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.1rem;
+  }
+
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .theme-tile {
+    display: block;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    color: var(--text);
+    text-decoration: none;
+    box-shadow: var(--shadow);
+  }
+
+  .theme-tile:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .theme-tile.is-current {
+    border-color: var(--accent);
+  }
+</style>

@@ -1,0 +1,62 @@
+---
+/**
+ * Section — 通用区块：标题 + 可选锚点 + 默认插槽。
+ *
+ * Props:
+ *   title  string   区块标题
+ *   id     string   锚点 id（默认取 title）
+ *   kicker string   标题上方的小字引导（可选）
+ *
+ * 示例：
+ *   <Section id="products" title="产品矩阵" kicker=" six projects ">
+ *     <div>…</div>
+ *   </Section>
+ */
+interface Props {
+  title: string;
+  id?: string;
+  kicker?: string;
+}
+
+const { title, id, kicker } = Astro.props;
+const anchor = id ?? title;
+---
+
+<section class="section" id={anchor}>
+  {kicker && <p class="kicker">{kicker}</p>}
+  <h2 class="section-title">{title}</h2>
+  <div class="section-body">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section {
+    margin: 3.2rem 0;
+    scroll-margin-top: 5rem;
+  }
+
+  .kicker {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0 0 0.2rem;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+    margin: 0 0 1.2rem;
+  }
+
+  .section-title::after {
+    content: '';
+    display: block;
+    width: 3rem;
+    height: 3px;
+    margin-top: 0.5rem;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+</style>

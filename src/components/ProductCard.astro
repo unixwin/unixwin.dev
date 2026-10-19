@@ -1,0 +1,134 @@
+---
+/**
+ * ProductCard — 产品卡片。
+ *
+ * Props:
+ *   product  products.json 中的一条记录（id/name/cmd/repo/lang/stars/accent/order/tagline_zh/tagline_en）
+ *   stars    可选，运行时星标数（来自 repo-meta.json，缺省回落 product.stars）
+ *
+ * 产品主色通过内联 CSS 变量 --card-accent 注入（数据驱动，不算硬编码），
+ * 卡片其余颜色一律引用 tokens。
+ *
+ * 示例：
+ *   <ProductCard product={products[0]} stars={repoMeta.niubash?.stars} />
+ */
+import Badge from './Badge.astro';
+
+interface Product {
+  id: string;
+  name: string;
+  cmd: string;
+  repo: string;
+  lang: string;
+  stars: number;
+  accent: string;
+  order: number;
+  tagline_zh: string;
+  tagline_en: string;
+}
+
+interface Props {
+  product: Product;
+  stars?: number;
+}
+
+const { product, stars } = Astro.props;
+const shownStars = typeof stars === 'number' ? stars : product.stars;
+const repoUrl = `https://${product.repo}`;
+---
+
+<article class="product-card" id={product.id} style={`--card-accent: ${product.accent};`}>
+  <header class="card-head">
+    <span class="card-bar" aria-hidden="true"></span>
+    <h3 class="card-name">{product.name}</h3>
+    <Badge tone="muted">{product.lang}</Badge>
+  </header>
+
+  <p class="card-tagline">{product.tagline_zh}</p>
+  <p class="card-tagline-en">{product.tagline_en}</p>
+
+  <footer class="card-foot">
+    <code class="card-cmd" title="命令行入口">$ {product.cmd}</code>
+    <span class="card-stars" title="GitHub Stars">★ {shownStars}</span>
+    <a class="card-repo" href={repoUrl} target="_blank" rel="noopener noreferrer">仓库 ↗</a>
+  </footer>
+</article>
+
+<style>
+  .product-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+
+  .product-card:hover {
+    border-color: var(--card-accent, var(--accent));
+    transform: translateY(-2px);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .card-bar {
+    width: 6px;
+    align-self: stretch;
+    border-radius: 3px;
+    background: var(--card-accent, var(--accent));
+  }
+
+  .card-name {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 1.12rem;
+  }
+
+  .card-tagline {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .card-tagline-en {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .card-foot {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+  }
+
+  .card-cmd {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.12rem 0.6rem;
+    color: var(--card-accent, var(--accent));
+  }
+
+  .card-stars {
+    color: var(--warn);
+    font-family: var(--font-mono);
+  }
+
+  .card-repo {
+    margin-left: auto;
+    color: var(--link);
+  }
+</style>

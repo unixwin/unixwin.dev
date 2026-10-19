@@ -1,0 +1,123 @@
+---
+/**
+ * SiteFooter — 页脚：组织信息 + 产品矩阵 + 资源链接 + 主题候选提示。
+ * 数据源：src/data/products.json、src/data/nav.json（github/docs 字段）。
+ */
+import products from '../data/products.json';
+import nav from '../data/nav.json';
+
+const year = new Date().getFullYear();
+const ordered = [...products].sort((a, b) => a.order - b.order);
+---
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-col about">
+      <p class="brand">UNIXWIN</p>
+      <p class="blurb">AI-native bash 家族 —— 真 bash 语法、真 Unix 命令、原生 Windows / Linux / macOS。</p>
+      <p class="hint">主题候选 A / B / C 可在右下角悬浮胶囊切换，选好后告诉我们。</p>
+    </div>
+    <nav class="footer-col" aria-label="产品">
+      <h3>产品</h3>
+      {ordered.map((p) => <a href={`/#${p.id}`}>{p.name}</a>)}
+    </nav>
+    <nav class="footer-col" aria-label="资源">
+      <h3>资源</h3>
+      <a href={nav.github} target="_blank" rel="noopener noreferrer">GitHub 组织</a>
+      <a href={nav.docs} target="_blank" rel="noopener noreferrer">文档</a>
+      <a href="/changelog/">更新日志</a>
+      <a href="/llms.txt">llms.txt</a>
+    </nav>
+    <nav class="footer-col" aria-label="主题">
+      <h3>主题候选</h3>
+      <a href="/">A · 终端</a>
+      <a href="/theme/clean/">B · 亮色</a>
+      <a href="/theme/neon/">C · 霓虹</a>
+    </nav>
+  </div>
+  <div class="container footer-bottom">
+    <span>© {year} UNIXWIN · MIT License</span>
+    <span class="divider">·</span>
+    <a href="https://github.com/unixwin/unixwin.dev" target="_blank" rel="noopener noreferrer">本站源码</a>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 4rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-elev);
+    padding: 2.5rem 0 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 2rem;
+  }
+
+  @media (max-width: 760px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .footer-col h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 0 0 0.35rem;
+  }
+
+  .footer-col a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .footer-col a:hover {
+    color: var(--text);
+  }
+
+  .about .brand {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 0.4rem;
+  }
+
+  .blurb {
+    color: var(--muted);
+    margin: 0 0 0.6rem;
+  }
+
+  .hint {
+    color: var(--muted);
+    font-size: 0.82rem;
+    border-left: 3px solid var(--accent);
+    padding-left: 0.6rem;
+    margin: 0;
+  }
+
+  .footer-bottom {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.82rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .divider {
+    color: var(--border);
+  }
+</style>

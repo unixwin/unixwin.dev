@@ -1,0 +1,79 @@
+---
+/**
+ * BaseLayout — 全站页面外壳。
+ *
+ * Props:
+ *   title       string  页面 <title>（会自动拼接 " · UNIXWIN"）
+ *   description string  页面 meta description
+ *   theme       'terminal' | 'clean' | 'neon'   写入 <html data-theme>
+ *   path        string  规范化路径（如 '/'、'/changelog/'），用于 canonical/hreflang
+ *
+ * 示例：
+ *   <BaseLayout title="首页" description="AI-native bash" theme="terminal" path="/">
+ *     <p>内容</p>
+ *   </BaseLayout>
+ */
+import '../styles/tokens.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  theme?: 'terminal' | 'clean' | 'neon';
+  path?: string;
+}
+
+const { title, description, theme = 'terminal', path = '/' } = Astro.props;
+
+const SITE = 'https://unixwin.dev';
+const fullTitle = title.includes('UNIXWIN') ? title : `${title} · UNIXWIN`;
+const canonical = new URL(path, SITE).href;
+const ogImage = `${SITE}/og-image.png`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'UNIXWIN',
+  url: SITE,
+  logo: `${SITE}/favicon.svg`,
+  description: 'AI-native bash family — real bash syntax, real Unix commands, native Windows/Linux/macOS.',
+  sameAs: ['https://github.com/unixwin'],
+};
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme={theme}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
+
+    <link rel="alternate" hreflang="zh-CN" href={canonical} />
+    <link rel="alternate" hreflang="en" href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="UNIXWIN" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="zh_CN" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

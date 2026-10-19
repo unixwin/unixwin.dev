@@ -1,0 +1,74 @@
+[
+  {
+    "id": "niubash",
+    "name": "niubash",
+    "cmd": "niu",
+    "repo": "github.com/unixwin/niubash",
+    "lang": "Rust",
+    "stars": 178,
+    "accent": "#38e07b",
+    "order": 1,
+    "tagline_zh": "AI-native 的真·Bash：真语法、真 Unix 命令、原生三平台",
+    "tagline_en": "AI-native real bash: real syntax, real Unix commands, native on Windows/Linux/macOS."
+  },
+  {
+    "id": "winuxcmd",
+    "name": "WinuxCmd",
+    "cmd": "winuxcmd",
+    "repo": "github.com/unixwin/WinuxCmd",
+    "lang": "C++",
+    "stars": 274,
+    "accent": "#6fb7ff",
+    "order": 2,
+    "tagline_zh": "原生 Windows 的 Unix 命令集，单文件约 3MB",
+    "tagline_en": "Native-Windows Unix command set, single ~3 MB executable."
+  },
+  {
+    "id": "rubash",
+    "name": "rubash",
+    "cmd": "rubash",
+    "repo": "github.com/unixwin/rubash",
+    "lang": "Rust",
+    "stars": 11,
+    "accent": "#f5b83d",
+    "order": 3,
+    "tagline_zh": "可嵌入的 GNU Bash 5.3 兼容引擎",
+    "tagline_en": "Embeddable GNU Bash 5.3-compatible engine."
+  },
+  {
+    "id": "niu-git",
+    "name": "niu-git",
+    "cmd": "git",
+    "repo": "github.com/unixwin/niu-git",
+    "lang": "C",
+    "stars": 6,
+    "accent": "#c792ea",
+    "order": 4,
+    "tagline_zh": "原生 Windows Git，无 MSYS，~14ms 启动",
+    "tagline_en": "Native Windows Git without MSYS, ~14 ms startup."
+  },
+  {
+    "id": "wpm",
+    "name": "wpm",
+    "cmd": "wpm",
+    "repo": "github.com/unixwin/wpm-source",
+    "lang": "C++",
+    "stars": 3,
+    "accent": "#4dd0e1",
+    "order": 5,
+    "tagline_zh": "WinuxCmd 内置包管理器，官方索引 288 包",
+    "tagline_en": "WinuxCmd's built-in package manager with a 288-package official index."
+  },
+  {
+    "id": "oh-my-niu",
+    "name": "oh-my-niu",
+    "cmd": "omn",
+    "repo": "github.com/unixwin/oh-my-niu",
+    "lang": "Shell",
+    "stars": 2,
+    "accent": "#ff8a65",
+    "order": 6,
+    "tagline_zh": "Oh-My 式框架：40+ 主题与插件",
+    "tagline_en": "Oh-My-style framework: 40+ themes and plugins."
+  }
+]

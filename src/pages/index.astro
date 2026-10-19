@@ -1,0 +1,260 @@
+---
+/**
+ * 首页 — 主题候选 A（terminal）。
+ * 结构：Hero(字标+双 CTA+tagline) → StatsBand 六格 → 产品网格 → 安装 → 主题候选 → 页脚。
+ * 文案占位均带 TODO-CONTENT 注释，供后续内容代理精修。
+ */
+import BaseLayout from '../components/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import ThemeSwitcher from '../components/ThemeSwitcher.astro';
+import StatsBand from '../components/StatsBand.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Section from '../components/Section.astro';
+import InstallTabs from '../components/InstallTabs.astro';
+import Badge from '../components/Badge.astro';
+import products from '../data/products.json';
+import facts from '../data/facts.json';
+import repoMeta from '../data/repo-meta.json';
+
+const ordered = [...products].sort((a, b) => a.order - b.order);
+
+// StatsBand 六格：取 facts.json 前六个指标（顺序即文档顺序）
+const stats = [
+  { label: 'bash 测试套件', value: facts.bashSuites },
+  { label: '字节级一致性', value: facts.byteIdentical },
+  { label: 'Unix 命令', value: facts.commands },
+  { label: '命令选项', value: facts.options },
+  { label: 'niu-git 启动', value: facts.gitStartup },
+  { label: 'shell 冷启动', value: facts.shellColdStart },
+];
+
+const installTabs = [
+  { label: 'PowerShell', code: 'irm https://dl.caomengxuan666.com/install.ps1 | iex' },
+  { label: 'wpm 安装', code: 'wpm install winuxcmd' },
+  { label: 'wpm 升级', code: 'wpm update winuxcmd' },
+];
+---
+
+<BaseLayout
+  title="UNIXWIN — AI-native 的 bash 家族"
+  description="UNIXWIN：AI-native 的真·Bash 家族 —— 真 bash 语法、真 Unix 命令、原生 Windows / Linux / macOS。niubash、WinuxCmd、rubash、niu-git、wpm、oh-my-niu。"
+  theme="terminal"
+  path="/"
+>
+  <SiteHeader />
+
+  <main class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <p class="hero-kicker">$ unixwin --version<span class="cursor" aria-hidden="true">▊</span></p>
+      <h1 class="hero-wordmark">UNIXWIN</h1>
+      <!-- TODO-CONTENT：主页 hero 中文 tagline -->
+      <p class="hero-tagline">AI-native 的真·Bash：真语法、真 Unix 命令、原生三平台。</p>
+      <p class="hero-tagline-en">AI-native bash family — real bash syntax, real Unix commands, native Windows / Linux / macOS.</p>
+      <div class="hero-cta">
+        <a class="cta cta-primary" href="#products">查看产品</a>
+        <a class="cta cta-ghost" href="https://github.com/unixwin" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <div id="facts">
+      <StatsBand items={stats} />
+    </div>
+
+    <!-- Products -->
+    <Section id="products" title="产品矩阵" kicker="six projects · one family">
+      <div class="product-grid">
+        {ordered.map((p) => (
+          <ProductCard product={p} stars={repoMeta.repos?.[p.id]?.stars} />
+        ))}
+      </div>
+    </Section>
+
+    <!-- Install -->
+    <Section id="install" title="快速安装" kicker="quick start">
+      <!-- TODO-CONTENT：安装命令待官方核对（PowerShell 为主线，wpm 命令为占位） -->
+      <InstallTabs id="install" tabs={installTabs} />
+      <p class="install-note">
+        需要 <Badge tone="info">Windows 10+</Badge> · 详细步骤见
+        <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">文档</a>。
+      </p>
+    </Section>
+
+    <!-- Theme candidates -->
+    <Section id="themes" title="主题候选" kicker="a / b / c — pick one">
+      <div class="theme-grid">
+        <a class="theme-tile is-current" href="/">
+          <span class="tile-key">A</span>
+          <span class="tile-name">终端 · terminal</span>
+          <span class="tile-desc">等宽字体、深空底色、终端绿。当前所在页。</span>
+        </a>
+        <a class="theme-tile" href="/theme/clean/">
+          <span class="tile-key">B</span>
+          <span class="tile-name">亮色 · clean</span>
+          <span class="tile-desc">白底无衬线、12px 圆角、轻阴影。</span>
+        </a>
+        <a class="theme-tile" href="/theme/neon/">
+          <span class="tile-key">C</span>
+          <span class="tile-name">霓虹 · neon</span>
+          <span class="tile-desc">紫青双色、玻璃卡渐变、16px 圆角。</span>
+        </a>
+      </div>
+    </Section>
+  </main>
+
+  <SiteFooter />
+  <ThemeSwitcher current="terminal" />
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: 4.5rem 0 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .hero-kicker {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+  }
+
+  .cursor {
+    animation: blink 1.1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .hero-wordmark {
+    font-family: var(--font-mono);
+    font-size: clamp(2.6rem, 8vw, 4.6rem);
+    letter-spacing: 0.08em;
+    margin: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-tagline {
+    font-size: 1.15rem;
+    margin: 0.4rem 0 0;
+  }
+
+  .hero-tagline-en {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 0.9rem;
+    margin-top: 1.4rem;
+    flex-wrap: wrap;
+  }
+
+  .cta {
+    border-radius: var(--radius);
+    padding: 0.6rem 1.5rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .cta:hover {
+    text-decoration: none;
+  }
+
+  .cta-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border: 1px solid var(--accent);
+  }
+
+  .cta-primary:hover {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+  }
+
+  .cta-ghost {
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .cta-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  #facts {
+    scroll-margin-top: 5rem;
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.1rem;
+  }
+
+  .install-note {
+    margin-top: 0.9rem;
+    color: var(--muted);
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .theme-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .theme-tile:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .theme-tile.is-current {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+
+  .tile-key {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+  }
+
+  .tile-name {
+    font-weight: 700;
+  }
+
+  .tile-desc {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>

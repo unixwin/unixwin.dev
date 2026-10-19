@@ -1,0 +1,63 @@
+---
+/**
+ * StatsBand — 数字带：一行若干格指标。
+ *
+ * Props:
+ *   items  Array<{ label: string; value: string | number }>
+ *
+ * 示例：
+ *   <StatsBand items={[
+ *     { label: 'Unix 命令', value: '176+' },
+ *     { label: '选项', value: '1,900+' },
+ *   ]} />
+ */
+interface Props {
+  items: Array<{ label: string; value: string | number }>;
+}
+
+const { items } = Astro.props;
+---
+
+<div class="stats-band" role="list" aria-label="项目数据">
+  {items.map((item) => (
+    <div class="stat" role="listitem">
+      <span class="stat-value">{item.value}</span>
+      <span class="stat-label">{item.label}</span>
+    </div>
+  ))}
+</div>
+
+<style>
+  .stats-band {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.4rem 1.6rem;
+    box-shadow: var(--shadow);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.3rem 0.6rem;
+    border-left: 2px solid var(--accent);
+  }
+
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.2;
+  }
+
+  .stat-label {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+</style>

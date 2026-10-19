@@ -1,0 +1,119 @@
+---
+/**
+ * InstallTabs — 原生 JS 标签页切换的安装命令代码块组。
+ *
+ * Props:
+ *   tabs  Array<{ label: string; code: string }>  每个标签的名称与命令
+ *   id    string  实例 id（同页多实例时必填且唯一，默认 "install"）
+ *
+ * 示例：
+ *   <InstallTabs id="install" tabs={[
+ *     { label: 'PowerShell', code: 'irm https://dl.caomengxuan666.com/install.ps1 | iex' },
+ *     { label: 'wpm', code: 'wpm install winuxcmd' },
+ *   ]} />
+ */
+import CopyButton from './CopyButton.astro';
+
+interface Tab {
+  label: string;
+  code: string;
+}
+
+interface Props {
+  tabs: Tab[];
+  id?: string;
+}
+
+const { tabs, id = 'install' } = Astro.props;
+const first = 0;
+---
+
+<div class="install-tabs" data-tabs-root>
+  <div class="tab-list" role="tablist" aria-label="安装方式">
+    {tabs.map((tab, i) => (
+      <button
+        type="button"
+        class="tab-btn"
+        role="tab"
+        id={`${id}-tab-${i}`}
+        aria-selected={i === first ? 'true' : 'false'}
+        aria-controls={`${id}-panel-${i}`}
+        data-tab-index={i}
+      >
+        {tab.label}
+      </button>
+    ))}
+  </div>
+
+  {tabs.map((tab, i) => (
+    <div
+      class="tab-panel"
+      role="tabpanel"
+      id={`${id}-panel-${i}`}
+      aria-labelledby={`${id}-tab-${i}`}
+      data-panel-index={i}
+      hidden={i !== first}
+    >
+      <div class="codeblock panel-inner">
+        <pre><code>{tab.code}</code></pre>
+        <CopyButton copy={tab.code} />
+      </div>
+    </div>
+  ))}
+</div>
+
+<script>
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const btn = target?.closest<HTMLElement>('[data-tab-index]');
+    if (!btn) return;
+    const root = btn.closest<HTMLElement>('[data-tabs-root]');
+    if (!root) return;
+    const index = btn.dataset.tabIndex;
+
+    root.querySelectorAll<HTMLElement>('.tab-btn').forEach((el) => {
+      el.setAttribute('aria-selected', el === btn ? 'true' : 'false');
+    });
+    root.querySelectorAll<HTMLElement>('.tab-panel').forEach((el) => {
+      el.hidden = el.dataset.panelIndex !== index;
+    });
+  });
+</script>
+
+<style>
+  .tab-list {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.28rem 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+  }
+
+  .tab-btn[aria-selected='true'] {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .tab-btn[aria-selected='false']:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .panel-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+</style>

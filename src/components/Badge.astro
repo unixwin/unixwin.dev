@@ -1,0 +1,66 @@
+---
+/**
+ * Badge — 小徽章。
+ *
+ * Props:
+ *   text  string                                  徽章文字
+ *   tone  'accent' | 'info' | 'warn' | 'danger' | 'muted'   色调（默认 accent）
+ *
+ * 示例：
+ *   <Badge text="Rust" tone="accent" />
+ *   <Badge tone="warn">Fixed</Badge>
+ */
+interface Props {
+  text?: string;
+  tone?: 'accent' | 'info' | 'warn' | 'danger' | 'muted';
+}
+
+const { text, tone = 'accent' } = Astro.props;
+---
+
+<span class={`badge badge-${tone}`}>{text ?? <slot />}</span>
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid;
+    border-radius: calc(var(--radius) * 0.75);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    padding: 0.22rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .badge-accent {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  .badge-info {
+    color: var(--accent-2);
+    border-color: var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+  }
+
+  .badge-warn {
+    color: var(--warn);
+    border-color: var(--warn);
+    background: color-mix(in srgb, var(--warn) 12%, transparent);
+  }
+
+  .badge-danger {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+  }
+
+  .badge-muted {
+    color: var(--muted);
+    border-color: var(--border);
+    background: transparent;
+  }
+</style>

@@ -1,0 +1,91 @@
+---
+/**
+ * SiteHeader — 顶部导航（吸顶玻璃条）。
+ * 数据源：src/data/nav.json（items: {label, href}）。
+ */
+import nav from '../data/nav.json';
+
+const { items } = nav;
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/" title="UNIXWIN 首页">
+      <span class="brand-mark">$</span>
+      <span class="brand-name">UNIXWIN</span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      {items.map((item) => <a href={item.href}>{item.label}</a>)}
+      <a class="github" href="https://github.com/unixwin" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.7rem 0;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+
+  .brand:hover {
+    text-decoration: none;
+  }
+
+  .brand-mark {
+    color: var(--accent);
+    font-size: 1.2em;
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    flex-wrap: wrap;
+    font-size: 0.92rem;
+  }
+
+  .site-nav a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .site-nav a:hover {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .site-nav .github {
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.15rem 0.7rem;
+  }
+
+  .site-nav .github:hover {
+    border-color: var(--accent);
+  }
+</style>

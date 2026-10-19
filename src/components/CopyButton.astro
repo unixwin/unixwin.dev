@@ -1,0 +1,89 @@
+---
+/**
+ * CopyButton — 复制按钮：读取 data-copy 属性的值写入剪贴板，
+ * 成功后显示 "✓" 1.5 秒再复原。
+ *
+ * Props:
+ *   copy   string  要复制到剪贴板的内容（同时写入 data-copy）
+ *   label  string  按钮文字，默认 "复制"
+ *
+ * 示例：
+ *   <CopyButton copy="irm https://dl.caomengxuan666.com/install.ps1 | iex" />
+ */
+interface Props {
+  copy: string;
+  label?: string;
+}
+
+const { copy, label = '复制' } = Astro.props;
+---
+
+<button class="copy-btn" type="button" data-copy={copy} title="复制到剪贴板">
+  <span class="copy-label">{label}</span>
+</button>
+
+<script>
+  function deactivate(btn: HTMLElement, original: string) {
+    btn.classList.remove('is-copied');
+    const label = btn.querySelector('.copy-label');
+    if (label) label.textContent = original;
+  }
+
+  async function copyText(text: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        ta.remove();
+        return ok;
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const btn = target?.closest<HTMLElement>('.copy-btn[data-copy]');
+    if (!btn) return;
+    const label = btn.querySelector('.copy-label');
+    const original = label?.textContent ?? '复制';
+    void copyText(btn.dataset.copy ?? '').then((ok) => {
+      if (!ok || !label) return;
+      label.textContent = '✓';
+      btn.classList.add('is-copied');
+      window.setTimeout(() => deactivate(btn, original), 1500);
+    });
+  });
+</script>
+
+<style>
+  .copy-btn {
+    background: var(--bg-elev);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 0.22rem 0.7rem;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .copy-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .copy-btn.is-copied {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+</style>

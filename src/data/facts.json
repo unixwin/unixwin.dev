@@ -1,0 +1,11 @@
+{
+  "bashSuites": "83/83",
+  "byteIdentical": "82 套逐字节一致",
+  "commands": "176+",
+  "options": "1,900+",
+  "gitStartup": "~14 ms",
+  "shellColdStart": "~170 ms",
+  "binarySize": "3.79 MB",
+  "unitTests": "2,420 · 99.6%",
+  "platforms": 5
+}

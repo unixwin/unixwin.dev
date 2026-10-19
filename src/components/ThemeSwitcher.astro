@@ -1,0 +1,90 @@
+---
+/**
+ * ThemeSwitcher — 右下角悬浮胶囊：三个圆形按钮 A/B/C 分别链到
+ *   A(/)  主题候选 A · 终端 terminal
+ *   B(/theme/clean/)  主题候选 B · 亮色 clean
+ *   C(/theme/neon/)   主题候选 C · 霓虹 neon
+ * 当前主题按钮以 accent 高亮（aria-current）。
+ *
+ * Props:
+ *   current  'terminal' | 'clean' | 'neon'   当前页面主题（必填）
+ *
+ * 示例：
+ *   <ThemeSwitcher current="terminal" />
+ */
+interface Props {
+  current: 'terminal' | 'clean' | 'neon';
+}
+
+const { current } = Astro.props;
+
+const options = [
+  { key: 'terminal', label: 'A', href: '/', name: '主题候选 A · 终端' },
+  { key: 'clean', label: 'B', href: '/theme/clean/', name: '主题候选 B · 亮色' },
+  { key: 'neon', label: 'C', href: '/theme/neon/', name: '主题候选 C · 霓虹' },
+] as const;
+---
+
+<nav
+  class="theme-switcher"
+  aria-label="主题候选切换"
+  title="主题候选 A·终端 / B·亮色 / C·霓虹——选好后告诉我们"
+>
+  {options.map((opt) => (
+    <a
+      href={opt.href}
+      class="theme-dot"
+      aria-current={opt.key === current ? 'true' : undefined}
+      title={opt.name}
+      aria-label={opt.name}
+    >
+      {opt.label}
+    </a>
+  ))}
+</nav>
+
+<style>
+  .theme-switcher {
+    position: fixed;
+    right: 1.1rem;
+    bottom: 1.1rem;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.6rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+  }
+
+  .theme-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+
+  .theme-dot:hover {
+    color: var(--text);
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .theme-dot[aria-current='true'] {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+</style>

@@ -1,0 +1,81 @@
+/* ==========================================================================
+   UNIXWIN portal — design tokens
+   三套主题候选，仅通过 <html data-theme="..."> 切换，变量名完全统一。
+   组件与页面 CSS 只允许引用这里的变量，禁止硬编码颜色。
+
+   公共变量（16 个核心 + 3 个扩展，三主题必须全量定义）：
+     --bg --bg-elev --bg-code --text --muted --accent --accent-2 --link
+     --border --danger --warn --radius --shadow --font-sans --font-mono
+     扩展：--font-body（该主题正文字体）--glass-bg --glass-blur（玻璃卡）
+   ========================================================================== */
+
+:root,
+[data-theme='terminal'] {
+  color-scheme: dark;
+  --bg: #0b1020;
+  --bg-elev: #111832;
+  --bg-code: #0d1428;
+  --text: #d7e0ee;
+  --muted: #8b98b8;
+  --accent: #38e07b;
+  --accent-2: #6fb7ff;
+  --link: #6fb7ff;
+  --border: #223052;
+  --danger: #ff5c6c;
+  --warn: #f5b83d;
+  --radius: 8px;
+  --shadow: 0 8px 24px rgba(3, 8, 20, 0.55);
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
+  /* terminal 候选：整站等宽 */
+  --font-body: var(--font-mono);
+  --glass-bg: rgba(17, 24, 50, 0.72);
+  --glass-blur: 8px;
+}
+
+[data-theme='clean'] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-elev: #f6f8fb;
+  --bg-code: #eef2f7;
+  --text: #1a2233;
+  --muted: #5b6779;
+  --accent: #2563eb;
+  --accent-2: #0ea5e9;
+  --link: #2563eb;
+  --border: #dde4ee;
+  --danger: #dc2626;
+  --warn: #d97706;
+  --radius: 12px;
+  --shadow: 0 2px 10px rgba(26, 34, 51, 0.08);
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
+  /* clean 候选：系统无衬线为主 */
+  --font-body: var(--font-sans);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-blur: 0px;
+}
+
+[data-theme='neon'] {
+  color-scheme: dark;
+  --bg: #0a0a16;
+  --bg-elev: #131328;
+  --bg-code: #0f0f22;
+  --text: #e8e6ff;
+  --muted: #9a95c9;
+  --accent: #a78bfa;
+  --accent-2: #22d3ee;
+  --link: #22d3ee;
+  --border: #2b2b55;
+  --danger: #fb7185;
+  --warn: #fbbf24;
+  --radius: 16px;
+  --shadow: 0 10px 36px rgba(122, 92, 255, 0.28);
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
+  /* neon 候选：无衬线正文 + 等宽代码 */
+  --font-body: var(--font-sans);
+  /* 玻璃卡：backdrop-filter + 半透明提升层 */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-blur: 14px;
+}

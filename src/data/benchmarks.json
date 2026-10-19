@@ -5,7 +5,7 @@
     "authority": "FACTS.json / HIGHLIGHTS.md / CARDS.md（unixwin.dev 仓库 portal-dump 分支，2026-10-19 总控审计）",
     "benchArtifacts": "data/bench/（原样拷贝：results.tsv / startup.tsv / run_bench.sh / PERF-TABLE.md 等 15 份 + BENCH-README.md 环境与方法）",
     "env": "Intel Xeon w5-3435 · Windows 10 19045 · 同机 WSL2 Ubuntu（GNU Bash 5.3.0 对照）· Git Bash 5.3.0 (msys)",
-    "retracted": "曾见于会话截图的 recheck_fork_20261018-*.tsv 数字：产物经全盘搜索未找到，按 FACTS 纪律不上页，待产物落盘后再入库。"
+    "retracted": "【预留位】fork/子壳专项表（$( ) 命令替换 / 反引号 / 子壳 / 递归，已完成 2026-10-18 实测）：产物 recheck_fork_20261018-*.tsv 落盘入库 data/bench/ 后即回填本节并上页——表结构与 headToHead 一致，数据到位即插即用。"
   },
   "latency": [
     { "metric": "git 启动（git --version）", "us": "~14 ms", "them": "Git Bash 45–103 ms", "badge": "3–7x faster", "source": "niubash README:32 · niu-git（MSVC+schannel，无 MSYS）" },

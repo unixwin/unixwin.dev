@@ -7,7 +7,6 @@
 import BaseLayout from '../../components/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import ThemeSwitcher from '../../components/ThemeSwitcher.astro';
 import Badge from '../../components/Badge.astro';
 import CopyButton from '../../components/CopyButton.astro';
 import agentsData from '../../data/agents.json';
@@ -24,7 +23,7 @@ const statusLabel: Record<string, string> = { ready: '可用', partial: '部分'
 <BaseLayout
   title="AI Agent 接入目录"
   description="把 Claude Code、Codex、VS Code 家族、opencode、Zed 等 AI agent 的默认 shell 换成 niubash——为 Windows 而生，一步脚本，附验证与回滚。"
-  theme="terminal"
+  theme="day"
   path="/agents/"
 >
   <SiteHeader />
@@ -100,7 +99,6 @@ const statusLabel: Record<string, string> = { ready: '可用', partial: '部分'
   </main>
 
   <SiteFooter />
-  <ThemeSwitcher current="terminal" />
 </BaseLayout>
 
 <style>

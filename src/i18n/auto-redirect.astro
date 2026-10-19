@@ -1,0 +1,35 @@
+---
+/**
+ * auto-redirect — 每会话一次的 navigator.language 自动跳转（旧站同款模式）。
+ *
+ * 由 BaseLayout 在「zh 页且存在对应 en 页」时引入（en 页不反向自动跳，避免打架）。
+ * 逻辑：
+ *   - sessionStorage 有 niu-lang-override（用户手动切换过）→ 不动；
+ *   - sessionStorage 无 niu-lang-auto 标记 → 按 navigator.language 判定一次：
+ *       zh* → 留在 zh 页；en* → 跳对应 en 页；
+ *     随即写入标记，本会话不再自动跳（防循环 / 后退键抖动）。
+ * sessionStorage 不可用（隐私模式等）时仍按语言判定跳转（en 页不会反向跳，无循环风险）。
+ */
+interface Props {
+  /** 对应英文页路径（跳转目标） */
+  enPath: string;
+}
+
+const { enPath } = Astro.props;
+---
+
+<script is:inline define:vars={{ enPath }}>
+  (function () {
+    try {
+      if (sessionStorage.getItem('niu-lang-override')) return;
+      if (sessionStorage.getItem('niu-lang-auto')) return;
+      sessionStorage.setItem('niu-lang-auto', '1');
+    } catch (e) {
+      /* sessionStorage 不可用则只判定、不记标记（en 页不回跳，无循环） */
+    }
+    var lang = String(navigator.language || '').toLowerCase();
+    if (lang.indexOf('en') === 0) {
+      window.location.replace(enPath);
+    }
+  })();
+</script>

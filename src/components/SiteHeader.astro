@@ -2,21 +2,55 @@
 /**
  * SiteHeader — 顶部导航（吸顶玻璃条）。
  * 数据源：src/data/nav.json（items: {label, href}）。
+ *
+ * i18n：按 Astro.url.pathname 推断当前语言——
+ *   - en 页（/en/ 前缀）：导航标签用 NAV_EN 英文对照、有 en 版的站内链接改指 /en/，
+ *     品牌落 /en/；
+ *   - zh 页：渲染与从前完全一致。
+ * 导航尾部挂 LangSwitch（仅当前页存在对应语言页时渲染；跳转目标由
+ * src/i18n/lang.ts 的配对清单决定）与 ToggleTheme（亮/暗切换；组件脚本自检
+ * data-theme，在 terminal/clean/neon 候选回看页自动隐藏，故共享渲染无害）。
  */
 import nav from '../data/nav.json';
+import LangSwitch from './LangSwitch.astro';
+import ToggleTheme from './ToggleTheme.astro';
+import { resolveLangPair, toEnHref } from '../i18n/lang';
 
 const { items } = nav;
+
+const pair = resolveLangPair(Astro.url.pathname);
+const isEn = pair.lang === 'en';
+
+// en 页导航标签对照（zh 页不查此表）
+const NAV_EN: Record<string, string> = {
+  '/#products': 'Products',
+  '/agents/': 'Agents',
+  '/docs/': 'Docs',
+  '/benchmarks/': 'Benchmarks',
+  '/ai/': 'AI Portal',
+  '/changelog/': 'Changelog',
+};
+
+// LangSwitch 仅在存在对应语言页时于模板内渲染（见 nav 尾部）
 ---
 
 <header class="site-header">
   <div class="container header-inner">
-    <a class="brand" href="/" title="UNIXWIN 首页">
+    <a class="brand" href={isEn ? '/en/' : '/'} title={isEn ? 'UNIXWIN home' : 'UNIXWIN 首页'}>
       <span class="brand-mark">$</span>
       <span class="brand-name">UNIXWIN</span>
     </a>
-    <nav class="site-nav" aria-label="主导航">
-      {items.map((item) => <a href={item.href}>{item.label}</a>)}
+    <nav class="site-nav" aria-label={isEn ? 'Main navigation' : '主导航'}>
+      {
+        items.map((item) => (
+          <a href={isEn ? toEnHref(item.href) : item.href}>
+            {isEn ? (NAV_EN[item.href] ?? item.label) : item.label}
+          </a>
+        ))
+      }
       <a class="github" href="https://github.com/unixwin" target="_blank" rel="noopener noreferrer">GitHub</a>
+      {pair.otherPath && <LangSwitch lang={pair.lang} otherPath={pair.otherPath} />}
+      <ToggleTheme />
     </nav>
   </div>
 </header>

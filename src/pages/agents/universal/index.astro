@@ -11,7 +11,6 @@
 import BaseLayout from '../../../components/BaseLayout.astro';
 import SiteHeader from '../../../components/SiteHeader.astro';
 import SiteFooter from '../../../components/SiteFooter.astro';
-import ThemeSwitcher from '../../../components/ThemeSwitcher.astro';
 import Badge from '../../../components/Badge.astro';
 import CopyButton from '../../../components/CopyButton.astro';
 
@@ -55,7 +54,7 @@ Test-Path 'C:\Program Files\Git\bin\bash.exe'
 <BaseLayout
   title="通用 Agent 接入指南"
   description="四机制 × 三步决策流：把任意 AI agent（不限目录已列名单）的默认 shell 换成 niubash——$SHELL 约定、显式配置、Git for Windows 探针、裸名解析，附验证命令、可复制配置片段与已知陷阱。"
-  theme="terminal"
+  theme="day"
   path="/agents/universal/"
 >
   <SiteHeader />
@@ -398,7 +397,6 @@ Test-Path 'C:\Program Files\Git\bin\bash.exe'
   </main>
 
   <SiteFooter />
-  <ThemeSwitcher current="terminal" />
 </BaseLayout>
 
 <style>

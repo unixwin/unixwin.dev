@@ -1,13 +1,24 @@
 ---
 /**
- * SiteFooter — 页脚：组织信息 + 产品矩阵 + 资源链接 + 主题候选提示。
+ * SiteFooter — 页脚：组织信息 + 产品矩阵 + 资源链接 + 主题候选回看入口。
  * 数据源：src/data/products.json、src/data/nav.json（github/docs 字段）。
+ *
+ * i18n：about 列追加一行语言切换（复用 LangSwitch，仅在当前页存在
+ * 对应语言页时渲染；en 页产品/资源等站内链接改指 /en/ 版本）。
  */
 import products from '../data/products.json';
 import nav from '../data/nav.json';
+import LangSwitch from './LangSwitch.astro';
+import { resolveLangPair } from '../i18n/lang';
 
 const year = new Date().getFullYear();
 const ordered = [...products].sort((a, b) => a.order - b.order);
+
+const pair = resolveLangPair(Astro.url.pathname);
+const isEn = pair.lang === 'en';
+const productHref = (id: string) => (isEn ? `/en/#${id}` : `/#${id}`);
+
+// 语言切换行仅在存在对应语言页时于模板内渲染
 ---
 
 <footer class="site-footer">
@@ -15,11 +26,16 @@ const ordered = [...products].sort((a, b) => a.order - b.order);
     <div class="footer-col about">
       <p class="brand">UNIXWIN</p>
       <p class="blurb">AI-native bash 家族 —— 真 bash 语法、真 Unix 命令、原生 Windows / Linux / macOS。</p>
-      <p class="hint">主题候选 A / B / C 可在右下角悬浮胶囊切换，选好后告诉我们。</p>
+      {pair.otherPath && (
+        <p class="lang-line">
+          <span class="lang-label">{isEn ? 'Language' : '语言'}</span>
+          <LangSwitch lang={pair.lang} otherPath={pair.otherPath} />
+        </p>
+      )}
     </div>
     <nav class="footer-col" aria-label="产品">
       <h3>产品</h3>
-      {ordered.map((p) => <a href={`/#${p.id}`}>{p.name}</a>)}
+      {ordered.map((p) => <a href={productHref(p.id)}>{p.name}</a>)}
     </nav>
     <nav class="footer-col" aria-label="资源">
       <h3>资源</h3>
@@ -30,7 +46,6 @@ const ordered = [...products].sort((a, b) => a.order - b.order);
     </nav>
     <nav class="footer-col" aria-label="主题">
       <h3>主题候选</h3>
-      <a href="/">A · 终端</a>
       <a href="/theme/clean/">B · 亮色</a>
       <a href="/theme/neon/">C · 霓虹</a>
     </nav>
@@ -98,12 +113,16 @@ const ordered = [...products].sort((a, b) => a.order - b.order);
     margin: 0 0 0.6rem;
   }
 
-  .hint {
+  .lang-line {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0.7rem 0 0;
+  }
+
+  .lang-label {
     color: var(--muted);
     font-size: 0.82rem;
-    border-left: 3px solid var(--accent);
-    padding-left: 0.6rem;
-    margin: 0;
   }
 
   .footer-bottom {

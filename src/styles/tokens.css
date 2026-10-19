@@ -1,12 +1,16 @@
 /* ==========================================================================
    UNIXWIN portal — design tokens
-   三套主题候选，仅通过 <html data-theme="..."> 切换，变量名完全统一。
+   多套主题，仅通过 <html data-theme="..."> 切换，变量名完全统一。
    组件与页面 CSS 只允许引用这里的变量，禁止硬编码颜色。
 
-   公共变量（16 个核心 + 3 个扩展，三主题必须全量定义）：
+   公共变量（16 个核心 + 3 个扩展，每套主题必须全量定义）：
      --bg --bg-elev --bg-code --text --muted --accent --accent-2 --link
      --border --danger --warn --radius --shadow --font-sans --font-mono
      扩展：--font-body（该主题正文字体）--glass-bg --glass-blur（玻璃卡）
+
+   day / night（全站默认亮/暗对）配色改编自 astrowind（MIT, © 2023 onWidget），
+   见项目根 THIRD_PARTY_NOTICES.md。
+   terminal / clean / neon 为早期候选页保留（仅 /theme/clean/、/theme/neon/ 使用）。
    ========================================================================== */
 
 :root,
@@ -78,4 +82,59 @@
   /* 玻璃卡：backdrop-filter + 半透明提升层 */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-blur: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   day — 亮色专业（全站默认）。配色改编自 astrowind（MIT, © 2023 onWidget）：
+   白/浅灰底 + 深墨文字 + 品牌蓝强调，slate 中性阶。
+   -------------------------------------------------------------------------- */
+[data-theme='day'] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-elev: #f8fafc;
+  --bg-code: #f1f5f9;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #2563eb;
+  --accent-2: #0ea5e9;
+  --link: #2563eb;
+  --border: #e2e8f0;
+  --danger: #dc2626;
+  --warn: #d97706;
+  --radius: 12px;
+  --shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
+  /* day：无衬线正文 + 等宽代码 */
+  --font-body: var(--font-sans);
+  /* 吸顶导航玻璃条：白底微透 + 轻模糊 */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-blur: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   night — 专业暗色（day 的暗色搭档，非终端绿风）。同为 astrowind 改编：
+   深海军蓝底 + slate 浅灰文字 + 亮一档的蓝色强调。
+   -------------------------------------------------------------------------- */
+[data-theme='night'] {
+  color-scheme: dark;
+  --bg: #0b1120;
+  --bg-elev: #111a2e;
+  --bg-code: #0d1526;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #60a5fa;
+  --accent-2: #38bdf8;
+  --link: #60a5fa;
+  --border: #1e293b;
+  --danger: #f87171;
+  --warn: #fbbf24;
+  --radius: 12px;
+  --shadow: 0 8px 24px rgba(2, 6, 23, 0.55);
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
+  /* night：与 day 相同的字体系，仅配色变化 */
+  --font-body: var(--font-sans);
+  --glass-bg: rgba(17, 26, 46, 0.75);
+  --glass-blur: 10px;
 }

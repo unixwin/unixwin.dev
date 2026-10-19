@@ -97,3 +97,9 @@ npm run build              # 出 dist/
 - BENCH/ 15 份产物原样入库 data/bench/（含 BENCH-README 环境/方法）
 - README 侧待修（FACTS 记录，非门户阻塞）：rubash 40+→62、WinuxCmd 84→67、组织描述 75-100→45-103；wpm-gui 已评估归档
 - CARDS.md 牌组 28 张仅用 6 张，P1 产品页/对比页继续取材
+
+## 7. 2026-10-19 主题重做 + i18n（用户否决三套自研主题后）
+
+- 新默认：**day 亮色专业 / night 暗色**（tokens 改编自 astrowind MIT，见 THIRD_PARTY_NOTICES.md），防 FOUC 内联脚本 + SiteHeader 日/月切换钮（localStorage.unixwin-theme + prefers-color-scheme）；旧候选仅存 /theme/clean/ 与 /theme/neon/ 供回看
+- i18n：zh 根路径 + /en/ 五页（index/agents/benchmarks/ai/docs 首页），LangSwitch + 每会话一次 navigator.language 自动跳转（sessionStorage.niu-lang-override 优先），BaseLayout hreflang 三条已按配对页互链
+- 待办：en 深页（agent 详情/docs 四篇/agents.md 英文化）；PORTAL-CONVENTIONS.md 主题章节过时待修订；品牌字体自托管（JetBrains Mono+思源黑体子集）未做

@@ -1,0 +1,1217 @@
+---
+/**
+ * /en/ — English home (theme A · terminal). Mirrors src/pages/index.astro.
+ * Structure: Hero (terminal window, 3-session carousel: install / agent / speed
+ *            + family banner) → StatsBand → Product matrix (cards + install bar
+ *            + maturity badge) → Why cards ×6 + speed recording → Install tabs
+ *            → Agent glimpse → Latest news → Theme candidates.
+ * All colors via tokens.css; product cards are inlined here (English labels)
+ * because the shared ProductCard renders Chinese link text.
+ * News data imports the same changelogs.json; summaries are quoted in the
+ * original Chinese (noted inline) until per-release English blurbs exist.
+ */
+import BaseLayout from '../../components/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import StatsBand from '../../components/StatsBand.astro';
+import Section from '../../components/Section.astro';
+import InstallTabs from '../../components/InstallTabs.astro';
+import Badge from '../../components/Badge.astro';
+import CopyButton from '../../components/CopyButton.astro';
+import products from '../../data/products.json';
+import facts from '../../data/facts.json';
+import repoMeta from '../../data/repo-meta.json';
+import changelogs from '../../data/changelogs.json';
+
+const ordered = [...products].sort((a, b) => a.order - b.order);
+
+// ---- StatsBand: same facts.json numbers, English labels ----
+const [identicalCount, ...identicalRest] = String(facts.byteIdentical).trim().split(/\s+/);
+const stats = [
+  { label: 'GNU bash suites', value: facts.bashSuites },
+  { label: identicalRest.join('') ? 'suites byte-identical' : 'byte-identical', value: identicalCount },
+  { label: 'Unix commands', value: facts.commands },
+  { label: 'git startup', value: facts.gitStartup },
+  { label: 'one-shot niu -c', value: facts.oneShot },
+  { label: 'single binary', value: facts.binarySize },
+];
+
+// ---- Install: PowerShell primary / wpm / other platforms (Releases) ----
+const installTabs = [
+  { label: 'PowerShell', code: 'irm https://dl.caomengxuan666.com/install.ps1 | iex' },
+  { label: 'wpm', code: 'wpm install winuxcmd' },
+  { label: 'Linux / macOS', code: 'https://github.com/unixwin/niubash/releases' },
+];
+
+// ---- Per-card install command bar + maturity badge (same as zh home) ----
+interface InstallBar {
+  cmd: string;
+  badge: string;
+  tone: 'accent' | 'warn';
+}
+const installBars: Record<string, InstallBar> = {
+  niubash: { cmd: 'irm https://dl.caomengxuan666.com/install.ps1 | iex', badge: 'stable', tone: 'accent' },
+  winuxcmd: { cmd: 'wpm install winuxcmd', badge: 'stable', tone: 'accent' },
+  rubash: { cmd: 'cargo add rubash', badge: 'beta · embed API 1.5.0', tone: 'warn' },
+  'niu-git': { cmd: 'wpm install niugit', badge: 'stable', tone: 'accent' },
+  wpm: { cmd: 'wpm update', badge: 'stable', tone: 'accent' },
+  'oh-my-niu': { cmd: 'niu plugin add oh-my-niu', badge: 'v2 beta', tone: 'warn' },
+};
+
+// ---- Latest news: newest released version per repo, first line of first
+//      non-empty section, truncated at 60 chars. Summaries stay in the
+//      original Chinese (flagged below) — numbers/versions/dates are shared. ----
+interface ChangelogVersion {
+  version: string;
+  date?: string;
+  unreleased?: boolean;
+  sections?: Record<string, string[]>;
+}
+interface ChangelogRepo {
+  repo: string;
+  versions?: ChangelogVersion[];
+}
+
+interface NewsItem {
+  productName: string;
+  version: string;
+  date: string;
+  summary: string;
+}
+
+const productByRepo = new Map(
+  ordered.map((p) => [(p.repo.split('/').pop() ?? '').toLowerCase(), p]),
+);
+
+const newsItems: NewsItem[] = [];
+for (const repo of (changelogs.repos ?? []) as ChangelogRepo[]) {
+  const released = (repo.versions ?? []).find(
+    (v) => !v.unreleased && typeof v.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v.date),
+  );
+  if (!released) continue;
+  const firstGroup = Object.entries(released.sections ?? {}).find(
+    ([name, lines]) => name.trim() !== '' && Array.isArray(lines) && lines.length > 0,
+  );
+  const raw = ((firstGroup?.[1] ?? [])[0] ?? '').replace(/\s+/g, ' ').trim();
+  newsItems.push({
+    productName: productByRepo.get(repo.repo.toLowerCase())?.name ?? repo.repo,
+    version: released.version,
+    date: released.date ?? '',
+    summary: raw.length > 60 ? `${raw.slice(0, 60)}…` : (raw || 'See the changelog for details.'),
+  });
+}
+newsItems.sort((a, b) => {
+  if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+  return a.productName.localeCompare(b.productName);
+});
+const latestNews = newsItems.slice(0, 4);
+---
+
+<BaseLayout
+  title="UNIXWIN — The AI-native Family of Real Bash"
+  description="UNIXWIN: an AI-native family of real Bash — real bash syntax, real Unix commands, native on Windows / Linux / macOS. No WSL, no MSYS. 83/83 GNU suites passing, 82 byte-identical, ~14 ms git startup, a 3.79 MB single binary."
+  theme="day"
+  path="/en/"
+  lang="en"
+  enPath="/"
+>
+  <SiteHeader />
+
+  <main class="container">
+    <!-- ============ Hero: terminal window · 3-session carousel ============ -->
+    <section class="hero" aria-label="UNIXWIN family intro">
+      <div class="terminal">
+        <div class="term-bar" aria-hidden="true">
+          <span class="tdot td-r"></span>
+          <span class="tdot td-y"></span>
+          <span class="tdot td-g"></span>
+          <span class="term-title">cmx@unixwin: ~ — 80×24</span>
+        </div>
+        <div class="term-body">
+          <div class="term-carousel" data-term-carousel role="region" aria-label="UNIXWIN capability carousel: install · agent takeover · speed">
+            <div class="term-sessions">
+              <div class="session">
+                <p class="sl sl-cmt"># install · session 1/3</p>
+                <p class="sl"><span class="p-user">PS C:\&gt;</span> irm https://dl.caomengxuan666.com/install.ps1 | iex</p>
+                <p class="sl"><span class="spin" aria-hidden="true">⠿</span> fetching install.ps1 → parsing the dependency manifest …</p>
+                <p class="sl"><span class="ok">✓</span> niubash 1.4.0 → ~/.unixwin/bin/niu.exe</p>
+                <p class="sl"><span class="ok">✓</span> winuxcmd · niu-git · wpm · oh-my-niu ready in sync</p>
+                <p class="sl"><span class="ok">✓</span> done — reopen the terminal and niu is on PATH (176+ Unix commands)</p>
+              </div>
+              <div class="session">
+                <p class="sl sl-cmt"># agent takeover · session 2/3</p>
+                <p class="sl"><span class="p-user">cmx@unixwin:~$</span> claude</p>
+                <p class="sl"><span class="ok">✓</span> shell: niubash (rubash engine) — $SHELL auto-detected</p>
+                <p class="sl"><span class="p-agent">agent&gt;</span> niu -c 'git log --oneline -1'</p>
+                <p class="sl sl-out">f0c0ffe niubash 1.4.0 — real syntax, real commands, native on three platforms</p>
+                <p class="sl"><span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span></p>
+              </div>
+              <div class="session">
+                <p class="sl sl-cmt"># speed · session 3/3</p>
+                <p class="sl"><span class="p-user">cmx@unixwin:~$</span> time git --version</p>
+                <p class="sl sl-out">git version 2.47.0.nii</p>
+                <p class="sl"><span class="ok">✓</span> real 0m0.014s ← niu-git</p>
+                <p class="sl sl-out">user 0m0.006s · sys 0m0.002s</p>
+                <p class="sl sl-cmt"># Git Bash on the same machine: real 0.045s – 0.103s (3–7× slower)</p>
+              </div>
+            </div>
+            <div class="term-dots">
+              <button class="tdot-btn" type="button" aria-label="Session 1: install"></button>
+              <button class="tdot-btn" type="button" aria-label="Session 2: agent takeover"></button>
+              <button class="tdot-btn" type="button" aria-label="Session 3: speed"></button>
+            </div>
+          </div>
+
+          <h1 class="hero-wordmark">UNIXWIN</h1>
+          <p class="hero-tagline">
+            An AI-native family of real Bash — real syntax, real Unix commands, native on
+            Windows / Linux / macOS. No WSL, no MSYS.
+          </p>
+          <p class="hero-tagline-en">
+            AI-native 的真·Bash 家族——真语法、真 Unix 命令、原生 Windows / Linux / macOS，无 WSL、无 MSYS。
+          </p>
+
+          <div class="hero-cta">
+            <a class="cta cta-primary" href="#install">Install</a>
+            <a class="cta cta-ghost" href="https://github.com/unixwin" target="_blank" rel="noopener noreferrer">
+              GitHub ↗
+            </a>
+          </div>
+
+          <p class="t-cmd">
+            <span class="t-user">cmx@unixwin:~$</span>
+            <span class="cursor" aria-hidden="true">▊</span>
+          </p>
+        </div>
+      </div>
+
+      <figure class="banner-fig">
+        <img
+          src="/assets/niubash-banner.svg"
+          alt="niubash brand banner: Bash, native on Windows — no WSL, no VM, no emulation layer"
+          width="1200"
+          height="300"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+    </section>
+
+    <!-- ============ Stats ============ -->
+    <div id="facts">
+      <StatsBand items={stats} />
+    </div>
+
+    <!-- ============ Products ============ -->
+    <Section id="products" title="Product Matrix" kicker="six projects · one family">
+      <div class="product-grid">
+        {ordered.map((p) => {
+          const bar = installBars[p.id];
+          const shownStars = repoMeta.repos?.[p.id]?.stars ?? p.stars;
+          return (
+            <div class="product-cell">
+              {/* Inlined product card (English labels); markup mirrors ProductCard.astro */}
+              <article class="product-card" id={p.id} style={`--card-accent: ${p.accent};`}>
+                <header class="card-head">
+                  <span class="card-bar" aria-hidden="true"></span>
+                  <h3 class="card-name">{p.name}</h3>
+                  <Badge tone="muted">{p.lang}</Badge>
+                </header>
+                <p class="card-tagline">{p.tagline_en}</p>
+                <p class="card-tagline-en">{p.tagline_zh}</p>
+                <footer class="card-foot">
+                  <code class="card-cmd" title="CLI entry">$ {p.cmd}</code>
+                  <span class="card-stars" title="GitHub Stars">★ {shownStars}</span>
+                  <a class="card-repo" href={`https://${p.repo}`} target="_blank" rel="noopener noreferrer">repo ↗</a>
+                </footer>
+              </article>
+              {bar && (
+                <div class="cell-install">
+                  <Badge tone={bar.tone}>{bar.badge}</Badge>
+                  <code class="cell-cmd" title={bar.cmd}>{bar.cmd}</code>
+                  <CopyButton copy={bar.cmd} />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </Section>
+
+    <!-- ============ Why ============ -->
+    <Section id="why" title="Why UNIXWIN" kicker="why --real --fast --native">
+      <div class="why-grid">
+        <article class="why-card">
+          <p class="why-num">01</p>
+          <h3 class="why-title">Truly compatible</h3>
+          <p class="why-body">
+            All <strong>83</strong> upstream GNU Bash test suites pass, and <strong>82</strong> of
+            them produce byte-identical output — the one remaining delta was proven byte-for-byte
+            to be a race in GNU's own code. Existing scripts run unmodified.
+          </p>
+          <code class="why-chip">suites 83/83 · byte-identical 82</code>
+        </article>
+        <article class="why-card">
+          <p class="why-num">02</p>
+          <h3 class="why-title">Zero fork</h3>
+          <p class="why-body">
+            <code>( )</code> and <code>$( )</code> create <strong>zero processes</strong> —
+            subshells complete in-process, with fd inheritance, shared offsets, exit codes and
+            signal disposition matching GNU. One model on every platform, no POSIX emulation layer.
+          </p>
+          <code class="why-chip">( ) $( ) → 0 processes</code>
+        </article>
+        <article class="why-card">
+          <p class="why-num">03</p>
+          <h3 class="why-title">Every path dialect</h3>
+          <p class="why-body">
+            <code>C:\</code>, <code>D:/</code>, <code>/d/</code>, <code>/mnt/d</code>,
+            <code>/cygdrive/d</code> — one shell accepts the path notations of <strong>four
+            ecosystems</strong> and genuinely folds them together. Switch shells without
+            rewriting your scripts.
+          </p>
+          <code class="why-chip">C:\ · /d/ · /mnt/d · /cygdrive/d</code>
+        </article>
+        <article class="why-card">
+          <p class="why-num">04</p>
+          <h3 class="why-title">No MSYS incantations</h3>
+          <p class="why-body">
+            Git Bash heuristically rewrites your arguments before spawn, so you end up learning
+            <code>MSYS_NO_PATHCONV</code>. niu ships no MSYS runtime — argv <strong>arrives
+            byte-for-byte as typed</strong>. That variable doesn't exist here because it doesn't
+            need to.
+          </p>
+          <code class="why-chip">argv verbatim</code>
+        </article>
+        <article class="why-card">
+          <p class="why-num">05</p>
+          <h3 class="why-title">AI-native</h3>
+          <p class="why-body">
+            Launch Claude Code, Codex or Cursor from a niu session and the agent picks up niubash
+            through the <code>$SHELL</code> convention; <code>niu -c</code> runs a single command
+            with deterministic output, built for agents' repeated calls and parsing.
+          </p>
+          <code class="why-chip">niu -c 'ls | grep src'</code>
+        </article>
+        <article class="why-card">
+          <p class="why-num">06</p>
+          <h3 class="why-title">Fast</h3>
+          <p class="why-body">
+            <code>git --version</code> in about <strong>~14 ms</strong> where Git Bash needs
+            45–103 ms; the prompt reads <code>.git/HEAD</code> directly (≤29 ms) while the other
+            shell pays a 113–362 ms git tax on every single prompt.
+          </p>
+          <code class="why-chip">git ~14ms · prompt ≤29ms</code>
+        </article>
+      </div>
+
+      <figure class="demo-fig">
+        <img
+          src="/assets/demo-gitbash.gif"
+          alt="Recorded run: git --version startup comparison — Git Bash 45–103 ms, niu-git about 14 ms"
+          width="692"
+          height="334"
+          loading="lazy"
+          decoding="async"
+        />
+        <figcaption><code>git --version</code> recorded live: Git Bash 45–103 ms → niu-git ~14 ms.</figcaption>
+      </figure>
+    </Section>
+
+    <!-- ============ Install ============ -->
+    <Section id="install" title="Quick Install" kicker="quick start · one line">
+      <InstallTabs id="install" tabs={installTabs} />
+      <ul class="install-notes">
+        <li>
+          <strong>Linux / macOS</strong>: grab the portable bundle from GitHub Releases and
+          unpack it —
+          <a href="https://github.com/unixwin/niubash/releases" target="_blank" rel="noopener noreferrer">
+            github.com/unixwin/niubash/releases
+          </a>.
+        </li>
+        <li>wpm ships inside WinuxCmd; after installing, run <code>wpm update</code> to upgrade the whole family.</li>
+        <li>
+          Requires <Badge tone="info">Windows 10+</Badge> · docs at
+          <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
+            unixwin.github.io/niubash/
+          </a>.
+        </li>
+      </ul>
+    </Section>
+
+    <!-- ============ Agent glimpse ============ -->
+    <Section id="agent" title="The Agent Story, at a Glance" kicker="niu × claude code">
+      <div class="codeblock agent-block" role="img" aria-label="niubash and Claude Code session demo">
+        <p class="al">
+          <span class="p-user">$</span> claude <span class="c-mute"># launched from a niu session; $SHELL already points at niubash</span>
+        </p>
+        <p class="al">
+          <span class="c-ok">✓</span> shell: niubash (rubash engine) — 14ms git, 176+ unix commands
+        </p>
+        <p class="al">
+          <span class="p-agent">agent&gt;</span> niu -c 'ls | grep src'
+        </p>
+        <p class="al al-out">src</p>
+        <p class="al">
+          <span class="p-agent">agent&gt;</span> niu -c 'git log --oneline -1'
+        </p>
+        <p class="al al-out">f0c0ffe niubash 1.4.0 — real syntax, real commands, native on three platforms</p>
+        <p class="al">
+          <span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span>
+        </p>
+      </div>
+      <p class="agent-note">
+        Once your agent runs on niubash, every command executes with real bash syntax —
+        deterministic output, fast startup, nothing falling over in long sessions. How each agent
+        is launched and wired is covered in the
+        <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">detection-mechanism docs</a>.
+      </p>
+    </Section>
+
+    <!-- ============ Latest news ============ -->
+    <Section id="news" title="Latest News" kicker="tail -f changelogs.json">
+      {latestNews.length > 0 ? (
+        <ul class="news-list" role="list">
+          {latestNews.map((n) => (
+            <li class="news-item" role="listitem">
+              <p class="news-line">
+                <Badge tone="accent">{n.productName}</Badge>
+                <span class="news-version">{n.version}</span>
+                <time class="news-date" datetime={n.date}>{n.date}</time>
+              </p>
+              <p class="news-summary">{n.summary}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="news-empty">Changelogs haven't been fetched yet — run <code>npm run fetch:github</code>.</p>
+      )}
+      <p class="news-src-note">Release notes are quoted from the original Chinese changelogs.</p>
+      <p class="news-more"><a href="/changelog/">Full changelog →</a></p>
+    </Section>
+
+    <!-- ============ Theme candidates ============ -->
+    <Section id="themes" title="Theme Candidates" kicker="a / b / c — pick one">
+      <div class="theme-grid">
+        <a class="theme-tile is-current" href="/en/">
+          <span class="tile-key">A</span>
+          <span class="tile-name">Terminal</span>
+          <span class="tile-desc">Monospace type, deep-space background, terminal green. You are here.</span>
+        </a>
+        <a class="theme-tile" href="/theme/clean/">
+          <span class="tile-key">B</span>
+          <span class="tile-name">Clean</span>
+          <span class="tile-desc">White background, sans-serif, 12 px radii, soft shadows.</span>
+        </a>
+        <a class="theme-tile" href="/theme/neon/">
+          <span class="tile-key">C</span>
+          <span class="tile-name">Neon</span>
+          <span class="tile-desc">Violet–cyan duotone, glass cards, 16 px radii.</span>
+        </a>
+      </div>
+    </Section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<style>
+  /* ---------- Hero: terminal window ---------- */
+  .hero {
+    position: relative;
+    padding: 3.5rem 0 2rem;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: -4rem 0 0;
+    background:
+      radial-gradient(52rem 26rem at 18% 0%, color-mix(in srgb, var(--accent) 9%, var(--bg)), var(--bg) 70%),
+      radial-gradient(40rem 22rem at 88% 12%, color-mix(in srgb, var(--accent-2) 7%, var(--bg)), var(--bg) 70%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .terminal {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .term-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-elev);
+  }
+
+  .tdot {
+    width: 0.72rem;
+    height: 0.72rem;
+    border-radius: 50%;
+  }
+
+  .td-r {
+    background: var(--danger);
+  }
+
+  .td-y {
+    background: var(--warn);
+  }
+
+  .td-g {
+    background: var(--accent);
+  }
+
+  .term-title {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+  }
+
+  .term-body {
+    position: relative;
+    padding: 1.3rem 1.5rem 1.5rem;
+  }
+
+  /* CRT scanlines (1px line / 3px period), both layers mixed from tokens */
+  .term-body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--bg) 60%, var(--bg-code)) 0 1px,
+      var(--bg-code) 1px 3px
+    );
+    pointer-events: none;
+  }
+
+  .term-body > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .t-cmd {
+    margin: 0 0 0.9rem;
+    font-size: 0.95rem;
+  }
+
+  .term-body > .t-cmd:last-child {
+    margin: 1.3rem 0 0;
+  }
+
+  .t-user {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .t-cmd .cursor {
+    color: var(--accent);
+  }
+
+  /* ---------- Hero 3-session carousel ---------- */
+  .term-carousel {
+    margin: 0 0 1.4rem;
+  }
+
+  .term-sessions {
+    display: grid;
+  }
+
+  /* No-JS fallback: sessions stack vertically, all text readable (full SEO) */
+  .session:not(:last-child) {
+    margin-bottom: 1.15rem;
+  }
+
+  .sl {
+    margin: 0 0 0.28rem;
+    font-size: 0.92rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sl:last-child {
+    margin-bottom: 0;
+  }
+
+  .sl-cmt {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .sl-out {
+    color: var(--muted);
+  }
+
+  .spin {
+    color: var(--accent-2);
+    animation: blink 1.1s steps(1) infinite;
+  }
+
+  .ok {
+    color: var(--accent);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* JS adds .is-live: sessions stacked in one grid cell, fade carousel + print-in */
+  .term-carousel.is-live .session {
+    grid-area: 1 / 1;
+    margin: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+  }
+
+  .term-carousel.is-live .session.is-active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.4s ease;
+  }
+
+  .term-carousel.is-live .session.is-active .sl {
+    animation: print-in 0.32s ease-out both;
+  }
+
+  .term-carousel.is-live .session.is-active .sl:nth-child(1) { animation-delay: 0.05s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(2) { animation-delay: 0.17s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(3) { animation-delay: 0.31s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(4) { animation-delay: 0.47s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(5) { animation-delay: 0.63s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(6) { animation-delay: 0.79s; }
+
+  @keyframes print-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.28em);
+    }
+  }
+
+  /* Dot indicators: hidden without JS (nothing to switch) */
+  .term-dots {
+    display: none;
+  }
+
+  .term-carousel.is-live .term-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0.95rem 0 0;
+  }
+
+  .tdot-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .tdot-btn::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .tdot-btn:hover::before {
+    background: var(--muted);
+  }
+
+  .tdot-btn:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .tdot-btn.is-on::before {
+    background: var(--accent);
+    box-shadow: 0 0 0.45rem color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+
+  .hero-wordmark {
+    font-family: var(--font-mono);
+    font-size: clamp(2.6rem, 8vw, 4.4rem);
+    letter-spacing: 0.08em;
+    margin: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow:
+      0 0 0.8rem color-mix(in srgb, var(--accent) 18%, transparent),
+      0 0 2rem color-mix(in srgb, var(--accent) 9%, transparent);
+  }
+
+  .hero-tagline {
+    font-size: 1.12rem;
+    margin: 0.7rem 0 0;
+  }
+
+  .hero-tagline-en {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0.35rem 0 0;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 0.9rem;
+    margin: 1.5rem 0 0;
+    flex-wrap: wrap;
+  }
+
+  .cta {
+    border-radius: var(--radius);
+    padding: 0.6rem 1.5rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .cta:hover {
+    text-decoration: none;
+  }
+
+  .cta-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border: 1px solid var(--accent);
+  }
+
+  .cta-primary::before {
+    content: '$ ';
+  }
+
+  .cta-primary:hover {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+  }
+
+  .cta-ghost {
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .cta-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .cursor {
+    animation: blink 1.1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .banner-fig {
+    margin: 1.6rem 0 0;
+  }
+
+  .banner-fig img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+  }
+
+  /* ---------- Stats: fine grid backdrop + tabular numbers ---------- */
+  #facts {
+    scroll-margin-top: 5rem;
+  }
+
+  #facts :global(.stats-band) {
+    background-image:
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--text) 5%, transparent) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 5%, transparent) 0 1px, transparent 1px 24px);
+  }
+
+  #facts :global(.stat-value) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Products: card + install bar (card inlined, see markup) ---------- */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.1rem;
+  }
+
+  .product-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* Inlined ProductCard (English labels), same structure/tokens as the component */
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+
+  .product-card:hover {
+    border-color: var(--card-accent, var(--accent));
+    transform: translateY(-2px);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .card-bar {
+    width: 6px;
+    align-self: stretch;
+    border-radius: 3px;
+    background: var(--card-accent, var(--accent));
+  }
+
+  .card-name {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 1.12rem;
+  }
+
+  .card-tagline {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .card-tagline-en {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .card-foot {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+  }
+
+  .card-cmd {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.12rem 0.6rem;
+    color: var(--card-accent, var(--accent));
+  }
+
+  .card-stars {
+    color: var(--warn);
+    font-family: var(--font-mono);
+  }
+
+  .card-repo {
+    margin-left: auto;
+    color: var(--link);
+  }
+
+  .cell-install {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.3rem 0.4rem 0.3rem 0.6rem;
+  }
+
+  .cell-install :global(.badge) {
+    flex-shrink: 0;
+  }
+
+  .cell-cmd {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+    font-size: 0.8rem;
+  }
+
+  .cell-install :global(.copy-btn) {
+    flex-shrink: 0;
+    padding: 0.08rem 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  /* ---------- Why ---------- */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.1rem;
+  }
+
+  .why-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+
+  .why-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .why-num {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+  }
+
+  .why-title {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  .why-body {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.92rem;
+    flex: 1;
+  }
+
+  .why-body strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .why-chip {
+    align-self: flex-start;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.15rem 0.6rem;
+    color: var(--accent-2);
+    font-size: 0.78rem;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .demo-fig {
+    margin: 1.6rem 0 0;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .demo-fig img {
+    display: inline-block;
+    width: 100%;
+    max-width: 692px;
+    height: auto;
+    border-radius: var(--radius);
+  }
+
+  .demo-fig figcaption {
+    margin-top: 0.7rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  /* ---------- Install ---------- */
+  .install-notes {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+
+  .install-notes strong {
+    color: var(--text);
+  }
+
+  /* ---------- Agent glimpse ---------- */
+  .agent-block {
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  .al {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .al-out {
+    color: var(--muted);
+  }
+
+  .p-user {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .p-agent {
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+
+  .c-ok {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .c-mute {
+    color: var(--muted);
+  }
+
+  .agent-block .cursor {
+    color: var(--accent-2);
+  }
+
+  .agent-note {
+    margin: 0.9rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* ---------- Latest news ---------- */
+  .news-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .news-item {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.85rem 1.1rem;
+  }
+
+  .news-line {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+  }
+
+  .news-version {
+    color: var(--accent-2);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .news-date {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .news-summary {
+    margin: 0.4rem 0 0;
+    color: var(--text);
+    font-size: 0.9rem;
+  }
+
+  .news-empty {
+    color: var(--muted);
+  }
+
+  .news-src-note {
+    margin: 0.6rem 0 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .news-more {
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+  }
+
+  /* ---------- Theme candidates ---------- */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .theme-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .theme-tile:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .theme-tile.is-current {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+
+  .tile-key {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+  }
+
+  .tile-name {
+    font-weight: 700;
+  }
+
+  .tile-desc {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  /* ---------- Narrow screens ---------- */
+  @media (max-width: 640px) {
+    .term-body {
+      padding: 1.05rem 1rem 1.25rem;
+    }
+
+    .sl {
+      font-size: 0.85rem;
+    }
+
+    .sl-cmt {
+      font-size: 0.72rem;
+    }
+
+    .cell-install {
+      gap: 0.4rem;
+      padding: 0.26rem 0.32rem 0.26rem 0.5rem;
+    }
+  }
+
+  /* ---------- prefers-reduced-motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .cursor,
+    .spin {
+      animation: none;
+    }
+
+    .term-carousel.is-live .session,
+    .term-carousel.is-live .session.is-active {
+      transition: none;
+    }
+
+    .term-carousel.is-live .session.is-active .sl {
+      animation: none;
+    }
+
+    .tdot-btn::before {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // Hero terminal carousel (minimal vanilla JS), mirroring the zh home page:
+  // .is-live enables same-cell stacking + timed switching; without JS the three
+  // sessions stay stacked and fully readable. Reduced motion: manual dots only.
+  const root = document.querySelector<HTMLElement>('[data-term-carousel]');
+  if (root) {
+    const sessions = Array.from(root.querySelectorAll<HTMLElement>('.session'));
+    const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('.tdot-btn'));
+    if (sessions.length > 1 && dots.length === sessions.length) {
+      const DWELL_MS = 6000;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let index = 0;
+      let timer: number | undefined;
+
+      const stop = (): void => {
+        if (timer !== undefined) {
+          window.clearInterval(timer);
+          timer = undefined;
+        }
+      };
+
+      const show = (next: number): void => {
+        index = ((next % sessions.length) + sessions.length) % sessions.length;
+        sessions.forEach((session, i) => session.classList.toggle('is-active', i === index));
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('is-on', i === index);
+          if (i === index) dot.setAttribute('aria-current', 'true');
+          else dot.removeAttribute('aria-current');
+        });
+      };
+
+      const play = (): void => {
+        stop();
+        if (!reducedMotion) timer = window.setInterval(() => show(index + 1), DWELL_MS);
+      };
+
+      dots.forEach((dot, i) => dot.addEventListener('click', () => { show(i); play(); }));
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', play);
+      root.addEventListener('focusin', stop);
+      root.addEventListener('focusout', stop);
+
+      root.classList.add('is-live');
+      show(0);
+      play();
+    }
+  }
+</script>

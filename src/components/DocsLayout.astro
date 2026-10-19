@@ -2,32 +2,33 @@
 /**
  * DocsLayout — 文档区布局（门户第一个带侧栏的区域）。
  *
- * 结构：BaseLayout 外壳（theme 固定 'terminal'）+ SiteHeader/SiteFooter +
+ * 结构：BaseLayout 外壳（theme 固定 'day'，顶栏 ToggleTheme 可切 night）+ SiteHeader/SiteFooter +
  *       三栏 grid：左 Sidebar（240px sticky）/ 中 内容（max-w-prose）/ 右 暂无（占位，窄屏隐藏）。
  *
  * Props（透传给 BaseLayout）：
  *   title       string  页面 <title>（自动拼 " · UNIXWIN"）
  *   description string  页面 meta description
  *   path        string  规范化路径（如 '/docs/compatibility/'）
- *
- * ThemeSwitcher 在此统一挂载，文档区每页自动携带。
+ *   lang        'zh' | 'en'  页面语言（可选，默认 zh，透传 BaseLayout）
+ *   enPath      string  另一语言页路径（可选，透传 BaseLayout，供 hreflang 互链）
  */
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from './SiteHeader.astro';
 import SiteFooter from './SiteFooter.astro';
-import ThemeSwitcher from './ThemeSwitcher.astro';
 import Sidebar from './Sidebar.astro';
 
 interface Props {
   title: string;
   description: string;
   path: string;
+  lang?: 'zh' | 'en';
+  enPath?: string;
 }
 
-const { title, description, path } = Astro.props;
+const { title, description, path, lang, enPath } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} theme="terminal" path={path}>
+<BaseLayout title={title} description={description} theme="day" path={path} lang={lang} enPath={enPath}>
   <SiteHeader />
 
   <div class="container docs-grid">
@@ -40,7 +41,6 @@ const { title, description, path } = Astro.props;
   </div>
 
   <SiteFooter />
-  <ThemeSwitcher current="terminal" />
 </BaseLayout>
 
 <style>

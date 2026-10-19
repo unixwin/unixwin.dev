@@ -7,7 +7,6 @@
 import BaseLayout from '../../components/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import ThemeSwitcher from '../../components/ThemeSwitcher.astro';
 import Badge from '../../components/Badge.astro';
 import bench from '../../data/benchmarks.json';
 
@@ -24,7 +23,7 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
 <BaseLayout
   title="基准：niubash vs Git Bash / WSL / GNU bash"
   description="实测：git 启动 3–7x、一次性执行 2.7x、提示符 git 段 4–12x 快于 Git Bash；Windows 同场 8 项负载全部领先。每个数字带产物或 PR 锚，输赢都展示。"
-  theme="terminal"
+  theme="day"
   path="/benchmarks/"
 >
   <SiteHeader />
@@ -162,7 +161,6 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
   </main>
 
   <SiteFooter />
-  <ThemeSwitcher current="terminal" />
 </BaseLayout>
 
 <style>

@@ -6,7 +6,6 @@
 import BaseLayout from '../../components/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import ThemeSwitcher from '../../components/ThemeSwitcher.astro';
 import Badge from '../../components/Badge.astro';
 import CopyButton from '../../components/CopyButton.astro';
 import agentsData from '../../data/agents.json';
@@ -23,7 +22,7 @@ const statusLabel = { ready: '可用', partial: '部分', blocked: '暂不支持
 <BaseLayout
   title={`${agent.name} × niubash`}
   description={agent.oneLiner}
-  theme="terminal"
+  theme="day"
   path={`/agents/${agent.slug}/`}
 >
   <SiteHeader />
@@ -102,7 +101,6 @@ const statusLabel = { ready: '可用', partial: '部分', blocked: '暂不支持
   </main>
 
   <SiteFooter />
-  <ThemeSwitcher current="terminal" />
 </BaseLayout>
 
 <style>

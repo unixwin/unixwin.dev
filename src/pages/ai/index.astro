@@ -10,7 +10,6 @@
 import BaseLayout from '../../components/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import ThemeSwitcher from '../../components/ThemeSwitcher.astro';
 import Section from '../../components/Section.astro';
 import Badge from '../../components/Badge.astro';
 import CopyButton from '../../components/CopyButton.astro';
@@ -151,7 +150,7 @@ const skillSummary = [
 <BaseLayout
   title="给 AI 的门户"
   description="给 AI 看的 UNIXWIN 门户：一键安装提示词（粘给你的 agent 即装 niubash）、官方 skill 一键安装、agent 自助接入模板与机器可读入口。真 bash 语法、真 Unix 命令、原生 Windows。"
-  theme="terminal"
+  theme="day"
   path="/ai/"
 >
   <SiteHeader />
@@ -303,7 +302,6 @@ const skillSummary = [
   </main>
 
   <SiteFooter />
-  <ThemeSwitcher current="terminal" />
 </BaseLayout>
 
 <style>

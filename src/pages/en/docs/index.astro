@@ -1,0 +1,172 @@
+---
+/**
+ * /en/docs/ — English edition of the docs-area home page.
+ * Intro: the philosophy of the differences — the compatibility is tested,
+ * but the machinery is different. Four cards carry English titles + one-liners
+ * and link to the Chinese articles for now ("in Chinese for now").
+ */
+import DocsLayout from '../../../components/DocsLayout.astro';
+
+const articles = [
+  {
+    href: '/docs/compatibility/',
+    title: 'Compatibility overview: what 83/83 means',
+    line: 'A 100% pass across GNU Bash\'s 83 upstream test corpora, with 82 suites byte-identical in output — the one remaining delta proven byte-for-byte to be GNU\'s own coproc race.',
+  },
+  {
+    href: '/docs/paths-and-msys/',
+    title: 'Paths & MSYS: the biggest behavioral difference',
+    line: 'One engine accepts all four path dialects — Windows, MSYS, WSL, Cygwin; with no MSYS runtime, argv arrives byte-for-byte as typed. MSYS_NO_PATHCONV is a word that does not exist here.',
+  },
+  {
+    href: '/docs/execution-model/',
+    title: 'Execution model: three tiers, zero forks',
+    line: '( list ) and $( ) never create a process; the fd table replicates POSIX dup semantics; real processes appear only at real process boundaries — and everything a script can observe matches GNU Bash.',
+  },
+  {
+    href: '/docs/performance-model/',
+    title: 'Performance profile: where it is fast, where it is even',
+    line: 'The zero-fork payoff lands on command substitution, subshells and background jobs; parity with GNU on external processes is the honest floor — every number measured on the same machine, methods public, benchmarks shipped along.',
+  },
+];
+---
+
+<DocsLayout
+  title="Docs · Where niubash differs from bash"
+  description="The UNIXWIN docs area: niubash vs GNU Bash compatibility overview, path and MSYS behavioral differences, the zero-fork three-tier execution model, and the performance profile."
+  path="/en/docs/"
+  lang="en"
+  enPath="/docs/"
+>
+  <header class="doc-head">
+    <h1>Where niubash differs from bash</h1>
+    <p class="lead">
+      One-sentence positioning: <strong>the compatibility is tested, but the machinery is
+      different.</strong> Against GNU Bash's own 83 upstream test suites, the niubash engine
+      (rubash) scores 83/83 passing, with 82 suites byte-identical in output; and underneath
+      that verified compatibility sits an entirely different machine — a zero-fork, three-tier
+      execution model, path folding with no MSYS layer, byte-for-byte verbatim argv, all four
+      path dialects accepted, 62 real builtins plus 12 inlined coreutils, and a deliberately
+      maintained <code>uname = MSYS_NT</code> compatibility persona.
+    </p>
+    <p class="lead">
+      This section takes the two sides of that coin apart: which side is "behaves like bash"
+      (with suite and byte-level evidence), and which side is "built differently from bash"
+      (with architecture and contract documents). Whether you are migrating scripts, evaluating
+      performance, or chasing down a behavioral difference — start from the matching article.
+    </p>
+  </header>
+
+  <nav class="cards" aria-label="Docs area article navigation">
+    {
+      articles.map((a) => (
+        <a class="card" href={a.href}>
+          <h2>{a.title}</h2>
+          <p>{a.line}</p>
+          <span class="go">Read the full article (in Chinese for now) →</span>
+        </a>
+      ))
+    }
+  </nav>
+
+  <div class="all-docs">
+    <h2>Full documentation</h2>
+    <p>
+      This section covers exactly one theme: how niubash differs from bash. Installation,
+      plugins, agent onboarding, platform support and everything else live on the official
+      documentation site:
+      <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
+        unixwin.github.io/niubash ↗
+      </a>.
+    </p>
+  </div>
+</DocsLayout>
+
+<style>
+  .doc-head {
+    margin-bottom: 0.5rem;
+  }
+
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  .lead code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1.8rem 0 2.4rem;
+  }
+
+  .card {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.15rem 1.3rem;
+    text-decoration: none;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .card h2 {
+    font-size: 1.02rem;
+    margin: 0 0 0.45rem;
+    color: var(--text);
+  }
+
+  .card:hover h2 {
+    color: var(--accent);
+  }
+
+  .card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .card .go {
+    display: block;
+    margin-top: 0.75rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+
+  .all-docs {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .all-docs h2 {
+    font-size: 1rem;
+    margin-bottom: 0.4rem;
+  }
+
+  @media (max-width: 720px) {
+    .cards {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

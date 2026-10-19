@@ -5,30 +5,58 @@
  * Props:
  *   title       string  页面 <title>（会自动拼接 " · UNIXWIN"）
  *   description string  页面 meta description
- *   theme       'terminal' | 'clean' | 'neon'   写入 <html data-theme>
+ *   theme       'day' | 'night' | 'terminal' | 'clean' | 'neon'   写入 <html data-theme>
+ *                       （默认 day；terminal/clean/neon 仅 /theme/* 候选回看页使用）
  *   path        string  规范化路径（如 '/'、'/changelog/'），用于 canonical/hreflang
+ *   lang        'zh' | 'en'  页面语言（默认 zh；写 <html lang> 与 og:locale）
+ *   enPath      string  另一语言页路径：zh 页传对应 en 路径、en 页传回 zh 路径，
+ *                       用于 hreflang 互链。缺省时按 src/i18n/lang.ts 的配对
+ *                       清单自动推断（zh 页在清单内且未传 enPath 的行为一致）。
+ *
+ * 亮/暗（day/night）：仅这两种主题的页面在 <head> 顶部跑一段 is:inline 防 FOUC
+ * 脚本（改编自 astrowind ApplyColorMode，MIT，见 THIRD_PARTY_NOTICES.md）——
+ * localStorage('unixwin-theme') 优先，其次 prefers-color-scheme，把 SSR 输出的
+ * data-theme 纠正为用户实际选择的亮/暗后再首绘。静态站全页刷新，无需监听。
+ *
+ * hreflang：有配对时 zh-CN → zh 路径、en → en 路径、x-default → zh 路径；
+ * 无配对页（如 /changelog/）三条回落 canonical（保持原行为）。
+ * 自动跳转：仅「zh 页且存在对应 en 页」引入 src/i18n/auto-redirect.astro
+ * （每会话一次按 navigator.language 跳 /en/，sessionStorage.niu-lang-override 优先）。
  *
  * 示例：
- *   <BaseLayout title="首页" description="AI-native bash" theme="terminal" path="/">
+ *   <BaseLayout title="首页" description="AI-native bash" theme="day" path="/">
  *     <p>内容</p>
  *   </BaseLayout>
  */
 import '../styles/tokens.css';
 import '../styles/global.css';
+import { resolveLangPair } from '../i18n/lang';
+import AutoRedirect from '../i18n/auto-redirect.astro';
 
 interface Props {
   title: string;
   description: string;
-  theme?: 'terminal' | 'clean' | 'neon';
+  theme?: 'day' | 'night' | 'terminal' | 'clean' | 'neon';
   path?: string;
+  lang?: 'zh' | 'en';
+  enPath?: string;
 }
 
-const { title, description, theme = 'terminal', path = '/' } = Astro.props;
+const { title, description, theme = 'day', path = '/', lang = 'zh', enPath } = Astro.props;
 
 const SITE = 'https://unixwin.dev';
 const fullTitle = title.includes('UNIXWIN') ? title : `${title} · UNIXWIN`;
 const canonical = new URL(path, SITE).href;
 const ogImage = `${SITE}/og-image.png`;
+
+// ---- i18n 配对：zh-CN/en/x-default 三条 hreflang + 是否自动跳转 ----
+const pair = resolveLangPair(path, lang, enPath);
+const zhUrl = new URL(pair.zhPath, SITE).href;
+const enUrl = pair.enPath ? new URL(pair.enPath, SITE).href : canonical;
+const htmlLang = pair.lang === 'en' ? 'en' : 'zh-CN';
+const ogLocale = pair.lang === 'en' ? 'en_US' : 'zh_CN';
+// AutoRedirect 仅「zh 页且存在 en 页」时于 <head> 内条件渲染
+const needsAutoRedirect = pair.lang === 'zh' && Boolean(pair.enPath);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -42,8 +70,32 @@ const jsonLd = {
 ---
 
 <!doctype html>
-<html lang="zh-CN" data-theme={theme}>
+<html lang={htmlLang} data-theme={theme}>
   <head>
+    {/* 防 FOUC：改编自 astrowind ApplyColorMode.astro（MIT, © 2023 onWidget，见 THIRD_PARTY_NOTICES.md）。
+        必须 is:inline 且置于 head 首位——首绘前把 day/night 页的 data-theme 纠正为
+        用户选择（localStorage 优先，其次 prefers-color-scheme）。terminal/clean/neon
+        候选页不受影响。静态站无客户端路由，无需 after-swap 监听。 */}
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        var pageTheme = root.getAttribute('data-theme');
+        if (pageTheme !== 'day' && pageTheme !== 'night') return;
+        var saved = null;
+        try {
+          saved = localStorage.getItem('unixwin-theme');
+        } catch (e) {
+          /* 隐私模式等 localStorage 不可用：回落系统偏好 */
+        }
+        var theme =
+          saved === 'day' || saved === 'night'
+            ? saved
+            : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'night'
+              : 'day';
+        if (theme !== pageTheme) root.setAttribute('data-theme', theme);
+      })();
+    </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
@@ -52,9 +104,11 @@ const jsonLd = {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonical} />
 
-    <link rel="alternate" hreflang="zh-CN" href={canonical} />
-    <link rel="alternate" hreflang="en" href={canonical} />
-    <link rel="alternate" hreflang="x-default" href={canonical} />
+    <link rel="alternate" hreflang="zh-CN" href={zhUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="x-default" href={zhUrl} />
+
+    {needsAutoRedirect && pair.enPath && <AutoRedirect enPath={pair.enPath} />}
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -63,7 +117,7 @@ const jsonLd = {
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:locale" content={ogLocale} />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />

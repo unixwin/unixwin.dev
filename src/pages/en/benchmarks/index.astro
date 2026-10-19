@@ -1,0 +1,281 @@
+---
+/**
+ * /en/benchmarks/ — English edition of the benchmarks page (2026-10-19 calibration).
+ * Principle: every number needs an artifact or PR anchor; wins and losses both shown;
+ * WSL is a reference column only.
+ * Data source: the same src/data/benchmarks.json as the zh page — numbers come from
+ * the JSON; Chinese label strings are translated here via the T map (fallback: as-is).
+ */
+import BaseLayout from '../../../components/BaseLayout.astro';
+import SiteHeader from '../../../components/SiteHeader.astro';
+import SiteFooter from '../../../components/SiteFooter.astro';
+import Badge from '../../../components/Badge.astro';
+import bench from '../../../data/benchmarks.json';
+
+const h = bench.headToHead as any;
+const fs = (bench._meta as any).forkSuite;
+const forkRows = (fs?.rows ?? []) as any[];
+const forkOnly = forkRows.filter((r) => r.tag === 'fork');
+const inlineOnly = forkRows.filter((r) => r.tag === 'inline');
+const maxMs = Math.max(...(h.rows as any[]).map((r) => r.gitbash));
+const bar = (ms: number) => `${Math.max(2, Math.round((ms / maxMs) * 100))}%`;
+const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / base) * 100))}%`;
+
+// Hand-translated labels for the Chinese strings inside benchmarks.json.
+// Numbers/values always come from the JSON; unknown strings fall back verbatim.
+const T: Record<string, string> = {
+  // _meta / environment
+  'Intel Xeon w5-3435 · Windows 10 19045 · 同机 WSL2 Ubuntu（GNU Bash 5.3.0 对照）· Git Bash 5.3.0 (msys)':
+    'Intel Xeon w5-3435 · Windows 10 19045 · WSL2 Ubuntu on the same machine (GNU Bash 5.3.0 baseline) · Git Bash 5.3.0 (msys)',
+  '占位：数字转录自 2026-10-18 复测运行输出；recheck_fork_20261018-*.tsv 产物入库 data/bench/ 后即转正（核对一致后移除此标注）。':
+    'Placeholder: figures transcribed from the 2026-10-18 re-run output; promoted once the recheck_fork_20261018-*.tsv artifacts land in data/bench/ (this note is removed after they verify).',
+  '顺序轮换（interleaved），min-of-N，单项超时保护':
+    'Sequential interleaving, min-of-N, per-item timeout guard',
+  // fork suite workloads
+  '$( ) 命令替换 ×3000': '$( ) command substitution ×3000',
+  '反引号替换 ×3000': 'Backtick substitution ×3000',
+  '子壳 ( : ) ×5000': 'Subshell ( : ) ×5000',
+  '递归 fib $() ×100': 'Recursive fib $() ×100',
+  '外部进程循环 /bin/true ×2000': 'External process loop /bin/true ×2000',
+  '后台 sleep & wait ×750': 'Background sleep & wait ×750',
+  '管道 echo | cat ×2000': 'Pipeline echo | cat ×2000',
+  '真实脚本 mkdir/wc ×250': 'Real script mkdir/wc ×250',
+  // fork suite analysis
+  '纯 fork/子壳类负载（命令替换、反引号、子壳、递归）13–62x 快于 GNU bash——无 fork 三层执行模型的直接收益':
+    'Pure fork/subshell workloads (command substitution, backticks, subshells, recursion) run 13–62x faster than GNU bash — the direct payoff of the zero-fork, three-tier execution model',
+  '外部进程循环 ≈1.01x 持平：真实 exec 成本仍在，无虚假加速（如实展示）':
+    'External process loop ≈1.01x, on par: the real exec cost is still there, no fake speedups (shown as-is)',
+  '管道与真实脚本两行含内联 coreutils 收益（进程内执行不产生子进程），单列不计入 fork 战绩':
+    'The pipeline and real-script rows include inline-coreutils gains (in-process execution spawns no children); they are listed separately and not counted toward the fork record',
+  'niu（产品壳）与 rubash（引擎）比例基本一致':
+    'niu (the product shell) and rubash (the engine) track each other closely in ratio',
+  // latency table
+  'git 启动（git --version）': 'git startup (git --version)',
+  '一次性执行 niu -c true': 'One-shot niu -c true',
+  '提示符 git 段': 'Prompt git segment',
+  '读 .git/HEAD ≤29 ms': 'reads .git/HEAD ≤29 ms',
+  '每条提示符 spawn git 113–362 ms': 'spawns git per prompt, 113–362 ms',
+  'shell 启动（5 次实测）': 'shell startup (5 measured runs)',
+  '安装体积': 'Install size',
+  'niu ≈16 MB · 零 DLL': 'niu ≈16 MB · zero DLLs',
+  '3.79 MB 携带 176 命令 / 1,924 选项 · ~19 ms 冷启':
+    '3.79 MB carrying 176 commands / 1,924 options · ~19 ms cold start',
+  'niubash README:32 · niu-git（MSVC+schannel，无 MSYS）':
+    'niubash README:32 · niu-git (MSVC + schannel, no MSYS)',
+  'GITBASH-KILLER 面 6': 'GITBASH-KILLER card 6',
+  'GITBASH-KILLER 面 3（真仓 min-of-20）': 'GITBASH-KILLER card 3 (real repo, min-of-20)',
+  'GITBASH-KILLER 面 4（装机位实测）': 'GITBASH-KILLER card 4 (measured on a real install)',
+  'WinuxCmd README:32,:74（PGO：sort −18%、nl −17%）':
+    'WinuxCmd README:32,:74 (PGO: sort −18%, nl −17%)',
+  // head-to-head
+  'Windows 同场：8/8 全部快于 Git Bash': 'Same Windows machine: 8/8 faster than Git Bash',
+  'master 8ab35e89（含 #807/#808）': 'master 8ab35e89 (incl. #807/#808)',
+  '交错轮换（每轮 rubash→Git Bash→WSL），弃 1 轮热身，min-of-3，timeout 120s，三方同一计时法（inner window date +%s%N）':
+    'Interleaved rounds (rubash → Git Bash → WSL per round), 1 warm-up round discarded, min-of-3, 120 s timeout, identical timing across all three (inner window date +%s%N)',
+  '后台等待 sleep & wait ×750': 'Background wait sleep & wait ×750',
+  '后台等待 ×1500': 'Background wait ×1500',
+  '后台等待 ×300': 'Background wait ×300',
+  '后台等待 ×100': 'Background wait ×100',
+  '后台子壳 ( ) ×750': 'Background subshell ( ) ×750',
+  '纯 spawn ×750': 'Pure spawn ×750',
+  '前台外部命令 ×750': 'Foreground external command ×750',
+  '内建循环 ×750': 'Built-in loop ×750',
+  'WSL 列仅作参考：后台作业占优（Linux 内核 fork），但前台外部命令 857 ms（跨 OS 文件操作）、冷启动 202–278 ms，且带走整套虚拟机。':
+    'The WSL column is for reference only: it wins on background jobs (Linux kernel fork), but foreground external commands take 857 ms (cross-OS file operations), cold start is 202–278 ms, and it drags an entire VM along.',
+  // engineering numbers
+  '一次性执行优化（xgr 六连）': 'One-shot execution optimization (xgr series of six)',
+  '多行粘贴': 'Multi-line paste',
+  '自动误执行 186 次 → 0；257 行载荷 300s 超时 → 4.6s':
+    'accidental auto-executions 186 → 0; 257-line payload 300 s timeout → 4.6 s',
+  'nvm.sh 重词法 checkpoint': 'nvm.sh re-lex checkpoint',
+  '与 GNU 差距 720x → 8x，重词法字节 −40%':
+    'gap vs GNU 720x → 8x, re-lexed bytes −40%',
+  '数组元素写 O(n²)→O(1)': 'Array element writes O(n²)→O(1)',
+  'K=5000 单次写：关联数组快 45 倍、索引数组快 177 倍（对旧版）':
+    'K=5000 single write: associative arrays 45x faster, indexed arrays 177x faster (vs the old build)',
+  '单次 spawn 成本': 'Single spawn cost',
+  'rubash 1.183 ms vs GNU 1.121 ms——持平（真实 exec 地板）':
+    'rubash 1.183 ms vs GNU 1.121 ms — on par (the real exec floor)',
+  'data/bench/unix-spawn-cost-20261012.md（min-of-3）':
+    'data/bench/unix-spawn-cost-20261012.md (min-of-3)',
+};
+const t = (s: string): string => T[s] ?? s;
+---
+
+<BaseLayout
+  title="Benchmarks: niubash vs Git Bash / WSL / GNU bash"
+  description="Measured: git startup 3–7x, one-shot execution 2.7x, prompt git segment 4–12x faster than Git Bash; 8/8 workloads ahead on the same Windows machine. Every number carries an artifact or PR anchor; wins and losses both shown."
+  theme="day"
+  path="/en/benchmarks/"
+  lang="en"
+  enPath="/benchmarks/"
+>
+  <SiteHeader />
+
+  <main class="container">
+    <section class="hero">
+      <h1>Let the numbers speak<span class="cursor">▊</span></h1>
+      <div class="badges">
+        <Badge tone="accent">git startup 3–7x vs Git Bash</Badge>
+        <Badge tone="accent">prompt git segment 4–12x</Badge>
+        <Badge tone="accent">8/8 ahead on Windows</Badge>
+        <Badge tone="info">27x lighter · zero DLLs</Badge>
+      </div>
+      <p class="sub">Every number carries an artifact or PR anchor (noted row by row); claims we haven't measured don't get printed on this page.</p>
+    </section>
+
+    <section class="sec">
+      <h2>Startup · latency · size</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Metric</th><th>niubash / rubash</th><th>Baseline</th><th>Ratio</th><th>Source</th></tr></thead>
+          <tbody>
+            {(bench.latency as any[]).map((r) => (
+              <tr>
+                <td>{t(r.metric)}</td>
+                <td class="us">{t(r.us)}</td>
+                <td>{t(r.them)}</td>
+                <td>{r.badge ? <Badge tone="accent">{r.badge}</Badge> : '—'}</td>
+                <td class="src">{t(r.source)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>{t(h.title)}</h2>
+      <p class="sec-desc">
+        {h.provenance.date} · rubash {t(h.provenance.rubash)} · method: {t(h.provenance.method)}.
+        Source: <code>{h.provenance.source}</code>
+      </p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Workload</th><th style="width:24%">rubash vs Git Bash</th><th>rubash</th><th>Git Bash</th><th>WSL (ref.)</th></tr></thead>
+          <tbody>
+            {(h.rows as any[]).map((r) => (
+              <tr>
+                <td>{t(r.workload)}</td>
+                <td>
+                  <span class="bar bar-us" style={`width:${bar(r.rubash)}`}></span>
+                  <span class="bar bar-them" style={`width:${bar(r.gitbash)}`}></span>
+                </td>
+                <td class="num us">{r.rubash.toLocaleString()} ms</td>
+                <td class="num">{r.gitbash.toLocaleString()} ms</td>
+                <td class="num wsl">{r.wsl.toLocaleString()} ms</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="foot-note">{t(h.note)}</p>
+    </section>
+
+    {forkRows.length > 0 && (
+      <section class="sec">
+        <h2>
+          Fork / subshell deep dive <span class="vs">rubash engine vs GNU bash 5.3.20</span>
+          {fs.status === 'placeholder' && <Badge tone="warn">placeholder · pending TSV</Badge>}
+        </h2>
+        <p class="sec-desc">
+          {fs.provenance.date} · rubash {fs.provenance.rubash} / niu {fs.provenance.niu} · method: {t(fs.provenance.method)}.
+          {fs.status === 'placeholder' && <em>{t(fs.statusNote)}</em>}
+        </p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Workload</th><th style="width:22%">bash → rubash</th><th>GNU bash</th><th>rubash</th><th>niu</th><th>Ratio</th></tr></thead>
+            <tbody>
+              {forkOnly.map((r) => (
+                <tr>
+                  <td>{t(r.workload)}</td>
+                  <td>
+                    <span class="bar bar-them" style={`width:${rowBar(r.bashMs, r.bashMs)}`}></span>
+                    <span class="bar bar-us" style={`width:${rowBar(r.rubashMs, r.bashMs)}`}></span>
+                  </td>
+                  <td class="num">{r.bashMs.toLocaleString()} ms</td>
+                  <td class="num us">{r.rubashMs.toLocaleString()} ms</td>
+                  <td class="num">{r.niuMs.toLocaleString()} ms</td>
+                  <td><Badge tone={parseFloat(r.ratioVsBash) >= 10 ? 'accent' : 'muted'}>{r.ratioVsBash}</Badge></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {inlineOnly.length > 0 && (
+          <>
+            <p class="sec-desc" style="margin-top:1rem">
+              Workloads that also include inline-coreutils gains (listed separately, not counted
+              toward the fork record):
+              {inlineOnly.map((r) => `${t(r.workload)} ${r.ratioVsBash} (${r.bashMs.toLocaleString()}→${r.rubashMs.toLocaleString()} ms)`).join('; ')}.
+            </p>
+          </>
+        )}
+        <ul class="foot-note" style="list-style:disc;padding-left:1.2rem;">
+          {fs.analysis.map((a: string) => <li>{t(a)}</li>)}
+        </ul>
+      </section>
+    )}
+
+    <section class="sec">
+      <h2>Engineering numbers <span class="vs">before → after, each with a PR anchor</span></h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Item</th><th>Number</th><th>Source</th></tr></thead>
+          <tbody>
+            {(bench.engineering as any[]).map((r) => (
+              <tr>
+                <td>{t(r.item)}</td>
+                <td class="us">{t(r.detail)}</td>
+                <td class="src">{t(r.source)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="sec methodology">
+      <h2>Methodology &amp; sources</h2>
+      <ul>
+        <li>Environment: {t((bench._meta as any).env)}; raw artifacts checked into <code>data/bench/</code> (15 files, incl. BENCH-README.md with the environment and method notes)</li>
+        <li>Discipline: nothing unmeasured gets written down; ties and losses are listed too (single-spawn parity = the real exec floor; the WSL reference column calls out its architectural cost)</li>
+        <li>Source of truth: FACTS.json (portal-dump branch, 2026-10-19) — where the README disagrees, FACTS wins</li>
+      </ul>
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<style>
+  .hero { padding: 3rem 0 1.2rem; }
+  .hero h1 { font-size: clamp(2rem, 5.5vw, 3rem); margin: 0 0 1rem; }
+  .badges { display: flex; gap: 0.55rem; flex-wrap: wrap; }
+  .sub { color: var(--muted); margin: 0.9rem 0 0; }
+  .cursor { color: var(--accent); animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .sec { margin: 2.4rem 0; }
+  .sec h2 { font-size: 1.2rem; margin: 0 0 0.5rem; }
+  .vs { color: var(--muted); font-size: 0.85rem; font-weight: 400; margin-left: 0.5rem; }
+  .sec-desc { color: var(--muted); font-size: 0.9rem; line-height: 1.7; margin: 0 0 0.9rem; }
+  .sec-desc code { color: var(--accent-2); }
+
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th { text-align: left; color: var(--muted); font-weight: 600; border-bottom: 2px solid var(--border); padding: 0.5rem 0.6rem; white-space: nowrap; }
+  td { border-bottom: 1px solid var(--border); padding: 0.55rem 0.6rem; vertical-align: middle; }
+  td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.us { color: var(--accent); font-weight: 600; }
+  td.wsl { color: var(--muted); }
+  td.src { color: var(--muted); font-size: 0.8rem; max-width: 18rem; }
+
+  .bar { display: block; height: 0.5rem; border-radius: 2px; margin: 2px 0; }
+  .bar-us { background: var(--accent); }
+  .bar-them { background: var(--muted); opacity: 0.55; }
+
+  .foot-note { color: var(--muted); font-size: 0.85rem; margin: 0.8rem 0 0; line-height: 1.7; }
+  .methodology ul { padding-left: 1.2rem; color: var(--muted); line-height: 1.85; font-size: 0.9rem; }
+  .methodology code { color: var(--accent-2); }
+</style>

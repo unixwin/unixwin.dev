@@ -9,7 +9,6 @@
 import BaseLayout from '../components/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import ThemeSwitcher from '../components/ThemeSwitcher.astro';
 import StatsBand from '../components/StatsBand.astro';
 import ProductCard from '../components/ProductCard.astro';
 import Section from '../components/Section.astro';
@@ -107,7 +106,7 @@ const latestNews = newsItems.slice(0, 4);
 <BaseLayout
   title="UNIXWIN — AI-native 的真·Bash 家族"
   description="UNIXWIN：AI-native 的真·Bash 家族——真 bash 语法、真 Unix 命令、原生 Windows / Linux / macOS，无 WSL、无 MSYS。83/83 GNU 套件全过、82 套逐字节一致、~14ms git 启动、3.79MB 单文件。"
-  theme="terminal"
+  theme="day"
   path="/"
 >
   <SiteHeader />
@@ -384,7 +383,6 @@ const latestNews = newsItems.slice(0, 4);
   </main>
 
   <SiteFooter />
-  <ThemeSwitcher current="terminal" />
 </BaseLayout>
 
 <style>

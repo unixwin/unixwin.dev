@@ -4,13 +4,12 @@
  * 静态构建时无法预知错误路径，用内联脚本在运行时回填 location.pathname。
  */
 import BaseLayout from '../components/BaseLayout.astro';
-import ThemeSwitcher from '../components/ThemeSwitcher.astro';
 ---
 
 <BaseLayout
   title="404 · command not found"
   description="UNIXWIN：页面不存在（command not found）。"
-  theme="terminal"
+  theme="day"
   path="/404"
 >
   <main class="container nf">
@@ -26,7 +25,6 @@ import ThemeSwitcher from '../components/ThemeSwitcher.astro';
     </div>
   </main>
 
-  <ThemeSwitcher current="terminal" />
 </BaseLayout>
 
 <script is:inline>

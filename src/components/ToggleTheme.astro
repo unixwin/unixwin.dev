@@ -1,0 +1,121 @@
+---
+/**
+ * ToggleTheme — 顶栏导航尾部的亮/暗切换圆形按钮（day ↔ night）。
+ *
+ * 改编自 astrowind ToggleTheme.astro / ApplyColorMode.astro
+ * （MIT, © 2023 onWidget，见项目根 THIRD_PARTY_NOTICES.md）：
+ * 去掉 astro-icon 依赖改用内联 SVG，.dark class 机制改为本项目 data-theme。
+ *
+ * 行为：
+ *   - 仅当 <html data-theme> 为 day/night 时可用：点击互相切换并写
+ *     localStorage('unixwin-theme')（BaseLayout 的防 FOUC 脚本下次进站读取）。
+ *   - 其它主题（terminal/clean/neon 候选回看页）隐藏自身且点击无效——
+ *     按运行时实际 data-theme 判断（组件随 SiteHeader 共享渲染，脚本自检）。
+ *   - 默认 hidden，脚本确认 day/night 后再显示：候选页不闪现、无 JS 不出现死按钮。
+ *   - day 显示月亮（邀请切到暗色），night 显示太阳，与 astrowind 语义一致。
+ *
+ * 事件挂 document 委托（Astro 打包去重；SiteHeader 全站渲染也只跑一份）。
+ */
+interface Props {
+  /** 无 props；保留 interface 以符合项目 Props 约定 */
+}
+
+const label = '切换亮色 / 暗色主题（Toggle light / dark theme）';
+---
+
+<button
+  class="toggle-theme"
+  type="button"
+  data-theme-toggle
+  aria-label={label}
+  title={label}
+  hidden
+>
+  {/* 月亮：day 下显示（邀请切到暗色）。stroke 用 currentColor，颜色全部来自 tokens */}
+  <svg class="icon icon-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+  </svg>
+  {/* 太阳：night 下显示 */}
+  <svg class="icon icon-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+  </svg>
+</button>
+
+<style>
+  .toggle-theme {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  /* scoped 的 display 会盖掉 UA 的 [hidden]，必须显式补回（防候选页闪现失效） */
+  .toggle-theme[hidden] {
+    display: none;
+  }
+
+  .toggle-theme:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .toggle-theme:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .icon {
+    display: block;
+  }
+
+  /* day：显示月亮；night：显示太阳（祖先选择器在 scoped 样式里需 :global） */
+  .icon-sun {
+    display: none;
+  }
+
+  :global(html[data-theme='night']) .icon-sun {
+    display: block;
+  }
+
+  :global(html[data-theme='night']) .icon-moon {
+    display: none;
+  }
+</style>
+
+<script>
+  const isDayNight = (t: string | null | undefined): t is 'day' | 'night' => t === 'day' || t === 'night';
+
+  // 运行时自检：当前页不是 day/night（theme/clean、theme/neon 候选回看页）则保持隐藏
+  function syncToggleVisibility() {
+    const btn = document.querySelector<HTMLElement>('[data-theme-toggle]');
+    if (!btn) return;
+    btn.hidden = !isDayNight(document.documentElement.getAttribute('data-theme'));
+  }
+
+  syncToggleVisibility();
+
+  // 委托点击：仅 day↔night 互切；写 localStorage 供 BaseLayout 防 FOUC 脚本下次读取
+  document.addEventListener('click', (event) => {
+    const el = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-theme-toggle]') : null;
+    if (!el) return;
+    const root = document.documentElement;
+    const current = root.getAttribute('data-theme');
+    if (!isDayNight(current)) return; // 非 day/night 页点击无效（且自身已隐藏）
+    const next = current === 'day' ? 'night' : 'day';
+    root.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('unixwin-theme', next);
+    } catch {
+      /* localStorage 不可用则仅本次会话生效 */
+    }
+  });
+</script>

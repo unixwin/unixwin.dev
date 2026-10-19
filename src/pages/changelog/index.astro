@@ -9,7 +9,6 @@
 import BaseLayout from '../../components/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import ThemeSwitcher from '../../components/ThemeSwitcher.astro';
 import Badge from '../../components/Badge.astro';
 import changelogs from '../../data/changelogs.json';
 import products from '../../data/products.json';
@@ -86,7 +85,7 @@ const fetchedAt = changelogs.fetchedAt ? new Date(changelogs.fetchedAt).toISOStr
 <BaseLayout
   title="更新日志"
   description="UNIXWIN 全家桶更新日志聚合：niubash、WinuxCmd、rubash、niu-git、oh-my-niu。"
-  theme="terminal"
+  theme="day"
   path="/changelog/"
 >
   <SiteHeader />
@@ -147,7 +146,6 @@ const fetchedAt = changelogs.fetchedAt ? new Date(changelogs.fetchedAt).toISOStr
   </main>
 
   <SiteFooter />
-  <ThemeSwitcher current="terminal" />
 </BaseLayout>
 
 <style>

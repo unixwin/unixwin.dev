@@ -45,9 +45,10 @@ interface Props {
   lang?: 'zh' | 'en';
   enPath?: string;
   toc?: boolean;
+  jsonLdExtra?: Record<string, unknown>;
 }
 
-const { title, description, path, lang, enPath, toc = true } = Astro.props;
+const { title, description, path, lang, enPath, toc = true, jsonLdExtra } = Astro.props;
 
 const LAST_UPDATED = '2026-10-19';
 
@@ -79,7 +80,7 @@ const next = index >= 0 && index < flat.length - 1 ? flat[index + 1] : null;
 const showPager = !isDocsHome && (prev !== null || next !== null) && index >= 0;
 ---
 
-<BaseLayout title={title} description={description} theme="day" path={path} lang={lang} enPath={enPath}>
+<BaseLayout title={title} description={description} theme="day" path={path} lang={lang} enPath={enPath} jsonLdExtra={jsonLdExtra}>
   <SiteHeader />
 
   <div class="container docs-grid">
@@ -367,6 +368,7 @@ const showPager = !isDocsHome && (prev !== null || next !== null) && index >= 0;
 
   /* 表格：细边框 + 表头浅底 */
   .docs-main table {
+    /* 表内代码 token 禁止词内断行（issue#1 P2-11） */
     width: 100%;
     border-collapse: collapse;
     margin: 1.2rem 0 1.6rem;
@@ -410,5 +412,19 @@ const showPager = !isDocsHome && (prev !== null || next !== null) && index >= 0;
 
   .docs-main blockquote p {
     margin-bottom: 0.4rem;
+  }
+
+  .docs-main td code,
+  .docs-main th code {
+    white-space: nowrap;
+    font-size: 0.82rem;
+  }
+
+  @media (max-width: 640px) {
+    .docs-main td code,
+    .docs-main th code {
+      white-space: normal;
+      word-break: break-all;
+    }
   }
 </style>

@@ -1,10 +1,30 @@
 {
-  "fetchedAt": "2026-10-19T02:13:28.341Z",
+  "fetchedAt": "2026-10-19T12:53:55.874Z",
   "repos": [
     {
       "repo": "niubash",
-      "source": "/home/cmx/unixwin-repos/niubash/CHANGELOG.md",
+      "source": "https://raw.githubusercontent.com/unixwin/niubash/master/CHANGELOG.md",
       "versions": [
+        {
+          "version": "1.4.1",
+          "date": "2026-10-19",
+          "sections": {
+            "": [
+              "Healthy re-release on the pinned release chain (the bundled engine is now locked to an exact verified commit). Details in the linked issues/PRs — entries here are deliberately short."
+            ],
+            "Fixed": [
+              "Pasted multi-line scripts no longer swallow the typeahead that follows them: the Enter-signature probe re-injects parked keys to the console queue head, so an engine `read` after a paste-submit sees the remaining input (#417, #420, #426, #433).",
+              "`niu -c` and stdin scripts reject a stray `)` exactly like GNU bash (rc 2, same diagnostics/line numbers) instead of silently running the subshell body (#431).",
+              "`rbash` startup semantics match GNU: the restricted face activates after startup files in every invocation form (#413); POSIX `$ENV` `exit` now exits silently without the greeting tail (#422).",
+              "A DSR-silent terminal keeps its shell; TAB completion commits (#418)."
+            ],
+            "Changed": [
+              "Release chain: the bundled rubash engine is pinned to an exact commit (fail-hard on mismatch) and dirty builds self-identify in `niu --version` (#424); the WinuxCmd bundle moves to v1.1.16 (POSIX drive-dialect fixes for mkdir/ln/stat/realpath/readlink) (#427).",
+              "CI: the VCS prompt timing budget is relative to an interleaved spawn baseline — immune to shared-runner noise, still catches real render regressions (#423/#436).",
+              "Engine: rubash 1.4.1 — ERR-trap nested-context semantics, patsub replacement-text escaping, subscript ANSI-C double-state law, pushd/popd readonly + message forms, `${var@P}` status-leak fix, and a package guard against build-variant directories."
+            ]
+          }
+        },
         {
           "version": "Unreleased",
           "date": "",
@@ -62,6 +82,26 @@
               "Live entry names are never matched. The PATH entry directory contract",
               "(hardlinks only, `usr\\bin` off `PATH`, declared entry set) is now documented",
               "in `docs/src/installer.md`.",
+              "The installer's slot contract is pinned by tests, not by a comment",
+              "(niubash#398): the ruling that the install tree never claims the",
+              "`C:\\Program Files\\Git\\bin\\bash.exe` convention slot — the installer runs",
+              "`PrivilegesRequired=lowest`, cannot elevate, and the slot directory is",
+              "admin-walled — lived only in a GitHub comment until now.",
+              "`tests/installer_surface.rs` guards the surface statically: no absolute",
+              "foreign path or `Program Files` reference anywhere in `niubash.iss`, every",
+              "`[Files]`/`[InstallDelete]`/`[UninstallDelete]`/`[Icons]`/`[Run]` surface",
+              "confined to `{app}` and Inno-managed shell folders, `HKCU\\Environment\\Path`",
+              "the only registry value written, and the delete sweeps matched against the",
+              "sanctioned retired-shape globs only. `scripts/installer-slot-probe.py` is",
+              "the runtime leg: a pure user-directory sandbox replays the executable",
+              "installer steps (`--relink-shells`, app-tree teardown) across a full",
+              "install/uninstall cycle and asserts the decoy foreign slot — and the real",
+              "Git Bash slot, read-only — byte-identical at baseline, after install and",
+              "after uninstall, with no face name left outside the removed tree. The same",
+              "probe records the niubash#377 quantification: forwarder faces cost one",
+              "extra process per `-c` call (chain evidence: 2 processes below the probe,",
+              "min ~36 ms) and collapse to the payload itself as hardlinks (1 process,",
+              "min ~19 ms, same file as `niu.exe`).",
               "The factory prompt's git segment runs the user's own git instead of the",
               "in-process libgit2 dependency: one bounded",
               "`git status --porcelain=v2 --branch` inside a repository, and no spawn at",
@@ -117,7 +157,8 @@
               "dirname/basename: slash-shaped operands stay verbatim — `dirname /a/b`",
               "reports `/a` instead of a drive spelling such as `A:`; the slash-drive",
               "argument mask now covers the filesystem-blind string tools",
-              "(unixwin/niubash#346)."
+              "(unixwin/niubash#346).",
+              "`(A;B);)` is a syntax error on every non-interactive route, like GNU (unixwin/niubash#431). `niu -c '(printf a; printf b);)'` ran the subshell and exited 0 — and so did script files, `--encoded-command`, and piped/redirected stdin — where GNU bash 5.3.0 rejects the shape in every mode (`syntax error near unexpected token ')'`, rc 2, subshell unexecuted; the earlier \"msys GNU tolerates the tail\" record came from the `winuxcmd/usr/bin/bash.exe` launcher shim echoing niu back — rubash#852). The host fast path now parses with the engine's stray-close guard armed (`ParseLoopOptions::stray_close_is_"
             ]
           }
         },
@@ -897,42 +938,64 @@
               "Imports are now OS in-box DLLs only (verified with objdump)."
             ]
           }
-        },
-        {
-          "version": "1.2.3",
-          "date": "2026-10-01",
-          "sections": {
-            "Fixes": [
-              "External-pipeline data loss (#141, #155, P0): the Windows",
-              "broken-pipe hard-kill window for non-final pipeline members armed",
-              "unconditionally at call time, killing healthy producers mid-stream",
-              "while their consumer was still reading (`seq 200000 | wc -l` returned",
-              "~17k with rc=0, drift per run). The window now arms only after the",
-              "downstream member is observed to have exited, plus a 100ms natural-exit",
-              "grace (rubash 2c781657). Verified: seq 5000000 x5 full count;",
-              "`yes | head` lingerer termination intact.",
-              "`$()` children see pre-opened fds 3/4 (rubash #368): the nvm-exec",
-              "`3>&1`/`1>&4` juggle protocol holds; fd-1 dup snapshots escape the",
-              "substitution to the real stdout.",
-              "`${assoc[*]@A}` keeps the assignment body (rubash #371);",
-              "case-pattern keywords stay inert (rubash #372, issue308 residue",
-              "green).",
-              "Engine bump: niu 1.2.3 builds against rubash 1.2.3 (a6eb8451)."
-            ]
-          }
         }
       ]
     },
     {
       "repo": "WinuxCmd",
-      "source": "/home/cmx/unixwin-repos/WinuxCmd/CHANGELOG.md",
+      "source": "https://raw.githubusercontent.com/unixwin/WinuxCmd/master/CHANGELOG.md",
       "versions": [
         {
           "version": "Unreleased",
           "date": "",
           "unreleased": true,
           "sections": {
+            "Fixed": [
+              "mkfifo / mknod: FIFO/device-node path operands resolved against the",
+              "cwd drive (#1235, #1230 sweep). The raw `/e/p` spelling reached the",
+              "existence probe and `create_winux_fifo_w`, and Win32 roots a leading `/e`",
+              "on the CURRENT drive, so from a `C:` cwd `mkfifo /e/p` probed",
+              "`<cwd>:\\e\\p` (ENOENT for a real `E:\\p`) and would have landed the marker",
+              "beside the cwd; `mknod /e p` from a `D:` cwd really created a `D:\\e`",
+              "marker file. Operands now fold once through the shared",
+              "`make_api_path_operand` boundary before any filesystem call;",
+              "`/cygdrive/e`, `/mnt/e` and bare `/e` (which now reports \"File exists\"",
+              "like MSYS) share the fold, and messages keep the operand spelling as",
+              "typed.",
+              "chgrp / chown / chcon: `--reference` and target file operands",
+              "resolved against the cwd drive (#1241, same sweep). An unfolded",
+              "`/e/...` spelling made `GetFileAttributesW` /",
+              "`GetNamedSecurityInfoW` / the `WRITE_OWNER` open answer for",
+              "`<cwd>:\\e\\...`, so existing `E:` files were reported as missing from",
+              "any other cwd, `chgrp -R --preserve-root /e` missed the failsafe and",
+              "descended into `<cwd>:\\e`, and chown/chcon globs enumerated the wrong",
+              "drive. Security lookups, attribute probes, the recursive walks and the",
+              "glob pattern all fold through the shared boundary first (children",
+              "re-fold from their display spelling, chmod `-R` precedent); error text",
+              "keeps the user's spelling. The preserve-root failsafe gained the same",
+              "fold, plus direct root matches for the spellings the operand layer",
+              "collapses onto `/`: all-separator forms (`//`, `///` - a verbatim",
+              "`GetFullPathNameW(\"//\")` answers for an UNC-ish name, which let",
+              "`chown -R --preserve-root X //` bypass the check and really walk the",
+              "shell root) and lexically collapsing forms (`/e/..`, `/tmp/..`), the",
+              "latter with the `(same as '/')` suffix MSYS prints; `//e/..` keeps the",
+              "POSIX two-slash rule and resolves against `//e` like MSYS."
+            ]
+          }
+        },
+        {
+          "version": "1.1.17",
+          "date": "2026-10-19",
+          "sections": {
             "Added": [
+              "wpm: a package entry can be an alias for another one (`alias_of`), so one",
+              "tool has one name - `wpm install git` installs `niugit` and says so, with a",
+              "depth bound, a cycle detector and a clear error when the target is missing.",
+              "`wpm info` shows the forwarding; `wpm list` labels such an entry `alias`.",
+              "wpm: a `layout: shim` command's payload is resolved from the artifact's",
+              "`files` mapping when it is not at the `opt/<pkg>/<command>.exe` convention, so",
+              "a payload that has to keep its own directory layout (an executable beside its",
+              "resource directories) gets a shim that can find it.",
               "native path: `/mnt/X/...` operands resolve like `/X/...` and `X:\\...` -",
               "the WSL interop spelling (#1172). WSL mounts the Windows drives under",
               "`/mnt`, and that spelling reached argv verbatim whenever a tool was invoked",
@@ -950,6 +1013,65 @@
               "boundary (ls, du, sed, cp, ...) picks the form up at once; under a",
               "configured shell root the resolution is unchanged, since the niubash#346",
               "shell-ns arm already mapped this exact shape."
+            ],
+            "Fixed": [
+              "shred: `shred /e/Data/secret` from a `C:` cwd handed the raw \"/e/...\"",
+              "text to CreateFileW, and Win32 resolved a leading `/e` against the",
+              "CURRENT drive (#1240). For the only data-destroying command in the",
+              "toolset that misparse was doubly dangerous: when a shadow `C:\\e\\...`",
+              "happened to exist, shred silently overwrote THAT file and exited 0 -",
+              "the requested E:\\ target stayed intact, i.e. a false success over the",
+              "wrong victim; when no shadow existed, a perfectly good E:\\ file was",
+              "reported \"cannot open\". Every operand now folds through the shared",
+              "`make_api_path_operand` boundary before the overwrite, the `--force`",
+              "retry, the native-glob pass (a `/e/*.log` pattern expands against the",
+              "operand drive) and the `-u`/`--remove` unlink, and the Win32 calls use",
+              "the extended form like the other post-#1233 commands. Messages keep",
+              "printing the operand spelling as typed; `/cygdrive/e`, `/mnt/e` and",
+              "Windows-form spellings share the fold, and a missing operand still",
+              "fails with rc 1 like MSYS.",
+              "mkdir: `mkdir -p /e/Data` from a `C:` cwd really created a shadow",
+              "`C:\\e\\Data` tree - the one audited misparse that writes to the wrong",
+              "place (#1233, found by the #1230 sweep). Win32 resolves a leading `/e`",
+              "against the CURRENT drive, so the raw operand reached",
+              "CreateDirectoryW / `create_directories` rooted on the wrong volume, an",
+              "existing `E:\\Data` reported ENOENT instead of \"File exists\", and `-m` /",
+              "`-v` answered for the shadow path. Every operand now folds through the",
+              "shared `normalize_api_operand` boundary once on entry to",
+              "`create_directory` (and in the `-m`/existence helpers) before any",
+              "filesystem call; GNU-style messages keep printing what the user typed,",
+              "like MSYS does. `/cygdrive/e`, `/mnt/e` and bare `/e` spellings all",
+              "share the fold, and `mkdir -p /e` (bare drive root) is a silent no-op",
+              "instead of creating `<cwd>:\\e`.",
+              "ln: `/e/...` link operands resolved against the cwd drive (#1234,",
+              "same sweep). `std::filesystem::absolute`/`GetFileAttributesW`/",
+              "`FindFirstFileW`/`CreateHardLinkW`/`CreateSymbolicLinkW` all rooted a",
+              "raw `/e/Data` spelling on the current drive, so the hard-link source",
+              "probe failed with \"failed to access\", `-t DIR` rejected a real",
+              "directory, and a privileged `ln -s` wrote the link beside the cwd",
+              "instead of on the operand's drive. Sources and targets fold through",
+              "`normalize_api_operand` once per job (and in the directory-detection",
+              "probes) before any Win32 call; create/removal error text quotes the",
+              "operand spelling as typed. Messages and link text stay verbatim; only",
+              "the API-facing path is folded.",
+              "ldd: `/e/x.exe`, `/cygdrive/e/x.exe` and `/mnt/e/x.exe` operands were",
+              "handed as raw text to a bare `std::ifstream`, and the CRT resolves a",
+              "leading `/e` against the CURRENT drive - from a foreign cwd every POSIX",
+              "spelling reported `cannot open` for a file that exists on the operand's",
+              "drive, while MSYS ldd opens the same spelling from anywhere (#1238,",
+              "found by the #1230 sweep). The operand now folds once through the shared",
+              "`normalize_api_operand` boundary at `load_file`, the single point every",
+              "caller opens through (covering the default, `--name` and `--unused`",
+              "paths); error messages keep quoting the operand exactly as typed.",
+              "date: `date -f DATEFILE` opened the file the same way, so",
+              "`/e/Data/dates.txt` and its `/cygdrive/e`, `/mnt/e` spellings reported",
+              "`No such file or directory` from a foreign cwd, and the directory probe",
+              "that produces the \"Is a directory\" report ran against the shadow path",
+              "too (#1239, same sweep). The `-f` operand folds through the shared",
+              "`normalize_api_operand` boundary before the `is_directory` probe and",
+              "the open; the open-failure messages keep printing the operand as the",
+              "user typed it. Bare `/e` (drive root) now correctly reports",
+              "\"read error: Is a directory\" instead of ENOENT."
             ]
           }
         },
@@ -1255,72 +1377,12 @@
               "trusted proxy with `--proxy`/environment variables (#1177)."
             ]
           }
-        },
-        {
-          "version": "1.1.5",
-          "date": "2026-10-03",
-          "sections": {
-            "Fixed — upstream lane wt50 (2026-10-03)": [
-              "yes: a broken-pipe write death now reports exit status 141 (the",
-              "SIGPIPE emulation other streaming tools use) instead of exit 1, so",
-              "`yes | head -n 3` shows 141 on the producer side exactly like GNU",
-              "coreutils (#1142). Non-pipe write errors keep the fatal exit-1 path."
-            ],
-            "Fixed — upstream lane wt48 (2026-10-03)": [
-              "cp: every stat/open route now goes through the shared API-path",
-              "boundary (`native_path::make_api_path_operand`, the mv/install",
-              "invariant), so POSIX-drive-form operands (`/d/x`, `/cygdrive/d/x`) work",
-              "in any combination with Windows-form operands instead of failing",
-              "`cannot stat ... No such file or directory` at the source-existence,",
-              "destination-directory, `-t`, same-file, symlink, and recursive-child",
-              "gates (#1145, unixwin/niubash#124 Option B). `cp -s` stores the",
-              "dialect-resolved source spelling as link text (a typed `/d/x` link text",
-              "can never resolve on native Windows).",
-              "ls: file operands and `-d` directory operands resolve POSIX drive",
-              "forms — `std::filesystem::absolute` used to fold `/d/x` against the",
-              "current drive root (`D:\\d\\x`) before the boundary could convert it",
-              "(#1145). A bare root operand (`ls /`, `ls -d /`, `ls //`) lists the",
-              "current drive root (the platform's `/` mapping, consistent with",
-              "`cygpath -w /`): the `\\\\?\\` spelling of a drive root is rejected by",
-              "attribute probes, and the root/`\\*` enumeration pattern is now built",
-              "with a path-aware join (`GetFullPathNameW` mis-parses the concatenated",
-              "`/\\*` form).",
-              "native_path (shared boundary): `normalize_api_operand_w` folds the",
-              "Cygwin drive prefix (`/cygdrive/d/x`, both separators) into the MSYS",
-              "spelling before drive-letter conversion, giving every command that",
-              "already routes through the boundary (cat, cp, install, mv, ...) cygdrive",
-              "support uniformly; `to_extended_path` keeps bare drive roots un-prefixed",
-              "and folds separators before `GetFullPathNameW` (#1145)."
-            ],
-            "Fixed — upstream lane wt41 (2026-10-02)": [
-              "mv: operands in MSYS drive form (`/d/x`) are routed through the",
-              "shared API-path boundary like cp/install, so mixing Windows-form and",
-              "POSIX-form operands in one invocation works in any combination (#1140,",
-              "unixwin/niubash#124); GNU coreutils under MSYS accepts either dialect.",
-              "The copy fallback also no longer mislabels regular files as directories,",
-              "actually moves directories across volumes (they used to report success",
-              "while doing nothing), refuses to move a directory into itself",
-              "(`cannot copy a directory, X, into itself, Y`, GNU copy.c:2091), and",
-              "honors a trailing separator on DEST (`failed to access 'DEST': Not a",
-              "directory` instead of silently creating/overwriting the stripped name).",
-              "mktemp: the printed name keeps the `-p`/`--tmpdir` operand's dialect",
-              "(`-p /d/...` echoes `/d/.../x.XXXXXX`, `-p /cygdrive/d/...` likewise),",
-              "so shell round-trips that capture the output stay self-consistent with",
-              "POSIX-form variables (#1141); Windows-form operands and the TMPDIR/",
-              "default-temp paths keep the native display form.",
-              "xargs: option parsing stops at the utility name; every argument",
-              "after it is passed to the utility verbatim (POSIX xargs operand",
-              "semantics, GNU findutils) — `xargs cat -n` no longer errors on `-n`,",
-              "`xargs wc -l` no longer silently consumes `-l` as `--max-lines`, and",
-              "`xargs echo -- help` keeps the `--` (#1139)."
-            ]
-          }
         }
       ]
     },
     {
       "repo": "rubash",
-      "source": "/home/cmx/unixwin-repos/rubash/CHANGELOG.md",
+      "source": "https://raw.githubusercontent.com/unixwin/rubash/master/CHANGELOG.md",
       "versions": [
         {
           "version": "Unreleased",
@@ -1329,6 +1391,9 @@
           "sections": {
             "新增": [
               "脚本级函数级性能剖析器（#815）：`niu --profile <script> [--profile-output <base>]`——解释器确定性插桩（非采样），在函数入口/出口（`execute_cmd.c:5200 execute_function` 家族）、简单命令分发点（`execute_cmd.c:624`，试探帧由真实分发自分类：函数/外部派发取消、其余确认为内建——无第二准入表）、外部 spawn 面、`( )` 子壳与 `$()` 命令替换独立栈帧（subst.c:7143）挂 Drop 守卫；return/exit/展开失败等中止形态经栈展开正确归因。运行时为 thread_local 调用树（self=elapsed−children，唯一 collapsed 路径聚合 count/self/total），归因三分离（内建/外部 spawn/子壳，self-time 切分面总和=100%）。输出文本调用树（self/children/calls 排序）+ collapsed-stack（flamegraph/speedscope 可渲染）；报告只写文件（默认进程 temp 目录，绝不 stdout/stderr）——profile 开启时 stdout/stderr/rc 与关闭逐字节一致。关闭路径开销=每缝一次 relaxed AtomicBool lo"
+            ],
+            "变更": [
+              "Windows 无宿主 sudo 回落 PATH 执行（#810 行为变化披露，#813 补记）：`sudo cmd` 在 Windows 且嵌入宿主未注册 elevation handler 时，曾一律由 host builtin 应答 \"elevation handler is not configured\"（rc 1），PATH 从不被咨询；自 #810 起该名字按外部命令走 PATH 解析——有 sudo.exe 的机器（Win11 System32）真实提升执行，没有的报 command-not-found rc 127，`builtin sudo` 无 handler 时报 `builtin: sudo: not a shell builtin`（rc 1）。introspection 契约不变：`command -v`/`type -a`/`enable -a`/`compgen -b` 依旧把 sudo 报告为外部命令（docs/builtins.md §3 隐藏 builtin 条款）。方向与 GNU 更近（GNU 无 sudo builtin）。#813 以两条 windows-only 测试钉死两臂执行路由（假 sudo PATH 实跑、`builtin sudo` rc 1）。"
             ],
             "性能": [
               "字面单命令跳过词展开重建（#607，PR #665）：每个简单命令在 `expand_command_words` 里付一次全量 `CommandNode` 重建（~1.34µs/次），裸 `:` 的展开恒为 identity。GNU 从不重建（`execute_cmd.c:4468` 跑存储的 SIMPLE_COM；`subst.c:13219` 无触发器文本无事可做）。白名单准入（单字面词、全部结构/重定向/赋值通道为空，`[`/`[[`/分发动词除外），共享 `preserves_word_metadata` 谓词（提取复用、永不复制），契约测试逐词锁定 fast==pipeline。`:` 循环 2.03x→1.77x GNU（~0.74µs/iter），`true` 1.86x→1.67x；`((1))` 路径按设计不动。门禁与 niubash 产品 A/B 零差异。",
@@ -1359,6 +1424,10 @@
               "索引数组覆盖写不再全量重渲染（#616，PR #652）：`a[i]=v` 同理 O(n²)，K=5000 时 674x。覆盖/稀疏跳跃同样 O(1) 追加（indexed 读路径天然折叠重复，BTreeMap last-wins，无需改解析/渲染；每次追加同步 typed cell；`declare -p` 等原文打印在有重复时才折叠重渲染）。K=5000 快 177 倍，与 GNU 差距 674x→3.8x。附带修好 `declare -a a=([5]=x [2]=y)` 种下 dense cell 导致后续元素写复刻的正确性 bug（另见 #651）。50 例差分电池 49/50（唯一分歧即 #651）；门禁与产品 A/B 零差异。"
             ],
             "修复": [
+              "`mark_quoted_ifs_from_raw` 模拟器补上 carrier 字节识别，per-char IFS 标记不再被 carrier 词静默跳过（#868）：`mark_quoted_ifs_from_raw`（`src/executor/command_prepare.rs`，#743 的实现核心）用平行状态机重读 raw 词、模拟 quote removal，仅在模拟结果与 cooked 词逐字符相等时才落 `\\x1c` per-char 标记，失配即静默 bail 退回粗粒度整拆/整不拆——而模拟器把 cook 产出的每个 markers.rs carrier（`$'...'` 解码输出、`$\"...\"` 体、逃逸引号、逃逸 IFS 空白/模式字符）都当普通数据字节，carrier 词逐字符必失配，最需要 per-char 规则的词恰恰被静默降级。现按 lexer 权威 walk（`lexer/quotes.rs` cursor 系列）逐臂复刻 carrier 变换：逃逸符在引号内外分别 cook 成 DATA_DOLLAR/DATA_BACKTICK/DATA_SQUOTE/DATA_BACKSLASH/DATA_DQUOTE、逃逸 IFS 空白 cook 成 ANSI_C_IFS_GUARD 对（自护形，不另记位）、逃逸模式字符 cook 成 CTLESC 对",
+              "`${var@P}` prompt 变换通道不再泄漏命令替换状态（#813）：`PS1='x$(false)y'; p=${PS1@P}; echo $?` 曾打印 1——`@P` 算子通道（`apply_parameter_transform_value` 的 Prompt 臂）内嵌 `$( )` 的收割状态经替换状态 cell 被赋值边界当作替换退出规则发布。GNU 律（parse.y:6684-6697）：`decode_prompt_string` 在 promptvars 遍历（`expand_prompt_string`，parse.y:6689）前后快照/恢复 `last_command_exit_value` 与 `last_command_subst_status`（subst.c string_transform 'P' 走同一 `decode_prompt_string`，`${var@P}` 同受覆盖）；#604 修的是交互渲染通道（`expand_prompt_string_mut` 快照恢复 rc/PIPESTATUS），本修复把同一律落到共享 prompt 遍历引擎（`expand_embedded_parameters_double_quoted` 快照/恢复替换状态 cell，含管道 `-i` 渲染通道）与 mut 渲染通道的 cell 残留。恢复",
+              "`set -T`（functrace）下 DEBUG trap 透传进 `$()` 命令替换（#825）：`set -T; trap 'echo D:$BASH_COMMAND' DEBUG; x=$(true)` 曾打印 `got=`——`$(true)`/`$(false)`/`$( :)` 的 trivial 体状态快捷路（`expand_command_substitution_inner`，command_substitution.rs）排在 functrace+DEBUG 取消资格门之上，硬编码空输出短路从未进入替换子壳，GNU trap.c:1466-1474（`reset_or_restore_signal_handlers` 仅在 `function_trace_mode == 0` 时清除 DEBUG/RETURN）要求的继承触发完全丢失。GNU subst.c:7143 `command_substitute` 把每个体交给 `parse_and_execute`，execute_cmd.c:4648-4649 对 `true`/`false`/`:` 照发头行与 DEBUG。修复：两快捷路移到门之下（与 xtrace 取消资格同门同型），门命中即走真实 parser/executor。WSL GNU 5.3.0(1) stdin oracle 8 形态逐字节",
+              "复合命令自身重定向失败诊断走 fd 表、单次发送（#826）：`{ :; } 2>err2.txt > /nonexistent_dir/f` 曾把诊断打印两次到真实 stderr 且 err2.txt 根本没建——brace 包装层按字段序（`redirect_out` 先于 `redirect_err`）应用重定向，fd-1 open 在 fd-2 绑定前失败；错误被 ast_exec 分发的 IoError 臂吞掉后不 `continue`，同一命令经通用路再分发、再失败、再打印（面 1/2 双打印 + 捕获丢失）。`( { :; } > /nonexistent_dir/f ) 2>err.txt` 则\"捕获 + 泄漏\"并存：包装层 raw `eprintln!` 绕过子壳已建立的 fd 2 绑定（面 3）。GNU（redir.c:767-955 `do_redirection_internal` 按解析序左到右；redir.c:135 `redirection_error` 经当时生效的 fd 2 报告）：诊断一次、落在重定向目标里。修复：brace 四个 stdio 臂改解析序处理（位置取自 `command.redirects`），`2>`/`2>>` 文件目标记为失败报告目的地（不做常驻 fd_table[2] 绑定——常驻绑定会被 walker 下游的 `1>&2",
               "alias 同读守卫改单调读取生成身份，跨 read 单元不再误抑制（#817）：执行级 alias 同行可见性守卫拿定义时的物理行号当身份（`__RUBASH_ALIAS_LINE_<name>` vs `__RUBASH_CURRENT_LINE`，`arithmetic_aliases.rs:867-882`），而嵌套读单元会重排行号——source 的文件从 1 重新计数、eval 串按 `caller_line+i-1` 续号（`trap_exec.rs` execute_eval_source）——定义行与外层后续物理行相撞时合法使用被误报 `command not found` rc=127，GNU 展开（规则是同读不是同行，parse.y 读时展开）。修复：定义改记 `(读取代, 行)` 二元组（`__RUBASH_ALIAS_GEN_<name>`，`ShellState::read_generation` + 单调高水位 `read_generation_ceiling`，兄弟单元永不共享身份），生成边界正是现有 `CURRENT_LINE` 保存/恢复接合点——source 在 `builtins/source/execution.rs` 的 evalfile.c:253-257 push_stream 处 push、run_unwind_frame（eval",
               "`set -E` ERR-trap 嵌套上下文语义：折叠压制、扁平区收口 fire、return 归因（#720，PR #831）：三面均以 WSL GNU 5.3.0(1)（stdin oracle）逐字节钉死。① 嵌套子壳过火：`( (false) )` 曾 fire 3 次，GNU 2 次——execute_cmd.c:1799-1806 把整体为单个子壳命令的子壳体标 `CMD_NO_FORK`，execute_cmd.c:662-663 原位执行（无 make_child/wait_for），中间帧从不观察失败、其 :769 `run_error_trap` 永不运行；现以 `subshell_fork_collapse` 旗标圈住该形体（node 形 + `f() ( )` 扁平形两路），聚合点与 `set -e` 早转臂在其下跳过，非折叠中间层（`( (false); false )`、`( { (false); } )`）照常 fire。② 扁平函数体欠火：`f() ( false ); f` 曾 fire 2 次，GNU 3 次——子壳完成态的 ERR 裁定属于 wait 帧（execute_cmd.c:756-778，无 `&&/||` 豁免；`$LINENO`=子壳 `)` 行 execute_cmd.c:696；`BASH_COMMAND`=区文本，:703",
               "活动控制台 `read` 三面：`-t` 门饿死、deadline 行读被 conhost 预煮劈半、onechar 缺 ICRNL（#806，PR 于 `fix/806-read-conpty`）：① `wait_readable`（`src/fd/windows_impl.rs`）只 peek 队头 1 条记录并要求 key-down——行编辑提交 Enter 的 key-RELEASE 卡在队头时，其后可消费的 key-down 永远不被看见，`read -t 2 -n1` 烧满 deadline 返 142 变量空（GNU select 同形 0.2s 取到键，WSL 5.3.0 oracle）。现 peek 16 条一批，批内任一\"带字符的 key-down\"（ReadFile 能吐出的）即 Ready，peek 不消费次序不动（niubash#280 的\"空队列永不 Ready\"保护原样保留）。② console 上的 deadline 读改走 one-char 路（`read.def:570-590` ttfd_onechar；read.def:659 每字节 check_read_timeout；GNU 的 zread 从不预煮 tty 行，read.def:736）：cooked 行纪律与 raw 队列是两个缓冲，首次 cooked `ReadFile(1)` 把",
@@ -1735,8 +1804,39 @@
       ]
     },
     {
+      "repo": "niu-git",
+      "source": "api.github.com/repos/unixwin/niu-git/tags",
+      "versions": [
+        {
+          "version": "v2.56.0.1",
+          "date": "",
+          "sections": {}
+        },
+        {
+          "version": "v2.55.0.5",
+          "date": "",
+          "sections": {}
+        },
+        {
+          "version": "v2.55.0.4",
+          "date": "",
+          "sections": {}
+        },
+        {
+          "version": "v2.55.0.3",
+          "date": "",
+          "sections": {}
+        },
+        {
+          "version": "v2.55.0.2",
+          "date": "",
+          "sections": {}
+        }
+      ]
+    },
+    {
       "repo": "oh-my-niu",
-      "source": "/home/cmx/unixwin-repos/oh-my-niu/CHANGELOG.md",
+      "source": "https://raw.githubusercontent.com/unixwin/oh-my-niu/master/CHANGELOG.md",
       "versions": [
         {
           "version": "2.0.0",

@@ -130,12 +130,24 @@ const news: News[] = [
       '兼容性归因账本发布（区分真实差异 / 宿主 fixture / 历史 runner 期望）；复合语句前缀 alias 修复；进程替换回归覆盖扩充；tag 触发自动 Release。',
   },
 ];
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Rubash',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "Embeddable GNU Bash 5.3-compatible shell engine in Rust",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
 ---
 
 <DocsLayout
   title="rubash — 可嵌入的 GNU Bash 5.3 兼容引擎"
   description="rubash 产品文档：从零用 Rust 写的可嵌入 bash 引擎。crates.io 1.4.0（cargo add rubash）、零 fork 三层执行、62 内建全覆盖、83/83 GNU 上游语料台账、vendored GNU 源码方法论与 1.5.0 嵌入 API 蓝图。"
   path="/products/rubash/"
+  jsonLdExtra={productJsonLd}
 >
   <header class="doc-head">
     <h1>rubash</h1>

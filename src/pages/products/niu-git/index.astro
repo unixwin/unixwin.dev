@@ -145,12 +145,24 @@ const news: News[] = [
       'Phase 0 PoC 定稿：MSVC + CMake + vcpkg 构建 git-for-windows v2.55.0.windows.2，zlib/iconv 静态链接，bundle 29 MB；init/add/commit/log/status、schannel https clone、经 PATH 上 sh 执行 hooks 全部验证。',
   },
 ];
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'niu-git',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "Native Windows Git distribution without MSYS, ~14 ms startup",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
 ---
 
 <DocsLayout
   title="niu-git — 原生 Windows Git"
   description="niu-git 产品文档：git-for-windows 真实 C 源码的 MSVC 原生构建——无 MSYS、无 OpenSSL（schannel + Windows 证书库）、无捆绑 shell/perl，git --version 约 14 ms 对照 Git Bash 45–103 ms；shell 部分由 niubash 的 sh 承担。"
   path="/products/niu-git/"
+  jsonLdExtra={productJsonLd}
 >
   <header class="doc-head">
     <h1>niu-git</h1>

@@ -76,7 +76,7 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
                 <td>{r.workload}</td>
                 <td>
                   <span class="bar bar-us" style={`width:${bar(r.rubash)}`}></span>
-                  <span class="bar bar-them" style={`width:${bar(r.gitbash)}`}></span>
+                  <span class="bar bar-them bar-them-gap" style={`width:${bar(r.gitbash)}`}></span>
                 </td>
                 <td class="num us">{r.rubash.toLocaleString()} ms</td>
                 <td class="num">{r.gitbash.toLocaleString()} ms</td>
@@ -190,6 +190,7 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
   .bar { display: block; height: 0.5rem; border-radius: 2px; margin: 2px 0; }
   .bar-us { background: var(--accent); }
   .bar-them { background: var(--muted); opacity: 0.55; }
+  .bar-them-gap { margin-top: 0.55rem; }
 
   .foot-note { color: var(--muted); font-size: 0.85rem; margin: 0.8rem 0 0; line-height: 1.7; }
   .methodology ul { padding-left: 1.2rem; color: var(--muted); line-height: 1.85; font-size: 0.9rem; }

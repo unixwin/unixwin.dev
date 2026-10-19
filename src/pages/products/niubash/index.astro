@@ -137,12 +137,24 @@ const news: News[] = [
       'PROMPT_COMMAND 探针吃首键修复（typeahead guard）；tr 管道选项修复；解析吞吐 +13%（nvm GNU 比例 18.0x → 15.6x）。',
   },
 ];
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Niubash',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "AI-native bash for humans and AI agents — real bash syntax, real Unix commands, native Windows/Linux/macOS",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
 ---
 
 <DocsLayout
   title="niubash — AI-native 的真·Bash"
   description="niubash 产品文档：Rust 实现的原生三平台 Bash 兼容 shell。零 fork 三层执行、无 MSYS、四大路径方言全收、83/83 GNU 上游语料通过、AI agent 旗标面与 wpm 联动。"
   path="/products/niubash/"
+  jsonLdExtra={productJsonLd}
 >
   <header class="doc-head">
     <h1>niubash</h1>

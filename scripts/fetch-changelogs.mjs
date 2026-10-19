@@ -151,7 +151,25 @@ for (const repo of REPOS) {
     });
     console.log(`  [ok] ${repo}: ${Math.min(versions.length, KEEP_VERSIONS)} versions (of ${versions.length} parsed)`);
   } catch (err) {
-    console.warn(`  [skip] ${repo}: ${err.message}`);
+    // 回退：无 CHANGELOG 的仓库（如 niu-git）用 GitHub tags 生成轻量版本条目
+    try {
+      const res = await fetch(`https://api.github.com/repos/unixwin/${repo}/tags?per_page=10`);
+      if (!res.ok) throw new Error(`tags API ${res.status}`);
+      const tags = await res.json();
+      if (!Array.isArray(tags) || tags.length === 0) throw new Error('no tags');
+      repos.push({
+        repo,
+        source: `api.github.com/repos/unixwin/${repo}/tags`,
+        versions: tags.slice(0, KEEP_VERSIONS).map((t) => ({
+          version: t.name,
+          date: '',
+          sections: {},
+        })),
+      });
+      console.log(`  [tags-fallback] ${repo}: ${tags.length} tags`);
+    } catch (err2) {
+      console.warn(`  [skip] ${repo}: ${err.message} / tags fallback: ${err2.message}`);
+    }
   }
 }
 

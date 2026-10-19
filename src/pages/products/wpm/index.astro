@@ -136,12 +136,24 @@ interface ChangelogRepo {
 }
 const wcRepo = ((changelogs as { repos: ChangelogRepo[] }).repos ?? []).find((r) => r.repo === 'WinuxCmd');
 const wcVersions = (wcRepo?.versions ?? []).slice(0, 3);
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'wpm',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "Package manager built into WinuxCmd with the official 281-package index",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
 ---
 
 <DocsLayout
   title="wpm — WinuxCmd 内建包管理器"
   description="wpm 产品文档：编译进 winuxcmd.exe 的 C++ 包管理器，零运行时依赖；官方索引 281 包、sha256/size/urls 三元组、flat/shim 双布局、schema:1 的 --json 契约、四源镜像（gh.caomengxuan666.com 中国区）与自更新回滚。"
   path="/products/wpm/"
+  jsonLdExtra={productJsonLd}
 >
   <header class="doc-head">
     <h1>wpm：WinuxCmd 内建包管理器</h1>

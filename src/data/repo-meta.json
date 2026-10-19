@@ -1,16 +1,16 @@
 {
   "repos": {
     "niubash": {
-      "stars": 178,
+      "stars": 180,
       "latest": "v1.4.0"
     },
     "winuxcmd": {
       "stars": 274,
-      "latest": "v1.1.15"
+      "latest": "v1.1.17"
     },
     "rubash": {
       "stars": 11,
-      "latest": "v1.4.0"
+      "latest": "v1.4.1"
     },
     "niu-git": {
       "stars": 0,
@@ -25,5 +25,5 @@
       "latest": "v2.0.0"
     }
   },
-  "fetchedAt": "2026-10-19T02:13:34.098Z"
+  "fetchedAt": "2026-10-19T12:54:01.671Z"
 }

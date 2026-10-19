@@ -138,12 +138,24 @@ interface ChangelogRepo {
 import changelogs from '../../../data/changelogs.json';
 const wcRepo = ((changelogs as { repos: ChangelogRepo[] }).repos ?? []).find((r) => r.repo === 'WinuxCmd');
 const wcVersions = (wcRepo?.versions ?? []).slice(0, 3);
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'WinuxCmd',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "Native Windows implementation of Unix commands — 176 commands in one ~3.79 MB binary",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
 ---
 
 <DocsLayout
   title="WinuxCmd — 原生 Windows 的 Unix 命令集"
   description="WinuxCmd 产品文档：单个原生 Win32 可执行文件携带 176 个 Unix 命令 / 1,924 个选项，3.79 MB、~19 ms 冷启、PGO 构建；对 GNU coreutils 9.7 差分 178 例 93% 通过；wpm 包管理器内建，与 niubash PATH 注入零胶水联动。"
   path="/products/winuxcmd/"
+  jsonLdExtra={productJsonLd}
 >
   <header class="doc-head">
     <h1>WinuxCmd：原生 Windows 的 Unix 命令集</h1>

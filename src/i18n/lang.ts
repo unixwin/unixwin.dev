@@ -78,6 +78,53 @@ export function resolveLangPair(
   return { lang: 'zh', zhPath: p, enPath, otherPath: enPathHint ?? enPath };
 }
 
+export interface SwitchPair {
+  /** 当前页语言 */
+  lang: PageLang;
+  /** 语言切换按钮的跳转目标（无合理回退时为 null） */
+  otherPath: string | null;
+}
+
+/**
+ * 解析「语言切换按钮」的目标页（SiteHeader/SiteFooter 专用）。
+ *
+ * 与 resolveLangPair 语义不同：resolveLangPair 只认精确配对（供 BaseLayout
+ * 的 hreflang 与自动跳转使用），本函数在无精确配对时按区段回退到「同区段
+ * 的另一语言页」，保证除少数无对页外每页都有切换入口。
+ *
+ * 规则（精确配对优先于前缀回退）：
+ *   1. 精确配对：PAIRED_ZH_ROUTES 内 zh 页 ↔ /en/ 镜像直接互指；
+ *   2. zh 深页回退：/docs/** → /en/docs/；/agents/**（含 /agents/<slug>/、
+ *      /agents/universal/）→ /en/agents/；/products/** → /en/；
+ *      /changelog/ → /en/；
+ *      其余未配对（/404、/theme/**、/llms.txt、/agents.md、/install.ps1 等）
+ *      → null（不渲染切换按钮）；
+ *   3. en 深页回退：/en/docs/** → /docs/；其余未配对 /en/** → /。
+ *
+ * 注意：回退目标仅作按钮跳转，不做 hreflang 声明、不触发自动跳转
+ * （BaseLayout 仍走 resolveLangPair，行为不变，避免 SEO 错配）。
+ */
+export function resolveSwitchPair(pathname: string): SwitchPair {
+  const p = normalizePath(pathname);
+  if (inferLang(p) === 'en') {
+    if (p === '/en/') return { lang: 'en', otherPath: '/' };
+    // 精确镜像：/en/ + PAIRED_ZH_ROUTES 直接回指 zh 页
+    const zhPath = enToZh(p);
+    if (PAIRED_ZH_ROUTES.has(zhPath)) return { lang: 'en', otherPath: zhPath };
+    // en 深页回退：/en/docs/** → /docs/；其余 → /
+    return { lang: 'en', otherPath: zhPath.startsWith('/docs/') ? '/docs/' : '/' };
+  }
+  // zh 侧：精确配对优先
+  const enPath = zhToEn(p);
+  if (enPath) return { lang: 'zh', otherPath: enPath };
+  // zh 深页区段回退
+  if (p.startsWith('/docs/')) return { lang: 'zh', otherPath: '/en/docs/' };
+  if (p.startsWith('/agents/')) return { lang: 'zh', otherPath: '/en/agents/' };
+  if (p.startsWith('/products/')) return { lang: 'zh', otherPath: '/en/' };
+  if (p === '/changelog/') return { lang: 'zh', otherPath: '/en/' };
+  return { lang: 'zh', otherPath: null };
+}
+
 /**
  * 站内链接 → en 版地址（用于 en 页上的导航改写）：
  * 有对应 en 页的内部链接加 /en 前缀（含锚点），其余原样返回。

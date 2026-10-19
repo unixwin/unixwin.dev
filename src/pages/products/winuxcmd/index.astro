@@ -1,0 +1,590 @@
+---
+/**
+ * /products/winuxcmd/ — WinuxCmd 产品文档页。
+ * 事实来源：unixwin-repos/WinuxCmd/README.md（数字、命令覆盖表、基准、PGO）、
+ * README-zh.md、DOCS/en/wpm_guide.md、CHANGELOG.md（i18n #1155、路径方言 #1145/#1172）、
+ * src/utils/i18n.cppm（WINUX_LANG 回落序）、HIGHLIGHTS.md #7/#11/#14、CARDS.md、
+ * src/data/{repo-meta,products,facts,changelogs}.json（构建期数据）。
+ */
+import DocsLayout from '../../../components/DocsLayout.astro';
+import Badge from '../../../components/Badge.astro';
+import CopyButton from '../../../components/CopyButton.astro';
+import repoMeta from '../../../data/repo-meta.json';
+
+const meta = repoMeta.repos.winuxcmd;
+const stars = typeof meta?.stars === 'number' ? meta.stars : null;
+const latest = typeof meta?.latest === 'string' ? meta.latest : '';
+
+// —— 安装命令（CopyButton 复制源） ——
+const installWinget = 'winget install caomengxuan666.WinuxCmd';
+const updateSelf = 'wpm update winuxcmd';
+const firstRun = [
+  '# 新开一个终端（让 PATH 生效），然后：',
+  'winuxcmd --version          # 确认活动二进制与版本',
+  'ls --help                   # 任意命令的 GNU 帮助面',
+  'winuxcmd --list-all         # 176 命令平铺清单（裸 winuxcmd 按 coreutils 分组）',
+  'wpm index update            # 刷新包索引（wpm 内建，见 /products/wpm/）',
+].join('\n');
+const i18nCmd = ['wpm install winuxcmd-i18n-zh-cn', 'export WINUX_LANG=zh-CN'].join('\n');
+
+// —— 为什么：4 卡 ——
+interface WhyCard {
+  icon: string;
+  title: string;
+  body: string;
+}
+const whyCards: WhyCard[] = [
+  {
+    icon: 'WSL',
+    title: '不是虚拟机',
+    body: 'WSL 给你 1 GB+ 安装与一道 VM 文件系统边界；WinuxCmd 是一个原生 Win32 可执行文件，直接操作你的真实文件。',
+  },
+  {
+    icon: 'Cygwin',
+    title: '不是模拟层',
+    body: 'Cygwin 要你做路径翻译体操、付 2–5 秒启动；WinuxCmd 理解 C:\\ 与 UNC 原生形态，冷启动约 19 ms，无运行时 DLL。',
+  },
+  {
+    icon: 'GnuWin32',
+    title: '不是 2012 年的遗物',
+    body: 'GnuWin32 停止维护于 2012 年、兼容度停在 60%；WinuxCmd 的差分语料 178 例对 GNU coreutils 9.7 oracle 实测 93% 通过。',
+  },
+  {
+    icon: 'uutils',
+    title: '不止 ~100 命令',
+    body: '同为原生命令集的 uutils 覆盖约 100 命令 / ~600 选项；WinuxCmd 携带 176 命令 / 1,924 选项，单文件 3.79 MB。',
+  },
+];
+
+// —— 核心特性：8 条 ——
+interface Feature {
+  title: string;
+  body: string;
+}
+const features: Feature[] = [
+  {
+    title: '原生而非模拟',
+    body: '直接调用 Win32 API：理解 C:\\、D:/、UNC 路径与 NTFS ACL（配 cygpath / getfacl 桥接），无 VM、无运行时 DLL、即时启动。',
+  },
+  {
+    title: 'GNU 关键位全给',
+    body: 'find 一个命令实现 88 个选项（完整表达式解析器、-exec/-execdir/-ok/-printf）；grep 49 选项含 PCRE2；sed 支持就地 -i 编辑。',
+  },
+  {
+    title: '176 命令 / 1,924 选项',
+    body: 'Coreutils 83 + findutils/grep/sed + BSD 工具 15 + 进程管理 13 + Cygwin/MSYS 桥 14 + 系统信息 16 + 自有扩展 10+，覆盖表见「深入」。',
+  },
+  {
+    title: 'wpm 内建',
+    body: '不该重造的工具（jq、ripgrep、fd、fzf、bat、make、neovim、curl、wget…）用内建包管理器一键装真发行版，详见 /products/wpm/。',
+  },
+  {
+    title: '双方言路径',
+    body: 'POSIX 写法（/d/repo、/cygdrive/d、/mnt/d）与 Windows 原生写法（D:\\repo）全部接受且真实折叠——方言能力链详见 /docs/paths-and-msys/。',
+  },
+  {
+    title: '中文输出（i18n）',
+    body: '消息目录经 wpm 安装（winuxcmd-i18n-zh-cn），WINUX_LANG 优先、回落 LC_ALL/LC_MESSAGES/LANG；WINUX_LANG=off 可整体关闭。',
+  },
+  {
+    title: '与 niubash 零胶水',
+    body: 'niubash 启动时把 WinuxCmd 的命令链接注入 PATH——shell 里敲的 grep/sed/find 就是这枚二进制，无前缀、无配置。',
+  },
+  {
+    title: 'PGO 发布档',
+    body: '公开 x64 二进制按真实负载做 Profile-Guided Optimization 训练：sort −18%、nl −17%（对同一代码的非 PGO 构建）。',
+  },
+];
+
+// —— 深入：命令覆盖与分类 ——
+interface CategoryRow {
+  cat: string;
+  count: string;
+  cmds: string;
+}
+const categories: CategoryRow[] = [
+  { cat: 'GNU Coreutils', count: '83', cmds: 'cp mv rm ln mkdir touch · cat head tail sort uniq cut tr wc · ls dir vdir · base64 md5sum sha256sum cksum · date seq expr env …' },
+  { cat: 'findutils / grep / sed', count: '3', cmds: 'find（88 选项）、grep（49 选项，PCRE2）、sed（17 选项，就地 -i）' },
+  { cat: 'BSD 工具', count: '15', cmds: 'cal column hexdump logger tree less more strings rev watch tput …' },
+  { cat: '进程管理', count: '13', cmds: 'ps top kill killall pgrep pkill pidof pldd free uptime renice stdbuf timeout' },
+  { cat: 'Cygwin / MSYS2 桥', count: '14', cmds: 'cygpath dos2unix unix2dos d2u u2d …（迁移期的写法兼容）' },
+  { cat: '系统信息', count: '16', cmds: 'hostname id who pinky stty locale getconf getfacl ldd lsof file man …' },
+  { cat: '自有扩展', count: '10+', cmds: 'wpm（包管理器）mpicalc regtool mkpasswd mkgroup mkfifo mknod clear reset tzset' },
+];
+
+interface FactRow {
+  metric: string;
+  value: string;
+  src: string;
+}
+const factRows: FactRow[] = [
+  { metric: '单文件体积', value: '3.79 MB（携带 176 命令 / 1,924 选项，静态链接、零依赖）', src: 'WinuxCmd README.md:74' },
+  { metric: '冷启动', value: '~19 ms', src: 'WinuxCmd README.md:74' },
+  { metric: 'PGO 收益', value: 'sort −18% · nl −17%（x64 发布档，真实负载训练）', src: 'WinuxCmd README.md:74 · scripts/build-pgo.ps1' },
+  { metric: '质量门', value: '差分 178 例 93%（165 通过 / 13 例平台差异实名在册）· 2,420 单元测试 99.6%', src: 'README.md · tests/differential/baseline.json' },
+  { metric: '负载对照', value: 'cat 100 MB 0.8 s · sort 1M 行 2.1 s · grep 100 MB 1.2 s · find 10K 文件 0.3 s（与 GNU/WSL2 差距 ~10–15%）', src: 'README.md Benchmarks（Win11 · i7-13700K · 32 GB · NVMe）' },
+];
+
+// —— 更新动态：changelogs.json 最新 3 版 ——
+interface ChangelogVersion {
+  version: string;
+  date?: string;
+  unreleased?: boolean;
+}
+interface ChangelogRepo {
+  repo: string;
+  versions?: ChangelogVersion[];
+}
+import changelogs from '../../../data/changelogs.json';
+const wcRepo = ((changelogs as { repos: ChangelogRepo[] }).repos ?? []).find((r) => r.repo === 'WinuxCmd');
+const wcVersions = (wcRepo?.versions ?? []).slice(0, 3);
+---
+
+<DocsLayout
+  title="WinuxCmd — 原生 Windows 的 Unix 命令集"
+  description="WinuxCmd 产品文档：单个原生 Win32 可执行文件携带 176 个 Unix 命令 / 1,924 个选项，3.79 MB、~19 ms 冷启、PGO 构建；对 GNU coreutils 9.7 差分 178 例 93% 通过；wpm 包管理器内建，与 niubash PATH 注入零胶水联动。"
+  path="/products/winuxcmd/"
+>
+  <header class="doc-head">
+    <h1>WinuxCmd：原生 Windows 的 Unix 命令集</h1>
+    <p class="lead">
+      一个原生 Win32 可执行文件，说 GNU 语法、走 Windows 真实路径：<strong>176 命令、
+      1,924 选项，单文件 3.79 MB</strong>。无 WSL、无 Cygwin、无 MSYS2、无路径翻译之痛——
+      它是 <a href="/products/niubash/">niubash</a> 工作流的命令那一半：shell 给语言，
+      WinuxCmd 给命令。
+    </p>
+    <div class="badge-row">
+      <Badge text="C++23" tone="accent" />
+      <Badge text="Windows x64 · ARM64" tone="info" />
+      <Badge text={latest || 'v1.1.15'} tone="warn" />
+      <Badge text="MIT" tone="muted" />
+    </div>
+    <p class="repo-line">
+      <a href="https://github.com/unixwin/WinuxCmd" target="_blank" rel="noopener noreferrer">
+        github.com/unixwin/WinuxCmd ↗
+      </a>
+      {stars !== null && <span class="stars">{stars} stars</span>}
+      <span class="src">（repo-meta.json 实测 2026-10-19）</span>
+    </p>
+  </header>
+
+  <section>
+    <h2>为什么是 WinuxCmd</h2>
+    <p>
+      在 Windows 上敲 <code>grep -rn</code>、<code>sed -i</code>、
+      <code>find -exec</code>、<code>xargs -0</code>，此前的每个选项都是妥协。
+      WinuxCmd 的立场是跳过妥协：不模拟 Unix，而是在 Win32 上把 GNU 的调用面实现出来。
+    </p>
+    <div class="why-grid">
+      {
+        whyCards.map((c) => (
+          <div class="why-card">
+            <span class="why-tag">{c.icon}</span>
+            <h3>{c.title}</h3>
+            <p>{c.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <h2>核心特性</h2>
+    <ul class="feature-list">
+      {
+        features.map((f) => (
+          <li>
+            <strong>{f.title}</strong>
+            <span>{f.body}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <h2>安装与快速上手</h2>
+    <p>
+      推荐走 winget 或 GitHub Releases 安装器（<code>WinuxCmd-&lt;version&gt;-x64-setup.exe</code>，
+      另有 ARM64 版与免安装 zip）；已装旧版时用内建的 wpm 自更新。三种方式落到同一枚
+      <code>winuxcmd.exe</code>。
+    </p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{installWinget}</code></pre>
+      <CopyButton copy={installWinget} />
+    </div>
+    <p class="cmd-label">已装 WinuxCmd，更新自身（wpm 随本体内建）：</p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{updateSelf}</code></pre>
+      <CopyButton copy={updateSelf} />
+    </div>
+    <h3>首跑引导</h3>
+    <div class="codeblock">
+      <pre class="cmd"><code>{firstRun}</code></pre>
+      <CopyButton copy={firstRun} />
+    </div>
+    <p>
+      中文输出：装消息目录并声明语言（未装目录时非英文 locale 会给出一行提示，#1155）；
+      从源码构建需 VS 2022 + CMake 3.30 + Ninja，入口 <code>scripts/build-with-vs.ps1</code>，
+      PGO 复现用 <code>scripts/build-pgo.ps1</code>。
+    </p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{i18nCmd}</code></pre>
+      <CopyButton copy={i18nCmd} />
+    </div>
+  </section>
+
+  <section>
+    <h2>深入：命令覆盖与分类</h2>
+    <p>
+      176 个命令按 GNU coreutils 风格分组（裸 <code>winuxcmd</code> 即分组清单，
+      <code>--list-all</code> 平铺全量）；选项总数 1,924 为 <code>src/commands/</code>
+      中 <code>OPTION(</code> 宏的计数，命令数不含内建的 wpm 与 <code>[</code> 别名。
+    </p>
+    <table>
+      <thead>
+        <tr><th>分类</th><th>数量</th><th>代表命令</th></tr>
+      </thead>
+      <tbody>
+        {
+          categories.map((r) => (
+            <tr>
+              <td><strong>{r.cat}</strong></td>
+              <td>{r.count}</td>
+              <td>{r.cmds}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p class="src-line">
+      来源：WinuxCmd README「Command coverage」（全表可展开节）与
+      <code>DOCS/en/command_compatibility_matrix.md</code>（176 命令逐条状态）。
+    </p>
+
+    <h3>差分测试：93% 是怎么来的</h3>
+    <p>
+      兼容度不是宣称，是对 oracle 实测的：<strong>178 例差分语料（131 语料 + 47 回归，覆盖
+      84 个命令）</strong>以相同输入对 GNU coreutils 9.7、findutils 4.10.0、grep 3.12、
+      sed 4.9、patch 2.7.6、util-linux 2.41、procps-ng 4.0.4 逐字节比对——
+      <strong>165 例通过、13 例为实名在册的平台差异（93%）</strong>，机器校验落在
+      <code>tests/differential/baseline.json</code>。13 例不是雾里的「有时不一样」：
+      <code>id -g</code> 因 Windows 无 POSIX gid 而打印主组 RID、跨 <code>\wsl.localhost</code>
+      9p 的硬链在 WSL 侧跑不了（原生 NTFS 上已验证）、<code>mkdir</code> 已存在报错用
+      ASCII 引号而 GNU 用 locale 弯引号。CI 里每个 PR 都对 GNU master 跑同一差分
+      （oracle + compare 双 job），通过率与差异清单随代码一起审。
+    </p>
+
+    <h3>i18n 与 WINUX_LANG</h3>
+    <p>
+      语言选择器优先级：<code>WINUX_LANG</code> → <code>LC_ALL</code> →
+      <code>LC_MESSAGES</code> → <code>LANG</code>（<code>src/utils/i18n.cppm</code>，#1155）。
+      消息目录定位在 WinuxCmd 安装根，因此经由 shim 或 PATH 入口在安装目录之外调用时本地化同样生效
+      （#1151）；目录本身是 wpm 包（如 <code>winuxcmd-i18n-zh-cn</code>），
+      <code>WINUX_LANG=off</code> 整体关闭目录。
+    </p>
+
+    <h3>与 niubash 的 PATH 注入联动</h3>
+    <p>
+      WinuxCmd 单独成立，也是 <a href="/products/niubash/">niubash</a> 的命令层：
+      niu 启动时把 WinuxCmd 的命令链接注入 <code>PATH</code>，脚本里敲的
+      <code>grep</code>/<code>sed</code>/<code>find</code> 就是真二进制，零胶水。
+      更深一层（niubash#346 的 Windows 路径契约）：捆绑的 WinuxCmd coreutils
+      「拥有 shell 树」——它们原样接收 shell 的 POSIX 写法并在子进程内自行解析，
+      而其余所有子进程（原生或 MSYS2/Cygwin 等外来 POSIX 运行时）一律收到原生
+      Windows 路径，无逐子进程探测、无 <code>MSYS_NO_PATHCONV</code> 类开关。
+      因此 WinuxCmd 的捆绑 pin 与 niubash 同步升级。
+    </p>
+
+    <h3>路径方言能力链</h3>
+    <p>
+      WinuxCmd 的参数边界认全部 POSIX 盘符形态：<code>/d/repo</code>（MSYS 单字母形）、
+      <code>/cygdrive/d</code>（Cygwin 形，#1145）、<code>/mnt/d</code>（WSL 形按
+      interop 折叠，#1172，与 rubash 的 argv 漏斗逐字节对齐）。方言 × 层的全量实测矩阵
+      与四层边界表见 <a href="/docs/paths-and-msys/">路径与 MSYS</a>。
+    </p>
+  </section>
+
+  <section>
+    <h2>实测数字</h2>
+    <table>
+      <thead>
+        <tr><th>指标</th><th>数值</th><th>来源</th></tr>
+      </thead>
+      <tbody>
+        {
+          factRows.map((r) => (
+            <tr>
+              <td>{r.metric}</td>
+              <td><strong>{r.value}</strong></td>
+              <td class="src">{r.src}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p>
+      更多口径（git 启动 ~14 ms、一次性执行 26.3 ms 等 niubash 家族数字）见
+      <a href="/benchmarks/">基准页</a>。
+    </p>
+  </section>
+
+  <section>
+    <h2>更新动态</h2>
+    <p class="src-line">
+      最新 3 版（changelogs.json，抓取 2026-10-19；完整流水见
+      <a href="/changelog/">更新日志</a>）：
+    </p>
+    <ul class="changelog-list">
+      <li>
+        <strong>{wcVersions[0]?.version ?? 'Unreleased'}（发布线，日期未标）</strong>
+        <span>
+          WSL interop 路径：<code>/mnt/X/…</code> 操作数与 <code>/X/…</code>、<code>X:\…</code>
+          同形折叠（#1172，与 rubash 的 <code>windows_mnt_drive_argument</code> 逐字节对齐）；
+          最新发布 tag 为 v1.1.15（repo-meta 实测）——发布档首次可验证携带
+          <code>winuxcmd-shim.exe</code>（v1.1.14 实测 0 个，#1207/#1225）。
+        </span>
+      </li>
+      <li>
+        <strong>{wcVersions[1]?.version ?? 'v1.1.14'}（{wcVersions[1]?.date ?? '2026-10-17'}）</strong>
+        <span>
+          wpm：<code>links verify</code> 逐路径报告不指向当前 winuxcmd.exe 的命令链接；
+          <code>winuxcmd-shim.exe</code> 小转发器把 shim 包的分发跳数从 24.5 ms 降到 12.1 ms；
+          <code>wpm update winuxcmd</code> 不再把命令链接静默留在旧镜像上；自更新回滚副本保留最新两份自动修剪。
+        </span>
+      </li>
+      <li>
+        <strong>{wcVersions[2]?.version ?? 'v1.1.13'}（{wcVersions[2]?.date ?? '2026-10-17'}）</strong>
+        <span>
+          wpm：被运行中进程占用的文件以 rename-aside 方式升级——要么完成、要么原样不动；
+          28 个 <code>fsmonitor--daemon</code> 持有载荷的真实安装上强制升级验证通过；
+          <code>wpm clean staging/all</code> 一并清理 parked 的 <code>.wpm-old-&lt;pid&gt;</code>。
+        </span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>相关链接</h2>
+    <div class="link-cols">
+      <div>
+        <h3>站内</h3>
+        <ul>
+          <li><a href="/products/niubash/">Niubash 产品文档</a> — 一条工作流的两半：shell 给语言</li>
+          <li><a href="/products/rubash/">Rubash 产品文档</a> — 路径方言与 argv 漏斗的引擎侧</li>
+          <li><a href="/products/wpm/">wpm 产品文档</a> — 内建包管理器与官方索引</li>
+          <li><a href="/products/oh-my-niu/">Oh My Niu 产品文档</a> — 主题与插件框架</li>
+          <li><a href="/docs/paths-and-msys/">路径与 MSYS：最大的行为差异</a></li>
+          <li><a href="/docs/">文档区首页</a> · <a href="/benchmarks/">基准页</a> · <a href="/changelog/">更新日志</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>仓内</h3>
+        <ul>
+          <li><a href="https://github.com/unixwin/WinuxCmd" target="_blank" rel="noopener noreferrer">GitHub：unixwin/WinuxCmd ↗</a>（README-zh 中文版在仓内）</li>
+          <li><a href="https://github.com/unixwin/WinuxCmd/blob/master/DOCS/en/command_compatibility_matrix.md" target="_blank" rel="noopener noreferrer">176 命令兼容矩阵 ↗</a></li>
+          <li><a href="https://github.com/unixwin/WinuxCmd/blob/master/DOCS/en/gnu_comparison_report.md" target="_blank" rel="noopener noreferrer">GNU 对照报告（差分全录）↗</a></li>
+          <li><a href="https://github.com/unixwin/WinuxCmd/blob/master/DOCS/en/wpm_guide.md" target="_blank" rel="noopener noreferrer">wpm 用户指南 ↗</a></li>
+          <li><a href="https://github.com/unixwin/WinuxCmd/releases/latest" target="_blank" rel="noopener noreferrer">Releases（安装器 / ARM64 / 便携 zip）↗</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .repo-line {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .repo-line a {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+  }
+
+  .stars {
+    margin-left: 0.6rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  /* —— 为什么：4 卡 —— */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin: 1.2rem 0;
+  }
+
+  .why-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.95rem 1.1rem;
+  }
+
+  .why-card h3 {
+    margin: 0.35rem 0 0.3rem;
+    font-size: 0.98rem;
+  }
+
+  .why-card p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .why-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.75);
+    padding: 0.14rem 0.5rem;
+  }
+
+  /* —— 核心特性：条目列表 —— */
+  .feature-list {
+    list-style: none;
+    margin: 1.2rem 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .feature-list li {
+    border-left: 3px solid var(--accent);
+    background: var(--bg-elev);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 0.6rem 0.95rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .feature-list strong {
+    font-size: 0.95rem;
+    color: var(--accent);
+  }
+
+  .feature-list span {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  /* —— 命令块 + 复制按钮 —— */
+  .codeblock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .codeblock pre.cmd {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cmd-label {
+    margin: 1rem 0 0.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .src-line {
+    color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  /* —— 更新动态 —— */
+  .changelog-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .changelog-list li {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-2);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.75rem 1rem;
+    margin: 0;
+  }
+
+  .changelog-list strong {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    color: var(--accent);
+  }
+
+  .changelog-list span {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.87rem;
+    color: var(--muted);
+  }
+
+  /* —— 相关链接双列 —— */
+  .link-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.4rem;
+  }
+
+  .link-cols h3 {
+    margin-top: 0.4rem;
+    font-size: 0.92rem;
+    font-family: var(--font-mono);
+    color: var(--accent-2);
+  }
+
+  .link-cols ul {
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 720px) {
+    .why-grid,
+    .link-cols {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

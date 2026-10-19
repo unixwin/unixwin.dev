@@ -3,22 +3,23 @@
  * SiteFooter — 页脚：组织信息 + 产品矩阵 + 资源链接 + 主题候选回看入口。
  * 数据源：src/data/products.json、src/data/nav.json（github/docs 字段）。
  *
- * i18n：about 列追加一行语言切换（复用 LangSwitch，仅在当前页存在
- * 对应语言页时渲染；en 页产品/资源等站内链接改指 /en/ 版本）。
+ * i18n：about 列追加一行语言切换（复用 LangSwitch，目标由 src/i18n/lang.ts
+ * 的 resolveSwitchPair 决定——精确配对互指、无配对回退同区段 en/zh 页，
+ * 仅 /404、/theme/** 等无对页不渲染；en 页产品/资源等站内链接改指 /en/ 版本）。
  */
 import products from '../data/products.json';
 import nav from '../data/nav.json';
 import LangSwitch from './LangSwitch.astro';
-import { resolveLangPair } from '../i18n/lang';
+import { resolveSwitchPair } from '../i18n/lang';
 
 const year = new Date().getFullYear();
 const ordered = [...products].sort((a, b) => a.order - b.order);
 
-const pair = resolveLangPair(Astro.url.pathname);
+const pair = resolveSwitchPair(Astro.url.pathname);
 const isEn = pair.lang === 'en';
 const productHref = (id: string) => (isEn ? `/en/#${id}` : `/#${id}`);
 
-// 语言切换行仅在存在对应语言页时于模板内渲染
+// 语言切换行仅在 resolveSwitchPair 给出回退目标时于模板内渲染
 ---
 
 <footer class="site-footer">

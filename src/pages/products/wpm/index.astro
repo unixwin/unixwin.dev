@@ -1,0 +1,586 @@
+---
+/**
+ * /products/wpm/ — wpm 包管理器产品文档页。
+ * 事实来源：unixwin-repos/wpm-source/README.md（索引、toolchain 准入、镜像源）、
+ * wpm-source/docs/index-schema.md（index.json 与 --json 契约）、wpm-source/index.json（sources 四源）、
+ * WinuxCmd/DOCS/en/wpm_guide.md（命令族、布局、防投毒、代理）、HIGHLIGHTS.md #13、
+ * src/data/{repo-meta,products,changelogs}.json（构建期数据；changelog 用 WinuxCmd 仓，
+ * wpm 随 winuxcmd.exe 发布、无独立版本）。
+ */
+import DocsLayout from '../../../components/DocsLayout.astro';
+import Badge from '../../../components/Badge.astro';
+import CopyButton from '../../../components/CopyButton.astro';
+import repoMeta from '../../../data/repo-meta.json';
+import changelogs from '../../../data/changelogs.json';
+
+const meta = repoMeta.repos.wpm; // wpm 实测口径 = wpm-source 仓
+const stars = typeof meta?.stars === 'number' ? meta.stars : null;
+const winuxLatest =
+  typeof repoMeta.repos.winuxcmd?.latest === 'string' ? repoMeta.repos.winuxcmd.latest : '';
+
+// —— 安装与首跑命令 ——
+const installWinux = 'winget install caomengxuan666.WinuxCmd';
+const quickStart = [
+  'wpm index update                 # 刷新官方索引',
+  'wpm install ripgrep fd jq        # 一次装多个包（rg / fd / jq 上 PATH）',
+  'wpm installed                    # 本机已装清单',
+  'wpm info ripgrep --json          # 完整包记录（机器可读）',
+].join('\n');
+const cnMirror = 'wpm source use official-cn';
+
+// —— 为什么：4 卡 ——
+interface WhyCard {
+  tag: string;
+  title: string;
+  body: string;
+}
+const whyCards: WhyCard[] = [
+  {
+    tag: '内建',
+    title: '不是外挂程序',
+    body: 'wpm 以 C++ 实现并编译进 winuxcmd.exe 本体——没有 Node.js、Python 或 .NET 运行时依赖；装了 WinuxCmd，就有 wpm。',
+  },
+  {
+    tag: '对象',
+    title: '装的是命令，不是软件',
+    body: 'winget/scoop/choco 管理「应用程序」；wpm 只收便携命令行工具与可搬迁工具链，与 winuxcmd.exe 同居一个 root，装完即在 PATH 上。',
+  },
+  {
+    tag: '校验',
+    title: 'SHA-256 是硬门',
+    body: '索引里每个构件带 sha256/size/urls 三元组；无校验和的远程构件拒绝安装，缓存键 <pkg>-<version>-<sha8> 双校验后复用。',
+  },
+  {
+    tag: '协同',
+    title: '为 shell 生态而生',
+    body: 'niubash 的发行流水线用 wpm 预装 gawk 进发布包（niubash#189）；oh-my-niu 的环境包声明 wpm 包清单——包管理器是全家桶的地基。',
+  },
+];
+
+// —— 核心特性：8 条 ——
+interface Feature {
+  title: string;
+  body: string;
+}
+const features: Feature[] = [
+  {
+    title: '官方索引 288 包',
+    body: 'wpm-source 仓维护的官方索引（schema:1）覆盖 ripgrep、fd、jq、fzf、bat、neovim、curl、wget、make、openssh、goawk、bsdtar 等便携 CLI。',
+  },
+  {
+    title: '三元组契约',
+    body: '每个构件必须带 sha256（64 位小写十六进制）、size（字节数）与 urls（多个则顺序尝试）——缺校验和的远程下载一律拒装。',
+  },
+  {
+    title: 'flat / shim 双布局',
+    body: 'flat 单 exe 直接进 usr\\bin\\；shim 载荷自包含在 opt\\<pkg>\\，私有 DLL 不进 PATH，卸载即删目录。',
+  },
+  {
+    title: '硬链接入口',
+    body: '每个命令在 bin\\ 下是「指向真二进制的硬链接」——同一文件，不是复制也不是转发进程，入口零启动开销。',
+  },
+  {
+    title: '--json 契约',
+    body: '查询类子命令输出带 schema:1 版本字段的纯 JSON（list/search/installed/info/index status/links list/outdated/categories），供 GUI/TUI 与 agent 消费。',
+  },
+  {
+    title: '四源镜像与回退',
+    body: '内置 github-raw / jsdelivr / release-pinned / official-cn 四源按优先级自动回退；中国区 official-cn 经 gh.caomengxuan666.com 的 nginx 缓存代理，GitHub 源保底。',
+  },
+  {
+    title: '防投毒两道锁',
+    body: '索引文件内声明的 sources 永不并入候选（防被攻破的镜像持久注入下载位）；wpm index update 记录 last_index_sha256，非首选源送来内容不同的索引时告警。',
+  },
+  {
+    title: '自更新与回滚',
+    body: 'wpm update winuxcmd 异步换镜像（等待占用进程退出后替换并重建全部链接）；.wpm\\backup\\ 自动保留最新两份回滚，wpm clean backup 回收。',
+  },
+];
+
+// —— 深入：索引结构与内置源 ——
+interface SourceRow {
+  name: string;
+  region: string;
+  priority: string;
+  note: string;
+}
+const sources: SourceRow[] = [
+  { name: 'official-github-raw', region: 'global', priority: '10', note: 'canonical：raw.githubusercontent.com 上的 index.json' },
+  { name: 'official-jsdelivr', region: 'global', priority: '15', note: 'CDN 镜像：cdn.jsdelivr.net/gh/unixwin/wpm-source@main' },
+  { name: 'official-github-release', region: 'global', priority: '20', note: '发布档钉版：releases/latest/download/wpm-index.json' },
+  { name: 'official-cn', region: 'cn', priority: '30', note: 'gh.caomengxuan666.com 的 nginx 缓存代理；构件 URL 走代理、GitHub 源兜底' },
+];
+
+interface FactRow {
+  metric: string;
+  value: string;
+  src: string;
+}
+const factRows: FactRow[] = [
+  { metric: '官方索引规模', value: '288 包（站内台账口径）', src: 'products.json · wpm-source 索引' },
+  { metric: 'shim 分发跳数', value: '12.1 ms（winuxcmd-shim.exe 转发器，此前硬链接 winuxcmd.exe 需 24.5 ms）', src: 'WinuxCmd CHANGELOG 1.1.14 实测' },
+  { metric: '占用文件升级', value: '28 个 fsmonitor--daemon 进程持有载荷时强制升级成功、包完整', src: 'WinuxCmd CHANGELOG 1.1.13 实机验证' },
+  { metric: '回滚副本治理', value: '自动保留最新两份并修剪（单机曾积累 61.8 MB）', src: 'WinuxCmd CHANGELOG 1.1.14' },
+  { metric: '缓存键', value: '<pkg>-<version>-<sha8>（下载先验 + 缓存复用双校验）', src: 'WinuxCmd#1154/#1157（HIGHLIGHTS #13）' },
+];
+
+// —— 更新动态：wpm 无独立版本，随 winuxcmd.exe 发布 ——
+interface ChangelogVersion {
+  version: string;
+  date?: string;
+  unreleased?: boolean;
+}
+interface ChangelogRepo {
+  repo: string;
+  versions?: ChangelogVersion[];
+}
+const wcRepo = ((changelogs as { repos: ChangelogRepo[] }).repos ?? []).find((r) => r.repo === 'WinuxCmd');
+const wcVersions = (wcRepo?.versions ?? []).slice(0, 3);
+---
+
+<DocsLayout
+  title="wpm — WinuxCmd 内建包管理器"
+  description="wpm 产品文档：编译进 winuxcmd.exe 的 C++ 包管理器，零运行时依赖；官方索引 288 包、sha256/size/urls 三元组、flat/shim 双布局、schema:1 的 --json 契约、四源镜像（gh.caomengxuan666.com 中国区）与自更新回滚。"
+  path="/products/wpm/"
+>
+  <header class="doc-head">
+    <h1>wpm：WinuxCmd 内建包管理器</h1>
+    <p class="lead">
+      <strong>wpm 不是一个独立程序</strong>——它作为子命令整体编译进
+      <code>winuxcmd.exe</code>（C++，无 Node/Python/.NET 运行时）。装了
+      <a href="/products/winuxcmd/">WinuxCmd</a> 就有 wpm：管索引、管下载校验、管命令链接，
+      还管 <code>winuxcmd.exe</code> 自己的更新。不该重造的工具，装真发行版。
+    </p>
+    <div class="badge-row">
+      <Badge text="C++（内建于 winuxcmd.exe）" tone="accent" />
+      <Badge text="Windows x64 · ARM64" tone="info" />
+      <Badge text={`随 winuxcmd.exe 发布${winuxLatest ? ` · ${winuxLatest}` : ''}`} tone="warn" />
+      <Badge text="MIT" tone="muted" />
+    </div>
+    <p class="repo-line">
+      <a href="https://github.com/unixwin/wpm-source" target="_blank" rel="noopener noreferrer">
+        github.com/unixwin/wpm-source ↗
+      </a>
+      <span class="src">（官方索引仓；star 数 repo-meta.json 实测 2026-10-19：
+        {stars !== null ? `${stars} stars` : '—'}）</span>
+    </p>
+  </header>
+
+  <section>
+    <h2>为什么是 wpm</h2>
+    <p>
+      在 Windows 上给命令行装工具，通常意味着给系统再装一层包管理器及其运行时。
+      wpm 的取舍相反：包管理器住在命令集本体里，包的边界就是命令的边界——
+      单 exe 工具平铺安装，带 DLL 的工具链自包含隔离。
+    </p>
+    <div class="why-grid">
+      {
+        whyCards.map((c) => (
+          <div class="why-card">
+            <span class="why-tag">{c.tag}</span>
+            <h3>{c.title}</h3>
+            <p>{c.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <h2>核心特性</h2>
+    <ul class="feature-list">
+      {
+        features.map((f) => (
+          <li>
+            <strong>{f.title}</strong>
+            <span>{f.body}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <h2>安装与快速上手</h2>
+    <p>
+      wpm 没有单独的安装器——它随 WinuxCmd 一起落地。装好 WinuxCmd 后第一件事是刷新索引：
+    </p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{installWinux}</code></pre>
+      <CopyButton copy={installWinux} />
+    </div>
+    <p class="cmd-label">装包四连（每行注释即作用）：</p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{quickStart}</code></pre>
+      <CopyButton copy={quickStart} />
+    </div>
+    <h3>首跑引导</h3>
+    <p>
+      <code>wpm --help</code> 看全部子命令（install/uninstall/update/list/search/info/installed/
+      export/restore/outdated/categories/index/source/links/clean/version）。索引不可达
+      （<code>no reachable index source</code>）时换源重试
+      <code>wpm index update -s official-jsdelivr</code>；需要代理时设
+      <code>WPM_HTTPS_PROXY</code> 等环境变量（WinHTTP 自动探测系统代理与 PAC）。
+      中国网络可直接切官方镜像源：
+    </p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{cnMirror}</code></pre>
+      <CopyButton copy={cnMirror} />
+    </div>
+    <p>
+      想清掉缓存/暂存/回滚目录：<code>wpm clean [cache|staging|backup|all]</code>；
+      重放一台机器的包清单：<code>wpm export &gt; profile.txt</code> 与
+      <code>wpm restore profile.txt</code>。
+    </p>
+  </section>
+
+  <section>
+    <h2>深入：包模型与索引</h2>
+    <p>
+      索引是一个 JSON 文件（<code>wpm-source/index.json</code>）：顶层
+      <code>schema:1</code>、<code>version</code>（如 official-2026.10.17）、<code>updated</code>、
+      <code>sources[]</code>（可用镜像源）与 <code>packages[]</code>。包记录含
+      name/version/description/kind/category/license/<code>commands[]</code>（安装后暴露到
+      PATH 的命令名）与按平台分组的 <code>artifacts</code>（windows-x64 / windows-arm64）。
+    </p>
+    <h3>构件三元组与文件映射</h3>
+    <p>
+      每个构件必须携带 <code>sha256</code>（小写十六进制，缺失即拒绝远程安装）、
+      <code>size</code>（字节数）与 <code>urls</code>（多条则顺序尝试，首个成功者胜出），
+      外加显式 <code>files</code> 映射（压缩包内路径 <code>from</code> → 安装目标
+      <code>to</code>）。下载先算校验和再解压；缓存键
+      <code>&lt;pkg&gt;-&lt;version&gt;-&lt;sha8&gt;</code> 双校验（WinuxCmd#1154/#1157），
+      命中即跳过下载。写侧同样严格：映射指向构件已不再携带的文件时，安装以
+      「extracted path not found」失败，不猜。
+    </p>
+    <h3>flat 与 shim 双布局</h3>
+    <p>
+      <strong>flat</strong>（默认）把映射文件直接装入 <code>usr\bin\</code>，适合单 exe。
+      <strong>shim</strong> 把载荷（exe + 私有 DLL）自包含装到 <code>&lt;root&gt;\opt\&lt;pkg&gt;\</code>，
+      <code>usr\bin\&lt;cmd&gt;.exe</code> 是转发入口——带 <code>winuxcmd-shim.exe</code>
+      的安装里是这个小转发器的硬链接（从 <code>.wpm/shims.map</code> 读载荷路径，分发跳数
+      24.5 ms → 12.1 ms）；否则硬链接 winuxcmd.exe 由分发器路由。DLL 与真 exe 同目录天然解析，
+      不进 PATH、无跨包冲突。无论哪种布局，<code>bin\&lt;command&gt;.exe</code> 都是
+      指向真二进制的硬链接——同一文件，零入口开销，且随 install/update/uninstall 同步。
+    </p>
+    <h3>--json 契约</h3>
+    <p>
+      查询类子命令的输出是<strong>纯 JSON、不混人类可读文本</strong>，顶层带
+      <code>schema:1</code> 版本字段（字段只增不改，语义不兼容时递增，前端应校验）：
+      <code>list</code>/<code>search</code> 返回摘要包列表（含 installed/install_state/state
+      与摘要 artifact），<code>info</code> 返回完整 Package 记录 + <code>wpm</code> 运行期状态，
+      <code>index status</code> 报 root/本地索引路径/版本/包数，<code>links list</code> 报
+      入口目录与命令名。变更类子命令（install/uninstall/update）暂无 --json：以退出码为准，
+      进度文本仅作展示。完整契约见 <code>wpm-source/docs/index-schema.md</code>。
+    </p>
+    <h3>镜像机制</h3>
+    <table>
+      <thead>
+        <tr><th>内置源</th><th>区域</th><th>优先级</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        {
+          sources.map((s) => (
+            <tr>
+              <td><code>{s.name}</code></td>
+              <td>{s.region}</td>
+              <td>{s.priority}</td>
+              <td>{s.note}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p>
+      源按优先级（数字小者优先）自动回退，<code>wpm source use</code> 可固定首选，
+      <code>wpm source add</code> 加自建源。安全边界成文：候选源集合 = 内置注册表 +
+      用户手加源——<strong>索引文件内部声明的 sources 永不并入</strong>（被攻破的镜像
+      无法持久注入新下载位）；<code>wpm index update</code> 记录
+      <code>last_success_source</code> 与 <code>last_index_sha256</code>，非首选源送来
+      内容不同的索引时打印告警，毒镜像换索引无法静默。
+    </p>
+    <h3>wpm-artifacts 与工具链层</h3>
+    <p>
+      <code>category: "toolchain"</code> 的语言运行时与 SDK 有四条准入：自包含便携发布档
+      （rustup-init 式引导器出局）、可搬迁（在 <code>opt\&lt;pkg&gt;\</code> 经 shim 布局运行、
+      无机器级安装）、官方发布或 <code>unixwin/wpm-artifacts</code> 上的 CI 构建镜像且
+      SHA-256 钉死、许可允许再分发。wpm-artifacts 是组织自托管的构件仓：官方上游不发
+      Windows 便携档（或需要重组）时的再分发通道——rust 的可搬迁 MSVC 束、git 的 MinGit
+      重组（仅暴露 git.exe、私有载荷留在 opt/git/）、protobuf 的 protoc 都走这条路。
+      GUI 应用、MSI/MSIX、服务驱动、生态包管理器（winget/scoop/choco 本身）明确出局。
+    </p>
+  </section>
+
+  <section>
+    <h2>实测数字</h2>
+    <table>
+      <thead>
+        <tr><th>指标</th><th>数值</th><th>来源</th></tr>
+      </thead>
+      <tbody>
+        {
+          factRows.map((r) => (
+            <tr>
+              <td>{r.metric}</td>
+              <td><strong>{r.value}</strong></td>
+              <td class="src">{r.src}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>更新动态</h2>
+    <p class="src-line">
+      wpm 无独立版本号——<strong>随 winuxcmd.exe 发布</strong>，条目记在 WinuxCmd 的
+      changelog 里。以下为最新 3 版中的 wpm 相关内容（changelogs.json，抓取 2026-10-19；
+      完整流水见 <a href="/changelog/">更新日志</a>）：
+    </p>
+    <ul class="changelog-list">
+      <li>
+        <strong>{wcVersions[0]?.version ?? 'Unreleased'}（WinuxCmd 发布线）</strong>
+        <span>
+          WSL interop 路径：<code>/mnt/X/…</code> 操作数与 <code>/X/…</code>、<code>X:\…</code>
+          同形折叠（#1172）——所有走共享参数边界的工具（ls/du/sed/cp…）一次全收，wpm 装的
+          工具链同样受益。
+        </span>
+      </li>
+      <li>
+        <strong>{wcVersions[1]?.version ?? 'v1.1.14'}（{wcVersions[1]?.date ?? '2026-10-17'}）</strong>
+        <span>
+          新增 <code>wpm links verify</code>（逐路径报告不运行当前 winuxcmd.exe 的链接）与
+          <code>winuxcmd-shim.exe</code> 转发器（24.5 ms → 12.1 ms，旧安装经
+          <code>wpm links rebuild --force</code> 平滑切换）；修复 <code>wpm update winuxcmd</code>
+          把命令链接留在旧镜像的问题（删不掉的链接先 park 再换、换后校验重链）；
+          回滚副本保留最新两份自动修剪（单机曾积累 61.8 MB，<code>wpm clean backup</code> 回收）。
+        </span>
+      </li>
+      <li>
+        <strong>{wcVersions[2]?.version ?? 'v1.1.13'}（{wcVersions[2]?.date ?? '2026-10-17'}）</strong>
+        <span>
+          被运行中进程占用的文件以 rename-aside 升级：<code>wpm install --force</code> 在
+          28 个 fsmonitor--daemon 持有载荷的真实安装上成功且包完整；升级要么完成、要么原样不动
+          （失败的文件名与占用进程一并报告）；<code>wpm clean staging/all</code> 一并清理
+          parked 的 <code>.wpm-old-&lt;pid&gt;</code>。
+        </span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>相关链接</h2>
+    <div class="link-cols">
+      <div>
+        <h3>站内</h3>
+        <ul>
+          <li><a href="/products/winuxcmd/">WinuxCmd 产品文档</a> — wpm 的宿主本体</li>
+          <li><a href="/products/niubash/">Niubash 产品文档</a> — 发行流水线用 wpm 预装 gawk</li>
+          <li><a href="/products/oh-my-niu/">Oh My Niu 产品文档</a> — 环境包声明 wpm 包清单</li>
+          <li><a href="/docs/cli/">CLI 与旗标参考</a> — 含 wpm 速查表</li>
+          <li><a href="/docs/">文档区首页</a> · <a href="/changelog/">更新日志</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>仓内</h3>
+        <ul>
+          <li><a href="https://github.com/unixwin/wpm-source" target="_blank" rel="noopener noreferrer">GitHub：unixwin/wpm-source ↗</a>（官方索引仓）</li>
+          <li><a href="https://github.com/unixwin/wpm-source/blob/main/docs/index-schema.md" target="_blank" rel="noopener noreferrer">index.json 与 --json 契约全文 ↗</a></li>
+          <li><a href="https://github.com/unixwin/WinuxCmd/blob/master/DOCS/en/wpm_guide.md" target="_blank" rel="noopener noreferrer">wpm 用户指南（子命令全录）↗</a></li>
+          <li><a href="https://github.com/unixwin/wpm-artifacts" target="_blank" rel="noopener noreferrer">wpm-artifacts：自托管构件仓 ↗</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .repo-line {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .repo-line a {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  /* —— 为什么：4 卡 —— */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin: 1.2rem 0;
+  }
+
+  .why-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.95rem 1.1rem;
+  }
+
+  .why-card h3 {
+    margin: 0.35rem 0 0.3rem;
+    font-size: 0.98rem;
+  }
+
+  .why-card p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .why-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.75);
+    padding: 0.14rem 0.5rem;
+  }
+
+  /* —— 核心特性：条目列表 —— */
+  .feature-list {
+    list-style: none;
+    margin: 1.2rem 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .feature-list li {
+    border-left: 3px solid var(--accent);
+    background: var(--bg-elev);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 0.6rem 0.95rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .feature-list strong {
+    font-size: 0.95rem;
+    color: var(--accent);
+  }
+
+  .feature-list span {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  /* —— 命令块 + 复制按钮 —— */
+  .codeblock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .codeblock pre.cmd {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cmd-label {
+    margin: 1rem 0 0.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .src-line {
+    color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  /* —— 更新动态 —— */
+  .changelog-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .changelog-list li {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-2);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.75rem 1rem;
+    margin: 0;
+  }
+
+  .changelog-list strong {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    color: var(--accent);
+  }
+
+  .changelog-list span {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.87rem;
+    color: var(--muted);
+  }
+
+  /* —— 相关链接双列 —— */
+  .link-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.4rem;
+  }
+
+  .link-cols h3 {
+    margin-top: 0.4rem;
+    font-size: 0.92rem;
+    font-family: var(--font-mono);
+    color: var(--accent-2);
+  }
+
+  .link-cols ul {
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 720px) {
+    .why-grid,
+    .link-cols {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

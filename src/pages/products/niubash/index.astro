@@ -1,0 +1,482 @@
+---
+/**
+ * /products/niubash/ — niubash 产品文档页（旗舰）。
+ * 事实来源：portal-dump HIGHLIGHTS.md / CARDS.md / FACTS.json（2026-10-19 总控审计）、
+ * src/data/{products,repo-meta,facts,changelogs}.json、niubash 仓 README.md 与 docs/src/。
+ * 每个数字括注来源；版本与 star 为 repo-meta 2026-10-19 实测值。
+ */
+import DocsLayout from '../../../components/DocsLayout.astro';
+import CopyButton from '../../../components/CopyButton.astro';
+
+interface Row {
+  a: string;
+  b: string;
+  c: string;
+  src: string;
+}
+
+interface Feature {
+  title: string;
+  body: string;
+}
+
+interface News {
+  version: string;
+  date: string;
+  summary: string;
+}
+
+const installWin = 'irm https://unixwin.dev/install.ps1 | iex';
+const installLinux = 'tar -xzf niubash-v*-linux-x86_64.tar.gz && niubash-v*-linux-x86_64/niu';
+const installSource = 'git clone https://github.com/unixwin/niubash.git && cd niubash && cargo build --release';
+
+const whyCards: Feature[] = [
+  {
+    title: '零 fork：三层执行模型',
+    body: 'POSIX fork() 在 Win32 没有等价物，MSYS2/Cygwin 只能在 syscall 层伪造它。niu 的引擎 rubash 复刻 fork 的语义而非机制：子壳与命令替换在进程内完成，脚本可观察的一切——退出码、fd 继承、共享偏移、信号处置——与 GNU Bash 一致。命令替换类负载实测 13–62x 快于 GNU bash。',
+  },
+  {
+    title: '无 MSYS：argv 永不改写',
+    body: 'Git Bash 的 MSYS 运行时会在 spawn 前启发式改写「看起来像路径」的参数，每个老用户都被迫学会 MSYS_NO_PATHCONV 咒语——这两个环境变量的存在本身就是官方承认问题的证据。niu 没有 MSYS 运行时：参数进什么，命令就收什么，无咒语可念。',
+  },
+  {
+    title: '四大生态的路径方言全收',
+    body: 'Windows 原生（D:\\repo、D:/repo）、MSYS/Git Bash 形（/d/repo、/tmp、/usr/bin）、WSL 形（/mnt/d）、Cygwin 形（/cygdrive/d）全部接受且真折叠——既有脚本零修改。对照探针证明 Git Bash 的 /mnt/d 会静默落到安装根（假阳性地雷），而 niu 真折叠（pwd -P=/d/repo）。',
+  },
+  {
+    title: '兼容性是测出来的，不是宣称的',
+    body: '对 GNU Bash 自己的 83 套上游语料做 true-baseline 双向测量：83/83 通过、82 套逐字节一致，唯一残差被逐字节证明是 GNU Bash 自身的 coproc 回收竞态。另外全网 2686 仓 / 9701 资产每夜巡检，6336 条真实资产判定原文入仓可回放。',
+  },
+];
+
+const features: Feature[] = [
+  {
+    title: '真·插件生态：上游 BASH 插件直接跑',
+    body: 'oh-my-bash、bash-it、bash-completion、bash-preexec 这些真实世界的 BASH 资产，源码一行不改就在 niu 里原生运行——没有 MSYS、没有 Cygwin、没有 WSL。bash-completion 3796 行完整 source rc=0 曾是发布阻塞，如今是端到端门禁的一环。',
+  },
+  {
+    title: '为 agent 而设的旗标面',
+    body: 'niu --encoded-command <base64> 给 agent/CI 一条免引号通道（RFC 4648 载荷走与 -c 完全相同的一次性路径，可选 v1: 前缀防 MSYS 路径改写）；niu --cwd-state <file> 让链式一次性调用共享目录记忆——表现为同一个 shell，不加旗标字节级零变化。',
+  },
+  {
+    title: 'AI agent 接入：$SHELL 即机制',
+    body: 'niu 导出 $SHELL，遵循 POSIX 约定的 agent（如 opencode）从 niu 会话启动即用、零配置；安装器还在探针路径布放 bash 启动器命中 Claude Code 的第一探针。每个 agent 的接入方式与验证命令见站内 Agent 目录。',
+  },
+  {
+    title: '内联命令与编译进壳的补全',
+    body: 'pwd、printf、cat、sed、mkdir、touch、chmod、cp、rm 等 12 个高频文件命令在引擎内联执行，echo | cat 全程零进程；178 个 WinuxCmd applet 的真实旗标补全编译进 shell，零插件即有 git/tar/curl/docker/kubectl 等常用命令的静态补全层。',
+  },
+  {
+    title: 'wpm 联动：命令即包',
+    body: 'Winux 包管理器 wpm 随 WinuxCmd 内建，rg / fd / bat / jq / node 等 Unix 工具一条 wpm install 到位；Windows 发行包预装 gawk、niu-git、ripgrep、fd，bash-it 插件依赖的 awk 开箱即用。',
+  },
+  {
+    title: 'git 感知的快速提示符',
+    body: '默认提示符读 .git/HEAD 文件（微秒级）渲染分支与脏标记，不再像 Git Bash 那样每条提示符 spawn git 子进程（实测 113–362ms）；仓库外连 stat 都省掉。视觉对齐 Git Bash 骨架，但明确不做 MINGW64 身份段。',
+  },
+  {
+    title: '输入管线做到字节级',
+    body: '多行粘贴自动误执行 186 次 → 0，257 行载荷 300s 超时 → 4.6s；ConPTY 粘贴丢字符、typeahead 吃键、控制台 read 三面（-t 门饿死 / conhost 预煮劈半行 / ICRNL）逐项与 GNU 行为对齐，每项带双向差分证据。',
+  },
+  {
+    title: '跨平台到 CI 腿：三个发布平台，五个目标',
+    body: 'Windows x64/ARM64、Linux、macOS 已发布且每次发布冒烟四查（--version、-c 执行、经原生 coreutils 的管道、离线插件栈）才允许上传；Android 双目标 CI 构建不发布，OpenHarmony CI 编译检查。各平台的诚实状态矩阵见平台支持文档。',
+  },
+];
+
+const bench: Row[] = [
+  {
+    a: '一次性执行 niu -c true',
+    b: '26.3 ms（优化前 105.6 → 19.8 ms）',
+    c: 'Git Bash 71 ms',
+    src: 'GITBASH-KILLER 面 6 · niubash PR #267–#272',
+  },
+  {
+    a: '提示符 git 段',
+    b: '读 .git/HEAD ≤29 ms',
+    c: '每条提示符 spawn git 113–362 ms',
+    src: 'GITBASH-KILLER 面 3（真仓 min-of-20）',
+  },
+  {
+    a: '安装体积',
+    b: 'niu ≈16 MB，零 DLL',
+    c: 'Git Bash 440 MB + 20 MB msys-2.0.dll',
+    src: 'GITBASH-KILLER 面 4（装机位实测）',
+  },
+  {
+    a: '多行粘贴',
+    b: '自动误执行 186 次 → 0；257 行 300s 超时 → 4.6s',
+    c: '—',
+    src: 'niubash PR #252/#288 · paste_multiline_bench.py',
+  },
+  {
+    a: 'workspace 单测',
+    b: '1026 通过 / 0 失败',
+    c: '—',
+    src: 'CI run 39191023176（FACTS.json）',
+  },
+];
+
+const news: News[] = [
+  {
+    version: '1.4.0',
+    date: '2026-10-10',
+    summary:
+      'Git Bash 兼容默认提示符（读 .git/HEAD，不 spawn git）、--encoded-command 与 --cwd-state、vi 模式端到端、agent skill bundle、发布包预装 gawk/niu-git/ripgrep/fd。',
+  },
+  {
+    version: '1.3.4',
+    date: '2026-10-05',
+    summary:
+      '主题选择在 source 与新终端下存活；多行主题光标落位修复；178/178 WinuxCmd applet 补全内嵌；金色用户旅程成为发布门禁。',
+  },
+  {
+    version: '1.3.3',
+    date: '2026-10-04',
+    summary:
+      'PROMPT_COMMAND 探针吃首键修复（typeahead guard）；tr 管道选项修复；解析吞吐 +13%（nvm GNU 比例 18.0x → 15.6x）。',
+  },
+];
+---
+
+<DocsLayout
+  title="niubash — AI-native 的真·Bash"
+  description="niubash 产品文档：Rust 实现的原生三平台 Bash 兼容 shell。零 fork 三层执行、无 MSYS、四大路径方言全收、83/83 GNU 上游语料通过、AI agent 旗标面与 wpm 联动。"
+  path="/products/niubash/"
+>
+  <header class="doc-head">
+    <h1>niubash</h1>
+    <p class="lead">
+      AI-native 的真·Bash：真语法、真 Unix 命令、原生 Windows / Linux / macOS。
+      一个 <code>niu.exe</code> 打包语言引擎（rubash）、真实 Unix 命令（WinuxCmd）、git 感知提示符与带信任模型的插件系统；
+      不是 MSYS2、Cygwin、Git Bash，也不是 WSL——没有 POSIX 模拟层，没有路径转换启发式。
+    </p>
+    <div class="badges">
+      <span class="p-badge">Rust</span>
+      <span class="p-badge">Windows · Linux · macOS</span>
+      <span class="p-badge">stable v1.4.0</span>
+    </div>
+    <p class="meta-line">
+      <a href="https://github.com/unixwin/niubash" target="_blank" rel="noopener noreferrer">github.com/unixwin/niubash ↗</a>
+      <span class="dot">·</span> Star 178
+      <span class="dot">·</span> 最新版本 v1.4.0（repo-meta 2026-10-19 实测）
+    </p>
+  </header>
+
+  <section>
+    <h2 id="why">为什么是 niubash</h2>
+    <p>
+      在 Windows 上写 Bash 的人只有几种命运：装一整个 MSYS 模拟层（Git Bash，440 MB + 一条会改写你参数的
+      msys-2.0.dll）、开一台 Linux 虚拟机（WSL，路径两边倒）、或者放弃 Bash 改学 PowerShell 的动词名词方言。
+      niubash 的答案是第四条路：<strong>从零写的 Rust 引擎直接执行 bash 语法</strong>，主战场原生 Windows，
+      同一份代码在 Linux 与 macOS 上作为可移植二进制发布。
+    </p>
+    <p>
+      它能跑真插件、真脚本、真 dotfiles，靠的不是移植 GNU 代码，而是把兼容性当工程对象：
+      每一个行为主张都要对 vendored GNU bash-5.3 源码给 file:line 坐标，每一处差异都要双向差分到字节级。
+    </p>
+    <div class="card-grid">
+      {
+        whyCards.map((c) => (
+          <div class="p-card">
+            <h3>{c.title}</h3>
+            <p>{c.body}</p>
+          </div>
+        ))
+      }
+    </div>
+    <p class="src-line">
+      路径方言实测矩阵随审计包附上（PATH-MATRIX.md，约 100 条 PS 原生 argv 探针逐格实跑）；
+      执行模型细读见 <a href="/docs/execution-model/">执行模型：零 fork 三层</a>，
+      路径差异见 <a href="/docs/paths-and-msys/">路径与 MSYS</a>。
+    </p>
+  </section>
+
+  <section>
+    <h2 id="features">核心特性</h2>
+    <div class="feature-list">
+      {
+        features.map((f) => (
+          <div class="feature">
+            <h3>{f.title}</h3>
+            <p>{f.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <h2 id="install">安装与快速上手</h2>
+    <p>Windows 一行命令（安装器免管理员权限，布好 PATH 与 Windows Terminal profile）：</p>
+    <div class="cmd">
+      <pre><code>{installWin}</code></pre>
+      <CopyButton copy={installWin} />
+    </div>
+    <p>Linux / macOS 取可移植 tar.gz 解压即用：</p>
+    <div class="cmd">
+      <pre><code>{installLinux}</code></pre>
+      <CopyButton copy={installLinux} />
+    </div>
+    <p>从源码构建（Rust 1.95+）：</p>
+    <div class="cmd">
+      <pre><code>{installSource}</code></pre>
+      <CopyButton copy={installSource} />
+    </div>
+    <p class="first-run">
+      首次运行 <code>niu</code> 会进入设置向导：提示符主题、补全风格、字体检测逐项可选，
+      生成纯 bash 语法的 <code>~/.niubashrc</code>——之后一切配置就是这一个文件。
+    </p>
+  </section>
+
+  <section>
+    <h2 id="deep">深入：AI 集成、插件系统与提示符</h2>
+    <h3>AI 集成</h3>
+    <p>
+      agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：跳过 REPL
+      专属初始化，<code>niu -c true</code> 从 105.6 ms 优化到 19.8 ms（29 例行为电池零差异）。
+      其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，
+      与 <code>-c</code> 同路径、同 <code>BASH_EXECUTION_STRING</code> 契约。其三，目录记忆
+      <code>--cwd-state</code>：agent 按工作区各配一个状态文件，链式调用即共享 cwd。
+    </p>
+    <p>
+      会话级接入更简单：<strong>从 niu 会话启动的 agent 直接拿到 niu 导出的 $SHELL</strong>——
+      遵循 POSIX 约定的 agent（opencode 等）零配置采用；Claude Code 的第一探针路径由安装器预置
+      bash 启动器命中。逐家 agent 的机制、难度与回滚命令见
+      <a href="/agents/">AI Agent 接入目录</a>；给 agent 的一键安装提示词与 skill bundle 安装见
+      <a href="/ai/">给 AI 的门户</a>。全部旗标语义见 <a href="/docs/cli/">CLI 与旗标参考</a>。
+    </p>
+    <h3>插件系统</h3>
+    <p>
+      外部 bash 生态走「先装、后审、再信」：<code>niu plugin add</code> 克隆源（新源默认不受信，
+      add 后不执行任何内容），<code>niu plugin trust</code> 审阅校验和后放行，
+      <code>niu plugin enable</code> 在 rc 尾部维护托管块——块外内容永不改写。
+      声明式 spec（<code>~/.niubash/plugins.toml</code>）是唯一事实源，
+      sync / restore / rollback 一族动词带 lockfile 锁定，镜像（<code>niu plugin mirror</code>）
+      对国内网络友好。运行时信任层会复验 pin：树被改动后读 drift 而非撒谎的 unchanged。
+    </p>
+    <h3>提示符</h3>
+    <p>
+      默认提示符是 Git Bash 骨架（绿 user@host、黄 POSIX 形态 cwd、青分支 + 脏星），
+      但分支段读 <code>.git/HEAD</code> 文件而不是 fork git——这是「提示符永不 spawn」红线的产物，
+      实测冷 39 ms / 暖 p50 2.5 ms，对照 Git Bash 每提示符 <code>__git_ps1</code> 的约 100–300 ms。
+      PS1 / 主题声明照常接管，<code>set -o vi</code> 的编辑模式指示器保留。
+    </p>
+  </section>
+
+  <section>
+    <h2 id="bench">实测数字</h2>
+    <p>每条为真机实测、可复现，基准脚本随仓附上；完整对比见 <a href="/benchmarks/">基准页</a>。</p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>指标</th><th>niu</th><th>对照</th><th>来源</th></tr>
+        </thead>
+        <tbody>
+          {
+            bench.map((r) => (
+              <tr>
+                <td>{r.a}</td>
+                <td><strong>{r.b}</strong></td>
+                <td>{r.c}</td>
+                <td><span class="src">{r.src}</span></td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="news">更新动态</h2>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>版本</th><th>日期</th><th>摘要</th></tr></thead>
+        <tbody>
+          {
+            news.map((n) => (
+              <tr>
+                <td><code>v{n.version}</code></td>
+                <td>{n.date}</td>
+                <td>{n.summary}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="src-line">
+      取自 changelogs.json（niubash 仓 CHANGELOG.md）最新 3 个已发布版本；完整流水见
+      <a href="/changelog/">更新日志</a>。
+    </p>
+  </section>
+
+  <section>
+    <h2 id="links">相关链接</h2>
+    <h3>站内</h3>
+    <ul>
+      <li><a href="/products/rubash/">rubash 产品文档</a>——niubash 背后的语言引擎</li>
+      <li><a href="/products/niu-git/">niu-git 产品文档</a>——niubash Windows 发行包随附的原生 git</li>
+      <li><a href="/docs/compatibility/">兼容总览：83/83 是什么意思</a> · <a href="/docs/execution-model/">执行模型</a> · <a href="/docs/paths-and-msys/">路径与 MSYS</a> · <a href="/docs/performance-model/">性能特征</a></li>
+      <li><a href="/agents/">AI Agent 接入目录</a> · <a href="/ai/">给 AI 的门户</a> · <a href="/benchmarks/">基准页</a> · <a href="/changelog/">更新日志</a></li>
+    </ul>
+    <h3>站外</h3>
+    <ul>
+      <li><a href="https://github.com/unixwin/niubash" target="_blank" rel="noopener noreferrer">GitHub 仓库 ↗</a> · <a href="https://github.com/unixwin/niubash/releases" target="_blank" rel="noopener noreferrer">Releases ↗</a></li>
+      <li><a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">完整手册（GitHub Pages）↗</a></li>
+    </ul>
+  </section>
+</DocsLayout>
+
+<style>
+  .doc-head h1 {
+    border-bottom: 3px solid #38e07b;
+    border-image: linear-gradient(90deg, #38e07b, transparent 70%) 1;
+    padding-bottom: 0.5rem;
+  }
+
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.12em 0.4em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .p-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #38e07b;
+    border-radius: calc(var(--radius) * 0.75);
+    background: color-mix(in srgb, #38e07b 12%, transparent);
+    color: #38e07b;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    padding: 0.24rem 0.6rem;
+    white-space: nowrap;
+  }
+
+  .meta-line {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .meta-line .dot {
+    margin: 0 0.4rem;
+  }
+
+  section h2 {
+    margin-top: 2.6rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0.9rem;
+    margin: 1.2rem 0;
+  }
+
+  .p-card {
+    border: 1px solid var(--border);
+    border-top: 3px solid #38e07b;
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.95rem 1.05rem;
+  }
+
+  .p-card h3 {
+    margin: 0 0 0.45rem;
+    font-size: 0.98rem;
+  }
+
+  .p-card p {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  .feature-list {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .feature h3 {
+    margin: 1.1rem 0 0.3rem;
+    color: #2fb863;
+  }
+
+  .feature p {
+    margin-bottom: 0.3rem;
+  }
+
+  .cmd {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0 0 1.05rem;
+  }
+
+  .cmd pre {
+    flex: 1 1 auto;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .first-run {
+    border-left: 3px solid #38e07b;
+    padding-left: 0.9rem;
+    color: var(--muted);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .cli-table {
+    width: 100%;
+    min-width: 620px;
+  }
+
+  .cli-table td strong {
+    color: #2fb863;
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  .src-line {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 960px) {
+    .cmd {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>

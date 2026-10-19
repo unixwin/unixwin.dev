@@ -1,0 +1,596 @@
+---
+/**
+ * /products/oh-my-niu/ — Oh My Niu 产品文档页。
+ * 事实来源：unixwin-repos/oh-my-niu/README.md（框架模型、插件表、环境包、rc 三行）、
+ * bundle.toml / index.toml（bundle 契约与 pack 条目）、docs/design.md（框架优先）、
+ * CHANGELOG.md、仓内实测计数（plugins/themes/completions/aliases/envs，2026-10-19）、
+ * HIGHLIGHTS.md #13（28 主题口径、catalog 指官方上游）、
+ * niubash crates/.../descriptors.rs（catalog 三源 origin）、src/data/repo-meta.json。
+ */
+import DocsLayout from '../../../components/DocsLayout.astro';
+import Badge from '../../../components/Badge.astro';
+import CopyButton from '../../../components/CopyButton.astro';
+import repoMeta from '../../../data/repo-meta.json';
+import changelogs from '../../../data/changelogs.json';
+
+const meta = repoMeta.repos['oh-my-niu'];
+const stars = typeof meta?.stars === 'number' ? meta.stars : null;
+const latest = typeof meta?.latest === 'string' ? meta.latest : '';
+
+// —— 安装与首跑命令 ——
+const rcBootstrap = [
+  '# ~/.niubashrc 三行启用：选插件、选主题、source 框架',
+  "NIU_PLUGINS=(prompt-core git docker zoxide)",
+  "NIU_THEME=minimal",
+  'source "$NIUBASH/oh-my-niu.niu"',
+].join('\n');
+const pluginOps = [
+  'niu plugin themes            # 主题总览',
+  'niu plugin doctor            # bundle 健康检查',
+  'niu plugin update oh-my-niu  # 在随 niubash 的离线基线之上独立更新',
+  'niu plugin rollback oh-my-niu',
+].join('\n');
+const mooCmd = 'niu_moo "Bash, native on Windows."   # cowsay 风格对话泡';
+
+// —— 为什么：3 卡 ——
+interface WhyCard {
+  tag: string;
+  title: string;
+  body: string;
+}
+const whyCards: WhyCard[] = [
+  {
+    tag: '形状',
+    title: 'Oh My 的形状，bash 的身体',
+    body: 'Oh My Zsh 真正好用的不是 zsh 语法，而是「插件即目录、按可预测顺序加载」的模型。oh-my-niu 把这个形状带给 niubash：列插件、source 框架、框架去加载，用户零学习成本。',
+  },
+  {
+    tag: '分工',
+    title: 'shell 出原语，框架出组合',
+    body: 'niubash 拥有加载、生命周期钩子、权限审阅、更新回滚等原语；oh-my-niu 拥有框架库、插件目录、主题与默认组合。随 shell 发行，但 bundled 不等于 built in——与第三方插件走同一套系统。',
+  },
+  {
+    tag: '不绑死',
+    title: 'catalog 指向官方上游',
+    body: 'niu plugin catalog 的三个 bash 生态源（oh-my-bash、bash-it、bash-completion）直指各自官方仓，不指向 oh-my-niu：上游插件一行不改即可原生运行，官方 bundle 只是选项之一。',
+  },
+];
+
+// —— 核心特性：8 条 ——
+interface Feature {
+  title: string;
+  body: string;
+}
+const features: Feature[] = [
+  {
+    title: '主题画廊',
+    body: '28 款主题（台账口径；仓内为 27 个 theme-* 插件目录 + 主题 TOML 资产层）：Oh My Zsh 经典款、Powerlevel 风 p10 四款、Oh My Posh 风配色款与官方基础款。',
+  },
+  {
+    title: '主题即插件',
+    body: '每款主题是一个普通插件目录（plugin.toml + theme-*.plugin.niu），与功能插件同一加载面——没有特殊的「主题系统」。',
+  },
+  {
+    title: 'prompt-core',
+    body: '提示符 API 与 segment 注册表的拥有者，默认开启；git 提示符段按 bundle 契约解析为 niubash 原生 Vcs 段（面向 niubash 1.4.1+），分支/脏星/短 SHA 进程内渲染，零 git 子进程。',
+  },
+  {
+    title: 'Starship 接管模式',
+    body: '想用 Starship？加载 starship 插件、留空 NIU_THEME，由 Starship 经标准 Bash init 路径接管 PROMPT_COMMAND/PS1/PS2/PS0。',
+  },
+  {
+    title: '功能插件族',
+    body: 'git、docker、kubectl、npm、jj、zoxide、direnv、dotenv、fzf、last-working-dir、thefuck、path-tools、extract、common-aliases、keybindings、command-not-found、winuxcmd-core（WinuxCmd 命令补全）……',
+  },
+  {
+    title: '2.0 新一方插件',
+    body: 'command-timer（逐命令耗时与退出码）、auto-env（按目录自动 .venv）、dirmarks（目录书签）、git-fetch-reminder（上游分叉提醒）、env-sync（经 rclone 同步 shell 配置与 WPM 包清单）。',
+  },
+  {
+    title: '别名 / 补全 / 键位资产',
+    body: 'aliases/ 五组 TOML（common/git/docker/kubectl/npm）；completions/ 174 个 TOML 补全定义（WinuxCmd 核心命令族 + git/docker/kubectl/npm/jj）；keybindings/ emacs 与 vi 预设。',
+  },
+  {
+    title: '环境包（envs）',
+    body: '一个小 TOML 声明装哪些 wpm 包、启用哪些插件、导出哪些变量：niu env use git 一键配好原生 Git 工具链（git + delta、GIT_PAGER、git-fetch-reminder）。',
+  },
+];
+
+// —— 深入：主题画廊 ——
+interface ThemeGroup {
+  group: string;
+  items: string;
+}
+const themeGroups: ThemeGroup[] = [
+  { group: 'Oh My Zsh 经典', items: 'agnoster · avit · bira · clean · fishy · lambda · robbyrussell' },
+  { group: 'Powerlevel 风', items: 'p10-lean · p10-classic · p10-rainbow · p10-pure' },
+  { group: 'Oh My Posh 风', items: 'dracula · catppuccin-mocha · gruvbox · spaceship · tokyonight' },
+  { group: '官方基础', items: 'default · dark · light · colorful · minimal · classic · pure · compact · cyberpunk · forest · ocean' },
+];
+
+interface CatalogRow {
+  id: string;
+  origin: string;
+  note: string;
+}
+const catalogRows: CatalogRow[] = [
+  { id: 'oh-my-bash', origin: 'github.com/ohmybash/oh-my-bash', note: 'bash 框架：80+ 主题、插件与别名（MIT）' },
+  { id: 'bash-it', origin: 'github.com/Bash-it/bash-it', note: '社区别名、插件、补全与主题（MIT）' },
+  { id: 'bash-completion', origin: 'github.com/scop/bash-completion', note: '标准 bash 补全库（GPL-2.0+，按需拉取）' },
+];
+
+interface FactRow {
+  metric: string;
+  value: string;
+  src: string;
+}
+const factRows: FactRow[] = [
+  { metric: '主题', value: '28 款（27 个 theme-* 插件目录 + 主题资产层）', src: 'HIGHLIGHTS #13 台账 · 仓内实测计数 2026-10-19' },
+  { metric: '插件目录', value: '50 个（27 主题 + 23 功能插件）', src: '仓内 plugins/ 实测计数 2026-10-19' },
+  { metric: '补全定义', value: '174 个 TOML', src: '仓内 completions/ 实测计数 2026-10-19' },
+  { metric: '索引 pack 条目', value: '22 个（bundle 2.0.0，min_niubash 1.0.0）', src: 'oh-my-niu/index.toml' },
+  { metric: '别名包 / 环境包', value: '5 组 TOML · 2 个官方 env（git / cicd）', src: '仓内 aliases/ · envs/ 实测计数' },
+];
+
+// —— 更新动态：oh-my-niu 自身 CHANGELOG ——
+interface ChangelogVersion {
+  version: string;
+  date?: string;
+  unreleased?: boolean;
+}
+interface ChangelogRepo {
+  repo: string;
+  versions?: ChangelogVersion[];
+}
+const omRepo = ((changelogs as { repos: ChangelogRepo[] }).repos ?? []).find((r) => r.repo === 'oh-my-niu');
+const omVersions = (omRepo?.versions ?? []).slice(0, 3);
+const omDate = (v?: ChangelogVersion) => (v?.date ? v.date : '日期未标');
+---
+
+<DocsLayout
+  title="Oh My Niu — Niubash 官方主题与插件框架"
+  description="Oh My Niu 产品文档：niubash 的官方 Oh My 式插件框架与捆绑发行——28 款主题、50 个插件目录、174 个补全定义、环境包与 prompt-core；插件即目录、主题即插件，随 niubash 发行、独立更新，catalog 指向官方上游。"
+  path="/products/oh-my-niu/"
+>
+  <header class="doc-head">
+    <h1>Oh My Niu：Niubash 的主题与插件框架</h1>
+    <p class="lead">
+      niubash 的<strong>官方 Oh My 式插件框架与捆绑发行</strong>：插件即目录、主题即插件，
+      shell 核心只提供加载原语。装好即得 <strong>28 款主题</strong>与一族功能插件
+      （git / docker / kubectl / zoxide / fzf…），随
+      <a href="/products/niubash/">niubash</a> 发行做离线基线，之后独立更新与回滚。
+      它不是 zsh 兼容层——是 Oh My Zsh 的有用形状、bash 的身体。
+    </p>
+    <div class="badge-row">
+      <Badge text="Shell（.niu / bash）" tone="accent" />
+      <Badge text="随 niubash · 全平台" tone="info" />
+      <Badge text={latest || 'v2.0.0'} tone="warn" />
+      <Badge text="MIT" tone="muted" />
+    </div>
+    <p class="repo-line">
+      <a href="https://github.com/unixwin/oh-my-niu" target="_blank" rel="noopener noreferrer">
+        github.com/unixwin/oh-my-niu ↗
+      </a>
+      {stars !== null && <span class="stars">{stars} stars</span>}
+      <span class="src">（repo-meta.json 实测 2026-10-19）</span>
+    </p>
+  </header>
+
+  <section>
+    <h2>为什么是 Oh My Niu</h2>
+    <p>
+      用惯了 Oh My Zsh / fish 插件管理器 / PowerShell 提示符框架的人，期待的不是某个具体主题，
+      而是一套模型：<strong>列插件、挑主题、source 一行，一切就位</strong>。
+      原生 shell 常缺这一层；oh-my-niu 给 niubash 补上，且刻意不把框架焊死在 shell 里。
+    </p>
+    <div class="why-grid">
+      {
+        whyCards.map((c) => (
+          <div class="why-card">
+            <span class="why-tag">{c.tag}</span>
+            <h3>{c.title}</h3>
+            <p>{c.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section>
+    <h2>核心特性</h2>
+    <ul class="feature-list">
+      {
+        features.map((f) => (
+          <li>
+            <strong>{f.title}</strong>
+            <span>{f.body}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <h2>安装与快速上手</h2>
+    <p>
+      bundle 随 niubash 发行（离线基线），启用只需 rc 三行；也可以经
+      <code>niu plugin</code> 命令族安装/更新/回滚。入口
+      <code>oh-my-niu.niu</code> 可重入——source 两次是空操作，
+      全量重载加 <code>--reload</code>。
+    </p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{rcBootstrap}</code></pre>
+      <CopyButton copy={rcBootstrap} />
+    </div>
+    <h3>首跑引导</h3>
+    <div class="codeblock">
+      <pre class="cmd"><code>{pluginOps}</code></pre>
+      <CopyButton copy={pluginOps} />
+    </div>
+    <p>
+      换主题改 <code>NIU_THEME</code> 后重开终端即可；把配置改动写进
+      <code>~/.niubashrc</code>（source 本身不落盘，插件不经用户显式命令不改写 rc）。
+      验证一切正常，让牛说话：
+    </p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{mooCmd}</code></pre>
+      <CopyButton copy={mooCmd} />
+    </div>
+  </section>
+
+  <section>
+    <h2>深入：主题画廊</h2>
+    <p>
+      画廊不是静态皮肤库——每款主题都是 <code>plugins/theme-*/</code> 下的普通插件目录
+      （<code>plugin.toml</code> 元数据 + <code>*.plugin.niu</code> 行为），由
+      <code>prompt-core</code> 的 segment 注册表渲染；<code>themes/*.toml</code> 资产层
+      服务于 manifest 兼容与审阅。四组风格：
+    </p>
+    <table>
+      <thead>
+        <tr><th>分组</th><th>主题</th></tr>
+      </thead>
+      <tbody>
+        {
+          themeGroups.map((g) => (
+            <tr>
+              <td><strong>{g.group}</strong></td>
+              <td><code>{g.items}</code></td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p class="src-line">
+      来源：oh-my-niu README「First-Party Plugins」插件表与 <code>plugins/</code>、
+      <code>themes/</code> 目录（实测计数 2026-10-19；28 主题为 HIGHLIGHTS #13 台账口径）。
+    </p>
+    <h3>目录优先模型</h3>
+    <p>
+      行为本体在 <code>plugins/&lt;name&gt;/</code>；<code>packs/</code>、<code>aliases/</code>、
+      <code>completions/</code>、<code>prompts/</code>、<code>keybindings/</code>、
+      <code>themes/</code> 是过渡期的 manifest 兼容与审阅元数据面（当前 niubash 发行工具仍认
+      manifest-first 布局）。新行为先进插件目录，再暴露 TOML 元数据供审阅、托管安装、更新与回滚——
+      设计全文见仓内 <code>docs/design.md</code>（framework-first）。
+    </p>
+    <h3>catalog 指向官方上游</h3>
+    <p>
+      <code>niu plugin</code> 的三个内置 bash 生态源<strong>不绑 oh-my-niu</strong>——
+      origin 直指官方上游仓，上游资产一行不改原生运行（兼容性是被
+      <a href="/products/rubash/">rubash</a> 引擎测出来的事实）：
+    </p>
+    <table>
+      <thead>
+        <tr><th>catalog 源</th><th>官方 origin</th><th>内容</th></tr>
+      </thead>
+      <tbody>
+        {
+          catalogRows.map((r) => (
+            <tr>
+              <td><code>{r.id}</code></td>
+              <td>{r.origin}</td>
+              <td>{r.note}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p class="src-line">来源：niubash <code>crates/niubash-runtime/src/plugins/descriptors.rs</code>（ManagerDescriptor origin 字段）· HIGHLIGHTS #13。</p>
+    <h3>与 niu plugin 命令联动</h3>
+    <p>
+      bundle 契约：<code>api = "niubash:plugin-bundle@0.1.0"</code>、
+      <code>min_niubash = "1.0.0"</code>（2.0 线自旧 <code>winuxsh:</code> 前缀迁至
+      <code>niubash:</code>；旧 <code>min_winuxsh</code> 字段仍被接受，改名前的
+      <code>~/.oh-my-winuxsh</code> 目录作为回退仍被发现）。发布档
+      <code>oh-my-niu-&lt;version&gt;.zip</code> 附 <code>.sha256</code>，经
+      <code>niu plugin update oh-my-niu --from … --checksum-file …</code> 升级、
+      <code>niu plugin rollback oh-my-niu</code> 回滚；<code>niu plugin review/search/themes/doctor</code>
+      是审阅与诊断面（CLI 全录见 <a href="/docs/cli/">CLI 参考</a>）。托管 TOML 亦映射到同一插件系统
+      （<code>[plugins] bundles = ["oh-my-niu"]</code> + <code>load = […]</code> + 权限声明）。
+    </p>
+  </section>
+
+  <section>
+    <h2>实测数字</h2>
+    <p class="src-line">框架类项目没有微基准——这里的数字是结构台账与仓内实测计数（2026-10-19）：</p>
+    <table>
+      <thead>
+        <tr><th>指标</th><th>数值</th><th>来源</th></tr>
+      </thead>
+      <tbody>
+        {
+          factRows.map((r) => (
+            <tr>
+              <td>{r.metric}</td>
+              <td><strong>{r.value}</strong></td>
+              <td class="src">{r.src}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>更新动态</h2>
+    <p class="src-line">
+      oh-my-niu 有自身 CHANGELOG。最新 3 版（changelogs.json，抓取 2026-10-19；
+      完整流水见 <a href="/changelog/">更新日志</a>）：
+    </p>
+    <ul class="changelog-list">
+      <li>
+        <strong>{omVersions[0]?.version ?? '2.0.0'}（{omDate(omVersions[0])}）</strong>
+        <span>
+          更名 oh-my-winuxsh → oh-my-niu（对齐 niubash 1.0.0 品牌）；bundle/plugin API 前缀
+          <code>winuxsh:</code> → <code>niubash:</code>，环境前缀改 <code>NIU_*</code>；
+          新一方插件 command-timer / auto-env / dirmarks / git-fetch-reminder / env-sync；
+          git 提示符段面向 niubash 1.4.1+ 解析为原生 Vcs 段（进程内渲染、零 git 子进程）。
+        </span>
+      </li>
+      <li>
+        <strong>{omVersions[1]?.version ?? '1.0.1'}（{omDate(omVersions[1])}）</strong>
+        <span>
+          首批源包（Git/Docker/kubectl/npm/zoxide/direnv/dotenv/fzf/last-working-dir/thefuck）；
+          框架入口点、目录优先官方插件、prompt-core 与 minimal/classic/pure/compact/cyberpunk/forest/ocean
+          七款主题插件；运行时 smoke 脚本；确定性发布打包（zip + sha256）。
+        </span>
+      </li>
+      <li>
+        <strong>{omVersions[2]?.version ?? '1.0.0'}（{omDate(omVersions[2])}）</strong>
+        <span>
+          建仓为官方插件 bundle：bundle 元数据（api = winuxsh:plugin-bundle@0.1.0、
+          min_winuxsh 0.8.3）、别名/补全/提示符预设/键位/主题资产与作者模板、
+          确定性发布打包与校验和。
+        </span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>相关链接</h2>
+    <div class="link-cols">
+      <div>
+        <h3>站内</h3>
+        <ul>
+          <li><a href="/products/niubash/">Niubash 产品文档</a> — 宿主 shell 与 plugin 原语</li>
+          <li><a href="/products/rubash/">Rubash 产品文档</a> — 上游插件直接跑的引擎侧</li>
+          <li><a href="/products/winuxcmd/">WinuxCmd 产品文档</a> — winuxcmd-core 补全的对象</li>
+          <li><a href="/products/wpm/">wpm 产品文档</a> — 环境包的包安装通道</li>
+          <li><a href="/docs/cli/">CLI 与旗标参考</a> — niu plugin / niu env 全录</li>
+          <li><a href="/docs/">文档区首页</a> · <a href="/changelog/">更新日志</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>仓内</h3>
+        <ul>
+          <li><a href="https://github.com/unixwin/oh-my-niu" target="_blank" rel="noopener noreferrer">GitHub：unixwin/oh-my-niu ↗</a></li>
+          <li><a href="https://github.com/unixwin/oh-my-niu/blob/main/docs/design.md" target="_blank" rel="noopener noreferrer">框架设计（framework-first）↗</a></li>
+          <li><a href="https://github.com/unixwin/oh-my-niu/blob/main/docs/authoring.md" target="_blank" rel="noopener noreferrer">插件作者指南 ↗</a></li>
+          <li><a href="https://github.com/unixwin/oh-my-niu/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG ↗</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .repo-line {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .repo-line a {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+  }
+
+  .stars {
+    margin-left: 0.6rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  /* —— 为什么：3 卡 —— */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin: 1.2rem 0;
+  }
+
+  .why-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.95rem 1.1rem;
+  }
+
+  .why-card h3 {
+    margin: 0.35rem 0 0.3rem;
+    font-size: 0.98rem;
+  }
+
+  .why-card p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  .why-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.75);
+    padding: 0.14rem 0.5rem;
+  }
+
+  /* —— 核心特性：条目列表 —— */
+  .feature-list {
+    list-style: none;
+    margin: 1.2rem 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .feature-list li {
+    border-left: 3px solid var(--accent);
+    background: var(--bg-elev);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 0.6rem 0.95rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .feature-list strong {
+    font-size: 0.95rem;
+    color: var(--accent);
+  }
+
+  .feature-list span {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  /* —— 命令块 + 复制按钮 —— */
+  .codeblock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .codeblock pre.cmd {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cmd-label {
+    margin: 1rem 0 0.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .src-line {
+    color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  /* —— 更新动态 —— */
+  .changelog-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .changelog-list li {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-2);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.75rem 1rem;
+    margin: 0;
+  }
+
+  .changelog-list strong {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    color: var(--accent);
+  }
+
+  .changelog-list span {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.87rem;
+    color: var(--muted);
+  }
+
+  /* —— 相关链接双列 —— */
+  .link-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.4rem;
+  }
+
+  .link-cols h3 {
+    margin-top: 0.4rem;
+    font-size: 0.92rem;
+    font-family: var(--font-mono);
+    color: var(--accent-2);
+  }
+
+  .link-cols ul {
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 900px) {
+    .why-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 720px) {
+    .link-cols {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

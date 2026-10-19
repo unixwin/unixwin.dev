@@ -32,7 +32,7 @@
         "最稳方式：终端里输入 niu 进入会话，再启动 opencode（$SHELL 自动可见）",
         "要覆盖开始菜单/桌面启动：运行上面的持久化命令，重开终端生效"
       ],
-      "verify": "让 agent 跑 universal.verifyCmd，期望 MSYS_NT-…",
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
       "rollback": "[Environment]::SetEnvironmentVariable('SHELL', $null, 'User')",
       "notes": [
         "opencode 二进制里没有任何 niu 专属代码，$SHELL 就是全部机制",
@@ -57,7 +57,7 @@
         "装好 niubash 即完成：安装器在 C:\\Program Files\\Git\\bin 放置 bash.exe 启动器，正好命中 Claude Code 的第一探针",
         "探针不生效时，把上面的 env 写进 Claude Code 的 settings.json"
       ],
-      "verify": "universal.verifyCmd，期望 MSYS_NT-…",
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
       "rollback": "删除 settings.json 中的 env.CLAUDE_CODE_GIT_BASH_PATH",
       "notes": [
         "该变量只接受文件名为 bash.exe / sh.exe / bash / sh 的路径——指向 niu.exe 会被静默忽略（这是它指向启动器而非 niu 本体的原因）",
@@ -79,7 +79,7 @@
         "安装 fork 版 Codex 与 niubash，无需任何配置：探测按序检查 C:\\Program Files\\Niubash\\niu.exe、x86 路径、%LOCALAPPDATA%\\Programs\\Niubash\\niu.exe 及 PATH 上的 niu",
         "exec 白名单已放行 niu.exe 的 -C / -c / -lc / --repl-command"
       ],
-      "verify": "universal.verifyCmd，期望 MSYS_NT-…",
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
       "rollback": "换回官方 Codex 即恢复默认 shell 表",
       "notes": ["这是其它 agent 接入方式的目标形态：探测表 + 参数白名单都在上游代码里"],
       "sources": ["agents.md#codex（codex-rs/shell-command/src/shell_detect.rs）"]
@@ -101,7 +101,7 @@
         "默认：安装器占位的 C:\\Program Files\\Git\\bin\\bash.exe 命中该家族的共享探针，无需配置",
         "要精确控制：设置 automationProfile 指向 niu.exe，经自动化终端跑命令的 agent 全部继承"
       ],
-      "verify": "universal.verifyCmd，期望 MSYS_NT-…",
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
       "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
       "notes": ["该家族共享同一份硬编码探针序列（Program Files 两级 Git 路径 → PATH 上 git 的相对 bin/bash.exe），修一处全家生效"],
       "sources": ["agents.md#vs-code（ZCode app.asar 本地核实，同源家族同理）"]
@@ -120,7 +120,7 @@
         "code": "{\n  \"terminal\": {\n    \"shell\": {\n      \"program\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\"\n    }\n  }\n}"
       },
       "steps": ["打开 Zed settings.json，写入上面的 terminal.shell.program"],
-      "verify": "universal.verifyCmd，期望 MSYS_NT-…",
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
       "rollback": "删除 terminal.shell.program 配置项",
       "notes": [],
       "sources": ["agents.md#zed"]
@@ -161,7 +161,7 @@
         "IDE agent：开启 Legacy Terminal Tool 设置；配合上面的 useWslProfiles:false 避免落到 WSL",
         "Agent CLI：暂无法配置（detectShellType() 在 Windows 上无条件优先 PowerShell）——已上报上游，等它暴露 shell 路径"
       ],
-      "verify": "universal.verifyCmd 观察当前回落到的 shell",
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——观察当前实际回落到的 shell",
       "rollback": "关闭 Legacy Terminal Tool / 删除 useWslProfiles 配置",
       "notes": ["上游修复前，CLI 侧命令会以 PowerShell 语法执行，不是 bash 语法错误"],
       "sources": ["agents.md#cursor（上游 issue 线程引用发行代码）"]

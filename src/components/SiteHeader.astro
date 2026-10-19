@@ -7,18 +7,20 @@
  *   - en 页（/en/ 前缀）：导航标签用 NAV_EN 英文对照、有 en 版的站内链接改指 /en/，
  *     品牌落 /en/；
  *   - zh 页：渲染与从前完全一致。
- * 导航尾部挂 LangSwitch（仅当前页存在对应语言页时渲染；跳转目标由
- * src/i18n/lang.ts 的配对清单决定）与 ToggleTheme（亮/暗切换；组件脚本自检
- * data-theme，在 terminal/clean/neon 候选回看页自动隐藏，故共享渲染无害）。
+ * 导航尾部挂 LangSwitch（几乎每页都渲染；跳转目标由 src/i18n/lang.ts 的
+ * resolveSwitchPair 决定——精确配对直接互指，无配对时回退到同区段的
+ * en/zh 页，仅 /404、/theme/** 等无对页不渲染）与 ToggleTheme（亮/暗切换；
+ * 组件脚本自检 data-theme，在 terminal/clean/neon 候选回看页自动隐藏，
+ * 故共享渲染无害）。
  */
 import nav from '../data/nav.json';
 import LangSwitch from './LangSwitch.astro';
 import ToggleTheme from './ToggleTheme.astro';
-import { resolveLangPair, toEnHref } from '../i18n/lang';
+import { resolveSwitchPair, toEnHref } from '../i18n/lang';
 
 const { items } = nav;
 
-const pair = resolveLangPair(Astro.url.pathname);
+const pair = resolveSwitchPair(Astro.url.pathname);
 const isEn = pair.lang === 'en';
 
 // en 页导航标签对照（zh 页不查此表）

@@ -3,28 +3,79 @@
     {
       "label": "文档",
       "items": [
-        { "label": "文档区首页", "href": "/docs/" }
+        {
+          "label": "文档区首页",
+          "href": "/docs/"
+        }
+      ]
+    },
+    {
+      "label": "产品文档",
+      "items": [
+        {
+          "label": "Niubash — AI-native bash",
+          "href": "/products/niubash/"
+        },
+        {
+          "label": "WinuxCmd — 原生 Unix 命令集",
+          "href": "/products/winuxcmd/"
+        },
+        {
+          "label": "Rubash — 可嵌入引擎",
+          "href": "/products/rubash/"
+        },
+        {
+          "label": "niu-git — 原生 Windows Git",
+          "href": "/products/niu-git/"
+        },
+        {
+          "label": "wpm — 包管理器",
+          "href": "/products/wpm/"
+        },
+        {
+          "label": "Oh My Niu — 主题与插件",
+          "href": "/products/oh-my-niu/"
+        }
       ]
     },
     {
       "label": "niubash 与 bash 的差异",
       "items": [
-        { "label": "兼容总览：83/83 是什么意思", "href": "/docs/compatibility/" },
-        { "label": "路径与 MSYS：最大的行为差异", "href": "/docs/paths-and-msys/" },
-        { "label": "执行模型：零 fork 三层", "href": "/docs/execution-model/" },
-        { "label": "性能特征：哪里快、哪里持平", "href": "/docs/performance-model/" }
+        {
+          "label": "兼容总览：83/83 是什么意思",
+          "href": "/docs/compatibility/"
+        },
+        {
+          "label": "路径与 MSYS：最大的行为差异",
+          "href": "/docs/paths-and-msys/"
+        },
+        {
+          "label": "执行模型：零 fork 三层",
+          "href": "/docs/execution-model/"
+        },
+        {
+          "label": "性能特征：哪里快、哪里持平",
+          "href": "/docs/performance-model/"
+        }
       ]
     },
     {
       "label": "参考",
       "items": [
-        { "label": "CLI 与旗标参考", "href": "/docs/cli/" }
+        {
+          "label": "CLI 与旗标参考",
+          "href": "/docs/cli/"
+        }
       ]
     },
     {
       "label": "完整文档",
       "items": [
-        { "label": "unixwin.github.io/niubash", "href": "https://unixwin.github.io/niubash/", "external": true }
+        {
+          "label": "unixwin.github.io/niubash",
+          "href": "https://unixwin.github.io/niubash/",
+          "external": true
+        }
       ]
     }
   ]

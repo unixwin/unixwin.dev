@@ -16,6 +16,12 @@
       ]
     },
     {
+      "label": "参考",
+      "items": [
+        { "label": "CLI 与旗标参考", "href": "/docs/cli/" }
+      ]
+    },
+    {
       "label": "完整文档",
       "items": [
         { "label": "unixwin.github.io/niubash", "href": "https://unixwin.github.io/niubash/", "external": true }

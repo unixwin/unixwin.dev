@@ -1,73 +1,103 @@
 ---
 /**
- * /docs/ — 文档区首页（门户第一个带侧栏的区域，terminal 主题）。
- * 导语：差异哲学——兼容是测出来的，但机制不同。
- * 卡片导航：本区四篇文章各一句 + 完整文档外链。
+ * /docs/ — 文档区首页（Mintlify 风格卡片网格）。
+ * 导语区：大标题 + 副题 + 快速链接行；正文：每篇文档一张卡（标题 + 两行描述 + 箭头）。
+ * 无右栏 TOC（toc=false），无面包屑/页尾导航（DocsLayout 对 /docs/ 自动省略）。
  */
 import DocsLayout from '../../components/DocsLayout.astro';
 
-const articles = [
+const cards = [
   {
     href: '/docs/compatibility/',
+    glyph: '83/83',
     title: '兼容总览：83/83 是什么意思',
     line: 'GNU Bash 上游 83 套测试语料 100% 通过、82 套输出逐字节一致——唯一残差经逐字节证明是 GNU 自身的 coproc 竞态。',
   },
   {
     href: '/docs/paths-and-msys/',
+    glyph: 'C:\\',
     title: '路径与 MSYS：最大的行为差异',
-    line: 'Windows、MSYS、WSL、Cygwin 四大路径方言一个引擎全收；没有 MSYS 运行时，argv 逐字节原样抵达，MSYS_NO_PATHCONV 这个词在这里不存在。',
+    line: 'Windows、MSYS、WSL、Cygwin 四大路径方言一个引擎全收；argv 逐字节原样抵达，MSYS_NO_PATHCONV 这个词在这里不存在。',
   },
   {
     href: '/docs/execution-model/',
+    glyph: '( )',
     title: '执行模型：零 fork 三层',
-    line: '( list ) 与 $( ) 从不创建进程，fd 表复刻 POSIX dup 语义，真进程只出现在真正的进程边界——而脚本可观察的一切与 GNU Bash 一致。',
+    line: '( list ) 与 $( ) 从不创建进程，fd 表复刻 POSIX dup 语义，真进程只出现在真正的进程边界——脚本可观察的一切与 GNU Bash 一致。',
   },
   {
     href: '/docs/performance-model/',
+    glyph: 'ms',
     title: '性能特征：哪里快、哪里持平',
     line: '零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平是诚实的地板——每个数字同机实测、方法公开、基准随包附上。',
   },
+  {
+    href: '/docs/cli/',
+    glyph: '$ _',
+    title: 'CLI 与旗标参考',
+    line: 'niu 的基础调用、skill / plugin 子命令、wpm 速查与 doctor 诊断——命令、作用与来源一张表查完。',
+  },
+];
+
+const quickLinks = [
+  { href: '/agents/universal/', label: '安装' },
+  { href: '/benchmarks/', label: '基准' },
+  { href: 'https://unixwin.github.io/niubash/', label: '完整文档', external: true },
 ];
 ---
 
 <DocsLayout
-  title="文档 · niubash 与 bash 的差异"
-  description="UNIXWIN 文档区：niubash 与 GNU Bash 的兼容总览、路径与 MSYS 行为差异、零 fork 三层执行模型、性能特征。"
+  title="niubash 文档"
+  description="UNIXWIN 文档区：niubash 与 GNU Bash 的兼容总览、路径与 MSYS 行为差异、零 fork 三层执行模型、性能特征，以及 CLI 与旗标参考。"
   path="/docs/"
+  toc={false}
 >
-  <header class="doc-head">
-    <h1>niubash 与 bash 的差异</h1>
+  <header class="doc-hero">
+    <h1>niubash 文档</h1>
     <p class="lead">
       一句话定位：<strong>兼容是测出来的，但机制不同。</strong>
       对 GNU Bash 自己的 83 套上游测试语料，niubash 引擎（rubash）取得 83/83
       通过、82 套输出逐字节一致；而在这层被验证的兼容之下，是一套完全不同的机制——
-      零 fork 的三层执行模型、没有 MSYS 层的路径翻译、逐字节原样的 argv、
-      四方言路径全收、62 个真内建加 12 个内联 coreutils，以及一个刻意保持的
-      <code>uname = MSYS_NT</code> 兼容人设。
+      零 fork 的三层执行模型、没有 MSYS 层的路径翻译、四大方言路径全收。
     </p>
-    <p class="lead">
-      这个区域把这枚硬币的两面分开讲清楚：哪一面是「与 bash 行为一致」（有套件与
-      逐字节证据），哪一面是「与 bash 实现不同」（有架构与契约文档）。迁移脚本、
-      评估性能、或排查一个行为差异时，从对应的一篇开始。
-    </p>
+    <nav class="quick-links" aria-label="快速链接">
+      {
+        quickLinks.map((q) => (
+          <a
+            href={q.href}
+            target={q.external ? '_blank' : undefined}
+            rel={q.external ? 'noopener noreferrer' : undefined}
+          >
+            {q.label}
+            <span aria-hidden="true">{q.external ? '↗' : '→'}</span>
+          </a>
+        ))
+      }
+    </nav>
   </header>
 
   <nav class="cards" aria-label="文档区文章导航">
     {
-      articles.map((a) => (
-        <a class="card" href={a.href}>
-          <h2>{a.title}</h2>
-          <p>{a.line}</p>
-          <span class="go">阅读全文 →</span>
+      cards.map((c) => (
+        <a class="card" href={c.href}>
+          <span class="card-glyph" aria-hidden="true">
+            {c.glyph}
+          </span>
+          <h2>{c.title}</h2>
+          <p>{c.line}</p>
+          <span class="go">
+            阅读全文
+            <span aria-hidden="true">→</span>
+          </span>
         </a>
       ))
     }
   </nav>
 
   <div class="all-docs">
-    <h2>完整文档</h2>
+    <h2>只讲差异，其余见完整文档</h2>
     <p>
-      本区只讲「与 bash 的差异」这一个主题。安装、插件、agent 接入、平台支持等完整内容，
+      本区的四篇文章只讲「与 bash 的差异」这一个主题。安装、插件、agent 接入、平台支持等完整内容，
       见官方文档站：
       <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
         unixwin.github.io/niubash ↗
@@ -77,43 +107,72 @@ const articles = [
 </DocsLayout>
 
 <style>
-  .doc-head {
-    margin-bottom: 0.5rem;
+  .doc-hero {
+    padding-bottom: 0.5rem;
   }
 
   .lead {
     color: var(--muted);
-    font-size: 1.02rem;
-    margin-bottom: 1.2rem;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    max-width: 68ch;
+    margin-bottom: 1.4rem;
   }
 
   .lead strong {
     color: var(--accent);
   }
 
-  .lead code {
-    background: var(--bg-code);
+  .quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .quick-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
     border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 0.08em 0.35em;
-    font-size: 0.88em;
+    border-radius: 999px;
+    background: var(--bg-elev);
     color: var(--text);
+    font-size: 0.86rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.12s ease, color 0.12s ease;
+  }
+
+  .quick-links a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .quick-links a span {
+    color: var(--muted);
+    font-size: 0.8em;
   }
 
   .cards {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
-    margin: 1.8rem 0 2.4rem;
+    margin: 2rem 0 2.4rem;
   }
 
   .card {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--bg-elev);
-    padding: 1.15rem 1.3rem;
+    padding: 1.2rem 1.3rem;
     text-decoration: none;
+    transition: border-color 0.12s ease;
   }
 
   .card:hover {
@@ -121,10 +180,25 @@ const articles = [
     text-decoration: none;
   }
 
+  .card-glyph {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.18rem 0.5rem;
+    letter-spacing: 0.02em;
+  }
+
   .card h2 {
-    font-size: 1.02rem;
-    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
     color: var(--text);
+    line-height: 1.4;
   }
 
   .card:hover h2 {
@@ -134,13 +208,20 @@ const articles = [
   .card p {
     margin: 0;
     color: var(--muted);
-    font-size: 0.88rem;
-    line-height: 1.6;
+    font-size: 0.87rem;
+    line-height: 1.65;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .card .go {
-    display: block;
-    margin-top: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: auto;
+    padding-top: 0.35rem;
     color: var(--accent);
     font-family: var(--font-mono);
     font-size: 0.78rem;
@@ -155,7 +236,9 @@ const articles = [
 
   .all-docs h2 {
     font-size: 1rem;
-    margin-bottom: 0.4rem;
+    margin: 0 0 0.4rem;
+    padding: 0;
+    border-bottom: none;
   }
 
   @media (max-width: 720px) {

@@ -1,0 +1,456 @@
+---
+/**
+ * /docs/cli/ — CLI 与旗标参考（docs api 页）。
+ * 事实来源：niubash 仓 docs/src/advanced-usage.md、getting-started.md、installer.md
+ * （补充：skills/niubash/references/wpm.md、docs/src/agents.md、src/main.rs 的 niu --help、
+ *  wpm-source/docs/index-schema.md 的 --json 契约）。每行备注标注来源文件。
+ */
+import DocsLayout from '../../../components/DocsLayout.astro';
+
+interface Row {
+  cmd: string;
+  purpose: string;
+  note: string;
+  src: string;
+}
+
+const basics: Row[] = [
+  {
+    cmd: 'niubash',
+    purpose: '交互 REPL 启动',
+    note: '日常 shell；加载 ~/.niubashrc（无则回落 ~/.winshrc）与交互生命周期钩子。',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: "niu -c '<cmd>'",
+    purpose: '一次性执行命令后退出',
+    note: '脚本 / 测试 / CI / agent 通道：不加载 rc、插件与交互钩子；需初始化时用 NIU_ENV（或 BASH_ENV）指定一次性 init 文件。',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: "niu -C '<cmd>' · niu --repl-command <cmd>",
+    purpose: '一次性 REPL 命令',
+    note: '加载与交互 REPL 相同的启动状态（rc + 钩子），执行一条命令后退出。',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu --encoded-command <b64>',
+    purpose: '执行 base64 编码的命令',
+    note: 'agent/CI 免引号转义通道；可选 v1: 前缀防 MSYS 路径改写，语义与 -c 完全一致。',
+    src: 'niu --help（src/main.rs）',
+  },
+  {
+    cmd: 'niu --cwd-state <file> [-c ...]',
+    purpose: '跨调用目录记忆',
+    note: '启动时恢复文件记录的目录、退出时写回最终目录；agent 按工作区各配一个文件即可隔离。',
+    src: 'niu --help（src/main.rs）',
+  },
+  {
+    cmd: 'niu --self-update [--check | --dry-run]',
+    purpose: '自更新 shell 本体',
+    note: 'WinHTTP 跟随 GitHub releases/latest 下载并静默安装；REPL 内等价命令 self-update。--check 只报告，--dry-run 只下载不运行。',
+    src: 'installer.md',
+  },
+  {
+    cmd: 'niu -V · niu --version',
+    purpose: '版本与组件信息',
+    note: '诊断首查项：先确认活动二进制版本，再排查其余。',
+    src: 'advanced-usage.md',
+  },
+];
+
+const skills: Row[] = [
+  {
+    cmd: 'niu skill install',
+    purpose: '安装 AI agent skill bundle',
+    note: '默认装入 ~/.claude/skills/niubash/（SKILL.md + references/）。',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu skill install --target claude',
+    purpose: '只装到 Claude',
+    note: '等价默认目标；字节级落盘。',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu skill install --target zcode',
+    purpose: '装到 ZCode',
+    note: '写入 ZCode 的 skills 目录。',
+    src: 'niu --help（src/main.rs）',
+  },
+  {
+    cmd: 'niu skill install --target cursor',
+    purpose: '装到 Cursor',
+    note: '写入 Cursor 的 skills 目录。',
+    src: 'niu --help（src/main.rs）',
+  },
+  {
+    cmd: 'niu skill install --target all',
+    purpose: 'claude + zcode + cursor 三处安装',
+    note: '一次覆盖三个 agent 宿主。',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu skill install --target C:/agents/skills',
+    purpose: '装入任意目录（通用形态）',
+    note: '落地为 <dir>/niubash/，供任意 agent 宿主自取。',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu skill status',
+    purpose: '逐目标检查 bundle 状态',
+    note: 'current / outdated 判定 = 字节比较 + sha256；niu doctor 会带一条建议行。',
+    src: 'advanced-usage.md',
+  },
+];
+
+const plugins: Row[] = [
+  {
+    cmd: 'niu plugin add <id|owner/repo|url|path>',
+    purpose: '安装外部插件源',
+    note: '克隆到 ~/.niubash/sources/<id> 并登记 registry；新源默认不受信，add 后不会执行任何内容。',
+    src: 'getting-started.md',
+  },
+  {
+    cmd: 'niu plugin trust <id>',
+    purpose: '审阅通过执行门',
+    note: 'review 校验和后放行；enable 在 trust 之前会被拒绝。',
+    src: 'getting-started.md',
+  },
+  {
+    cmd: 'niu plugin enable <target> · disable <target>',
+    purpose: '激活 / 停用源或主题资产',
+    note: '在 ~/.niubashrc 尾部维护 # >>> niu source <id> 托管块；块外内容永不改写。disable 后内置提示符（floor）回归。',
+    src: 'getting-started.md',
+  },
+  {
+    cmd: 'niu plugin sync [--prune | --adopt]',
+    purpose: '对账 spec 与安装现状',
+    note: 'lockfile 式维护动词族：update / sync / restore / rollback / clean 同族；--adopt 把已装源声明进 spec。',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu plugin mirror <command>',
+    purpose: 'Git fetch 镜像控制',
+    note: 'list / show / set <url|none>：可配置的 insteadOf 镜像，仅作用于 git 传输层。',
+    src: 'niu --help（src/main.rs）',
+  },
+  {
+    cmd: 'niu plugin list [--json]',
+    purpose: '源、资产与激活状态清单',
+    note: '--json 供 agent 消费（同理 recipe list --json）；另配 discover 只读总览。',
+    src: 'advanced-usage.md',
+  },
+];
+
+const wpm: Row[] = [
+  {
+    cmd: 'wpm list [--json] · wpm installed',
+    purpose: '包目录与本机安装状态',
+    note: '--json 输出带 schema:1 版本化的纯 JSON；installed 只列本 root 已装包。',
+    src: 'installer.md · index-schema.md',
+  },
+  {
+    cmd: 'wpm search <q> · wpm info <pkg> [--json]',
+    purpose: '查包 / 看包详情',
+    note: '索引过旧时先 wpm index update；info --json 返回完整 Package 记录。',
+    src: 'skills/wpm.md · index-schema.md',
+  },
+  {
+    cmd: 'wpm install <pkg>',
+    purpose: '安装命令包',
+    note: 'Windows 上 Unix 工具层的第一通道（rg / fd / bat / jq / node …）。',
+    src: 'skills/wpm.md',
+  },
+  {
+    cmd: 'wpm update winuxcmd',
+    purpose: '更新命令层本体',
+    note: 'WinuxCmd 命令集就地刷新，命令链接自动重建；与 niu --self-update 是两个更新面。',
+    src: 'installer.md',
+  },
+  {
+    cmd: 'wpm uninstall <pkg>',
+    purpose: '卸载命令包',
+    note: '变更类子命令（install / uninstall / update）暂无 --json：以退出码为准，进度文本仅作展示。',
+    src: 'index-schema.md',
+  },
+  {
+    cmd: 'wpm links rebuild --force · wpm links list',
+    purpose: '修复 / 查看命令链接',
+    note: '包在而硬链接缺失（更新后锁文件、拒绝访问）时先 rebuild；list 可 --json。',
+    src: 'installer.md · skills/wpm.md',
+  },
+  {
+    cmd: 'wpm index status · wpm index update',
+    purpose: '索引状态 / 刷新',
+    note: 'status 报告本地索引版本与包数（--json 含 root、fallback 来源）。',
+    src: 'skills/wpm.md · index-schema.md',
+  },
+];
+
+const doctor: Row[] = [
+  {
+    cmd: 'niu doctor',
+    purpose: '一键健康检查',
+    note: '覆盖 links、core、rc、bundle 与 agent skill 建议行；迁移窗口与 PATH 遮蔽也会给只读报告。',
+    src: 'skills/wpm.md · CHANGELOG.md',
+  },
+  {
+    cmd: 'niu --version · command -v niubash · command -v winuxcmd.exe',
+    purpose: '捕获活动二进制与执行路径',
+    note: '排查「命令缺失 / 来自错误 provider」的第一步。',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'echo "$SHELL"; uname -a',
+    purpose: '确认 agent 实际用的 shell',
+    note: 'MSYS_NT-… = niu；MINGW64_NT-… = Git Bash；Linux = 落进了 WSL。',
+    src: 'agents.md',
+  },
+  {
+    cmd: "niu -c 'echo command-mode:$SHELL' · niu -C 'echo repl-command:$SHELL'",
+    purpose: '验证两种一次性模式的启动面',
+    note: '-c 零加载、-C 与 REPL 同态——正是 agent 接入要区分的两个通道。',
+    src: 'advanced-usage.md',
+  },
+];
+---
+
+<DocsLayout
+  title="CLI 与旗标参考"
+  description="niu 命令行速查：基础调用（-c、--encoded-command、--cwd-state、--repl-command、--self-update）、skill / plugin 子命令全旗标、wpm 包管理速查与 doctor 诊断。每条命令标注来源文档。"
+  path="/docs/cli/"
+>
+  <header class="doc-head">
+    <h1>CLI 与旗标参考</h1>
+    <p class="lead">
+      <code>niu</code> 命令行面的速查表：基础调用、skill / plugin 子命令、wpm 包管理
+      与诊断。每行给出命令、作用与备注，备注括注事实来源（niubash 仓文档文件名）；
+      语义细则与完整手册见页尾外链。
+    </p>
+  </header>
+
+  <section>
+    <h2 id="basics">基础调用</h2>
+    <p>
+      三条执行路径刻意分离：交互 REPL、零加载的一次性 <code>-c</code>、与 REPL 同态的
+      一次性 <code>-C</code>。自动化只走后两条，交互内容留在 rc。
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>命令</th><th>作用</th><th>备注（来源）</th></tr>
+        </thead>
+        <tbody>
+          {
+            basics.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">（{r.src}）</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="skill">skill 子命令</h2>
+    <p>
+      AI agent skill bundle（能力面 + 方言契约）的安装与检查。<code>--target</code>
+      的全部取值：<code>claude</code>（默认）、<code>zcode</code>、<code>cursor</code>、
+      <code>all</code> 与任意目录。
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>命令</th><th>作用</th><th>备注（来源）</th></tr>
+        </thead>
+        <tbody>
+          {
+            skills.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">（{r.src}）</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="plugin">plugin 子命令</h2>
+    <p>
+      外部 bash 生态（oh-my-bash、bash-it、任意 git 源）的安装、信任与激活——
+      一律「先装、后审、再信」，声明式 spec 是唯一事实源。
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>命令</th><th>作用</th><th>备注（来源）</th></tr>
+        </thead>
+        <tbody>
+          {
+            plugins.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">（{r.src}）</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="wpm">wpm 速查</h2>
+    <p>
+      Winux 包管理器：Unix 命令层（<code>ls</code>、<code>grep</code>、<code>rg</code> …）
+      在 Windows 上的第一通道。查询类子命令支持 <code>--json</code>（带
+      <code>schema</code> 版本字段），变更类以退出码为准。
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>命令</th><th>作用</th><th>备注（来源）</th></tr>
+        </thead>
+        <tbody>
+          {
+            wpm.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">（{r.src}）</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="doctor">doctor 与诊断</h2>
+    <p>先捕获活动二进制与执行路径，再跑健康检查——顺序反了会在错误的安装上修问题。</p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>命令</th><th>作用</th><th>备注（来源）</th></tr>
+        </thead>
+        <tbody>
+          {
+            doctor.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">（{r.src}）</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="further">
+    <h2>完整手册</h2>
+    <p>
+      本页是速查口径；语义细则、安装器契约与全部子命令的完整手册见 GitHub Pages：
+      <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
+        unixwin.github.io/niubash ↗
+      </a>。
+    </p>
+  </footer>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.12em 0.4em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  section h2 {
+    margin-top: 2.6rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* 窄屏表格横向滚动，不挤压面包屑与正文 */
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .cli-table {
+    width: 100%;
+    min-width: 620px;
+  }
+
+  .cli-table td:first-child code {
+    white-space: nowrap;
+  }
+
+  .cli-table td strong {
+    color: var(--accent);
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+    white-space: nowrap;
+  }
+
+  .further {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.1rem 1.4rem;
+    font-size: 0.92rem;
+  }
+
+  .further h2 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    border-bottom: none;
+    padding: 0;
+  }
+
+  .further p {
+    margin: 0;
+  }
+</style>

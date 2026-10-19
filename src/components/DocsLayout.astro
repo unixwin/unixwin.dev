@@ -1,9 +1,16 @@
 ---
 /**
- * DocsLayout — 文档区布局（门户第一个带侧栏的区域）。
+ * DocsLayout — 文档区布局（Mintlify / docs.claude.com 风格三栏）。
  *
  * 结构：BaseLayout 外壳（theme 固定 'day'，顶栏 ToggleTheme 可切 night）+ SiteHeader/SiteFooter +
- *       三栏 grid：左 Sidebar（240px sticky）/ 中 内容（max-w-prose）/ 右 暂无（占位，窄屏隐藏）。
+ *       三栏 grid：左 Sidebar（260px sticky）/ 中 内容（minmax(0,1fr)，正文上限 ~780px）/
+ *       右 TocRight「On this page」（220px sticky，≤1240px 隐藏）。
+ *
+ * 面包屑：由 docs-nav.json 反查当前路径所在分组 → 「文档 / 分组 / 当前页」；
+ *         /docs/ 首页与未收录页不渲染面包屑。
+ * 页尾：prev/next（docs-nav 扁平顺序，仅站内条目）+「最后更新」行；
+ *       /docs/ 首页不渲染页尾导航。文章排版（h1/表格/行内 code/blockquote 等）
+ *       统一在本组件以 :global 定义，scoped 到 .docs-main。
  *
  * Props（透传给 BaseLayout）：
  *   title       string  页面 <title>（自动拼 " · UNIXWIN"）
@@ -11,11 +18,25 @@
  *   path        string  规范化路径（如 '/docs/compatibility/'）
  *   lang        'zh' | 'en'  页面语言（可选，默认 zh，透传 BaseLayout）
  *   enPath      string  另一语言页路径（可选，透传 BaseLayout，供 hreflang 互链）
+ *   toc         boolean 是否渲染右栏 On this page（默认 true；卡片首页传 false）
  */
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from './SiteHeader.astro';
 import SiteFooter from './SiteFooter.astro';
 import Sidebar from './Sidebar.astro';
+import TocRight from './TocRight.astro';
+import nav from '../data/docs-nav.json';
+
+interface NavItem {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
 
 interface Props {
   title: string;
@@ -23,9 +44,39 @@ interface Props {
   path: string;
   lang?: 'zh' | 'en';
   enPath?: string;
+  toc?: boolean;
 }
 
-const { title, description, path, lang, enPath } = Astro.props;
+const { title, description, path, lang, enPath, toc = true } = Astro.props;
+
+const LAST_UPDATED = '2026-10-19';
+
+const sections = (nav as { sections: NavSection[] }).sections;
+
+const currentPath = (Astro.url.pathname.replace(/\/+$/, '') || '/');
+
+// —— 面包屑与 prev/next：docs-nav.json 反查 ——
+let currentSection: NavSection | null = null;
+let currentLabel: string | null = null;
+for (const section of sections) {
+  for (const item of section.items) {
+    const normalized = item.href.replace(/\/+$/, '') || '/';
+    if (!/^https?:\/\//.test(item.href) && normalized === currentPath) {
+      currentSection = section;
+      currentLabel = item.label;
+    }
+  }
+}
+
+const isDocsHome = currentPath === '/docs';
+const showCrumb = !isDocsHome && currentSection !== null && currentLabel !== null;
+
+// 扁平化站内条目（外链不参与 prev/next）
+const flat = sections.flatMap((s) => s.items).filter((i) => !i.external);
+const index = flat.findIndex((i) => (i.href.replace(/\/+$/, '') || '/') === currentPath);
+const prev = index > 0 ? flat[index - 1] : null;
+const next = index >= 0 && index < flat.length - 1 ? flat[index + 1] : null;
+const showPager = !isDocsHome && (prev !== null || next !== null) && index >= 0;
 ---
 
 <BaseLayout title={title} description={description} theme="day" path={path} lang={lang} enPath={enPath}>
@@ -34,10 +85,52 @@ const { title, description, path, lang, enPath } = Astro.props;
   <div class="container docs-grid">
     <Sidebar />
     <main class="docs-main">
-      <slot />
+      {
+        showCrumb && (
+          <nav class="crumbs" aria-label="面包屑">
+            <a href="/docs/">文档</a>
+            <span aria-hidden="true">/</span>
+            <span>{currentSection!.label}</span>
+            <span aria-hidden="true">/</span>
+            <span class="crumb-current" aria-current="page">{currentLabel}</span>
+          </nav>
+        )
+      }
+      <article class="docs-body">
+        <slot />
+      </article>
+      {
+        showPager && (
+          <footer class="doc-pager">
+            <p class="doc-updated">最后更新 {LAST_UPDATED}</p>
+            <div class="pager-row">
+              {prev ? (
+                <a class="pager-link is-prev" href={prev.href}>
+                  <span class="pager-dir">上一页</span>
+                  <span class="pager-label">{prev.label}</span>
+                </a>
+              ) : (
+                <span />
+              )}
+              {next ? (
+                <a class="pager-link is-next" href={next.href}>
+                  <span class="pager-dir">下一页</span>
+                  <span class="pager-label">{next.label}</span>
+                </a>
+              ) : (
+                <a class="pager-link is-next" href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
+                  <span class="pager-dir">完整手册</span>
+                  <span class="pager-label">unixwin.github.io/niubash ↗</span>
+                </a>
+              )}
+            </div>
+          </footer>
+        )
+      }
     </main>
-    <!-- 暂无右栏：保留三栏骨架，内容后续可挂 TOC / on-this-page -->
-    <div class="docs-right" aria-hidden="true"></div>
+    <div class="docs-right">
+      {toc && <TocRight />}
+    </div>
   </div>
 
   <SiteFooter />
@@ -46,27 +139,116 @@ const { title, description, path, lang, enPath } = Astro.props;
 <style>
   .docs-grid {
     display: grid;
-    grid-template-columns: 240px minmax(0, 1fr) 240px;
-    gap: 2rem;
+    grid-template-columns: 260px minmax(0, 1fr) 220px;
+    gap: 2.25rem;
     align-items: start;
     min-height: 60vh;
   }
 
   .docs-main {
-    max-width: 66ch; /* max-w-prose 口径 */
+    max-width: 780px;
     width: 100%;
-    padding: 2.5rem 0 4rem;
+    padding: 2.25rem 0 4rem;
+    font-size: 1rem;
+    line-height: 1.75;
   }
 
   .docs-right {
     position: sticky;
     top: 4.5rem;
+    align-self: start;
     min-height: 1px;
   }
 
+  /* —— 面包屑 —— */
+  .crumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 1.1rem;
+  }
+
+  .crumbs a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .crumbs a:hover {
+    color: var(--text);
+    text-decoration: underline;
+  }
+
+  .crumb-current {
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* —— 页尾 prev/next —— */
+  .doc-pager {
+    margin-top: 3.25rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.25rem;
+  }
+
+  .doc-updated {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    margin: 0 0 1rem;
+  }
+
+  .pager-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+  }
+
+  .pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    text-decoration: none;
+    transition: border-color 0.12s ease;
+  }
+
+  .pager-link:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .pager-link.is-next {
+    text-align: right;
+  }
+
+  .pager-dir {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .pager-label {
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  /* —— 响应式：右栏 1240 收，侧栏 960 收 —— */
   @media (max-width: 1240px) {
     .docs-grid {
-      grid-template-columns: 240px minmax(0, 1fr);
+      grid-template-columns: 260px minmax(0, 1fr);
     }
 
     .docs-right {
@@ -83,5 +265,150 @@ const { title, description, path, lang, enPath } = Astro.props;
     .docs-main {
       padding-top: 1.5rem;
     }
+
+    .crumbs {
+      margin-bottom: 0.9rem;
+    }
+
+    .pager-row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pager-link.is-next {
+      text-align: left;
+    }
+  }
+</style>
+
+<style is:global>
+  /* ==========================================================================
+     文章排版（Mintlify 化）—— 全局块，全部选择器以 .docs-main 前缀收口
+     （该 class 只存在于 DocsLayout）。刻意保持低特异度（0,1,1 量级）：
+     页面对 .card h2 / .further h2 / .doc-table 等的覆盖永远赢过这里的基线。
+     颜色一律引用 tokens；day/night 双档由变量自带。
+     ========================================================================== */
+  .docs-main h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    margin: 0 0 1rem;
+  }
+
+  .docs-main h2 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 2.6rem 0 0.9rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 5rem; /* 平滑滚动落点避开吸顶 SiteHeader */
+  }
+
+  .docs-main h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 1.9rem 0 0.7rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .docs-main p {
+    margin: 0 0 1.05rem;
+  }
+
+  .docs-main ul,
+  .docs-main ol {
+    margin: 0 0 1.05rem;
+    padding-left: 1.5rem;
+  }
+
+  .docs-main li {
+    margin-bottom: 0.3rem;
+  }
+
+  .docs-main a {
+    color: var(--link);
+  }
+
+  .docs-main hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.4rem 0;
+  }
+
+  /* 行内 code：浅底圆角；pre 内还原 */
+  .docs-main code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.12em 0.4em;
+    font-size: 0.86em;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+
+  .docs-main pre {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.9rem 1.1rem;
+    overflow-x: auto;
+    margin: 0 0 1.2rem;
+    line-height: 1.6;
+  }
+
+  .docs-main pre code {
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    font-size: 0.86em;
+  }
+
+  /* 表格：细边框 + 表头浅底 */
+  .docs-main table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.65;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .docs-main th {
+    text-align: left;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.7rem;
+    vertical-align: bottom;
+  }
+
+  .docs-main td {
+    border: 1px solid var(--border);
+    padding: 0.55rem 0.7rem;
+    vertical-align: top;
+  }
+
+  .docs-main tbody tr:hover td {
+    background: var(--bg-elev);
+  }
+
+  /* blockquote：左条 + muted */
+  .docs-main blockquote {
+    margin: 1.2rem 0 1.4rem;
+    padding: 0.35rem 0 0.35rem 1.1rem;
+    border-left: 3px solid var(--accent);
+    color: var(--muted);
+  }
+
+  .docs-main blockquote p {
+    margin-bottom: 0.4rem;
   }
 </style>

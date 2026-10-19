@@ -1,15 +1,15 @@
 ---
 /**
- * Sidebar — 文档区侧栏（门户第一个带侧栏的区域）。
+ * Sidebar — 文档区侧栏（Mintlify / docs.claude.com 风格）。
  *
  * 数据源：src/data/docs-nav.json
  *   { sections: [ { label: string, items: [ { label, href, external? } ] } ] }
  *
- * - 分组标题 + 链接；`external: true` 的条目新窗口打开并带 ↗ 标记。
- * - 激活态：Astro.url.pathname 与 href 去尾部斜杠后比较（构建期静态判定，
- *   与 Astro 静态路由一致，无需客户端 JS）。
- * - 折叠：原生 <details open>，零 JS；默认展开，可点击 summary 收起。
- * - 宽 240px，sticky（top 偏移避开吸顶 SiteHeader），超高自身滚动。
+ * - 顶部：静态搜索框占位（disabled input + 快捷键提示；搜索即将上线，title 说明）。
+ * - 分组：小号 muted 大写字距分组名；条目圆角 hover；激活态 accent 左条 + 浅底。
+ * - 折叠：原生 <details open>，零 JS；默认展开。
+ * - 底部：GitHub 编辑外链（github.com/unixwin/unixwin.dev）。
+ * - 宽 260px（与 DocsLayout 三栏 grid 第一轨一致），sticky 避开吸顶 SiteHeader。
  */
 import nav from '../data/docs-nav.json';
 
@@ -26,7 +26,7 @@ interface NavSection {
 
 const sections = (nav as { sections: NavSection[] }).sections;
 
-const currentPath = (Astro.url.pathname.replace(/\/+$/, '') || '/');
+const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
 
 function isActive(href: string): boolean {
   if (/^https?:\/\//.test(href)) return false;
@@ -36,6 +36,17 @@ function isActive(href: string): boolean {
 ---
 
 <aside class="sidebar" aria-label="文档导航">
+  <div class="side-search">
+    <input
+      type="search"
+      disabled
+      placeholder="Search docs… / 搜索文档"
+      title="搜索即将上线"
+      aria-label="搜索文档（即将上线）"
+    />
+    <span class="search-kbd" aria-hidden="true">⌘K</span>
+  </div>
+
   {
     sections.map((section) => (
       <details class="side-group" open>
@@ -50,7 +61,7 @@ function isActive(href: string): boolean {
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noopener noreferrer' : undefined}
               >
-                {item.label}
+                <span class="link-label">{item.label}</span>
                 {item.external && (
                   <span class="ext-mark" aria-hidden="true">↗</span>
                 )}
@@ -61,42 +72,94 @@ function isActive(href: string): boolean {
       </details>
     ))
   }
+
+  <div class="side-foot">
+    <a
+      href="https://github.com/unixwin/unixwin.dev"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="side-github"
+    >
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+        <path
+          d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+          fill="currentColor"
+        />
+      </svg>
+      在 GitHub 上编辑此站
+      <span class="ext-mark" aria-hidden="true">↗</span>
+    </a>
+  </div>
 </aside>
 
 <style>
   .sidebar {
-    width: 240px;
-    flex: 0 0 240px;
+    width: 260px;
     position: sticky;
     top: 4.5rem; /* 吸顶 SiteHeader 之下 */
     align-self: start;
     max-height: calc(100vh - 5.5rem);
     overflow-y: auto;
-    padding: 1.5rem 0.75rem 2rem 0;
+    padding: 1.25rem 0.875rem 1.5rem 0;
     font-size: 0.9rem;
   }
 
-  .side-group {
-    margin-bottom: 1.1rem;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 0.9rem;
+  /* —— 搜索占位（静态，搜索即将上线） —— */
+  .side-search {
+    position: relative;
+    margin: 0 0.5rem 1.25rem;
   }
 
-  .side-group:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+  .side-search input {
+    width: 100%;
+    padding: 0.45rem 0.75rem;
+    padding-right: 3rem; /* 给 ⌘K 让位 */
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--muted);
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: not-allowed;
+  }
+
+  .side-search input::placeholder {
+    color: var(--muted);
+    opacity: 0.85;
+  }
+
+  .search-kbd {
+    position: absolute;
+    right: 0.55rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.05rem 0.35rem;
+    pointer-events: none;
+  }
+
+  /* —— 分组（Mintlify 化） —— */
+  .side-group {
+    margin-bottom: 1.35rem;
+  }
+
+  .side-group:last-of-type {
+    margin-bottom: 0.5rem;
   }
 
   .side-title {
     cursor: pointer;
     color: var(--muted);
-    font-family: var(--font-mono);
     font-size: 0.72rem;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     padding: 0 0.5rem;
+    margin-bottom: 0.45rem;
     list-style: none;
     user-select: none;
   }
@@ -105,21 +168,27 @@ function isActive(href: string): boolean {
     display: none;
   }
 
-  .side-title::before {
-    content: '▸';
+  .side-title::after {
+    content: '';
     display: inline-block;
-    margin-right: 0.4em;
-    color: var(--muted);
+    width: 0;
+    height: 0;
+    border-left: 4px solid var(--muted);
+    border-top: 3px solid transparent;
+    border-bottom: 3px solid transparent;
+    margin-left: 0.45em;
+    opacity: 0.7;
     transition: transform 0.15s ease;
+    vertical-align: middle;
   }
 
-  .side-group[open] > .side-title::before {
+  .side-group[open] > .side-title::after {
     transform: rotate(90deg);
   }
 
   .side-list {
     list-style: none;
-    margin: 0.5rem 0 0;
+    margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -131,12 +200,20 @@ function isActive(href: string): boolean {
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    padding: 0.32rem 0.5rem 0.32rem 1.45rem;
-    border-radius: var(--radius);
+    padding: 0.34rem 0.6rem;
+    border-radius: 6px;
     border-left: 2px solid transparent;
     color: var(--muted);
     text-decoration: none;
-    line-height: 1.4;
+    line-height: 1.45;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+  }
+
+  .side-link .link-label {
+    flex: 1;
+    min-width: 0;
   }
 
   .side-link:hover {
@@ -149,10 +226,35 @@ function isActive(href: string): boolean {
     color: var(--accent);
     border-left-color: var(--accent);
     background: var(--bg-elev);
-    font-weight: 700;
+    font-weight: 600;
   }
 
   .is-external .ext-mark {
+    color: var(--muted);
+    font-size: 0.8em;
+  }
+
+  /* —— 底部 GitHub 外链 —— */
+  .side-foot {
+    margin-top: 1.25rem;
+    padding: 0.9rem 0.5rem 0 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .side-github {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-decoration: none;
+  }
+
+  .side-github:hover {
+    color: var(--text);
+  }
+
+  .side-github .ext-mark {
     color: var(--muted);
     font-size: 0.8em;
   }
@@ -162,10 +264,9 @@ function isActive(href: string): boolean {
       position: static;
       max-height: none;
       width: 100%;
-      flex-basis: 100%;
       overflow: visible;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 1rem;
+      padding: 1rem 0 1.25rem;
     }
   }
 </style>

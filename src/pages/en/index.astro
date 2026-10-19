@@ -1,10 +1,10 @@
 ---
 /**
- * /en/ — English home (theme A · terminal). Mirrors src/pages/index.astro.
- * Structure: Hero (terminal window, 3-session carousel: install / agent / speed
- *            + family banner) → StatsBand → Product matrix (cards + install bar
- *            + maturity badge) → Why cards ×6 + speed recording → Install tabs
- *            → Agent glimpse → Latest news → Theme candidates.
+ * /en/ — English home (day/night). Mirrors src/pages/index.astro (Mintlify-style
+ * visual recast): two-column Hero (copy + floating terminal carousel)
+ * → stats row (header + /en/benchmarks/ link) → 3-column product cards
+ * → Why 3×2 icon cards + speed recording → Install tabs → Agent glimpse
+ * → Latest news.
  * All colors via tokens.css; product cards are inlined here (English labels)
  * because the shared ProductCard renders Chinese link text.
  * News data imports the same changelogs.json; summaries are quoted in the
@@ -13,7 +13,6 @@
 import BaseLayout from '../../components/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import StatsBand from '../../components/StatsBand.astro';
 import Section from '../../components/Section.astro';
 import InstallTabs from '../../components/InstallTabs.astro';
 import Badge from '../../components/Badge.astro';
@@ -25,7 +24,7 @@ import changelogs from '../../data/changelogs.json';
 
 const ordered = [...products].sort((a, b) => a.order - b.order);
 
-// ---- StatsBand: same facts.json numbers, English labels ----
+// ---- Stats: same facts.json numbers, English labels ----
 const [identicalCount, ...identicalRest] = String(facts.byteIdentical).trim().split(/\s+/);
 const stats = [
   { label: 'GNU bash suites', value: facts.bashSuites },
@@ -132,50 +131,10 @@ const softwareAppJsonLd = {
   <SiteHeader />
 
   <main class="container">
-    <!-- ============ Hero: terminal window · 3-session carousel ============ -->
+    <!-- ============ Hero: two columns (copy / floating terminal) ============ -->
     <section class="hero" aria-label="UNIXWIN family intro">
-      <div class="terminal">
-        <div class="term-bar" aria-hidden="true">
-          <span class="tdot td-r"></span>
-          <span class="tdot td-y"></span>
-          <span class="tdot td-g"></span>
-          <span class="term-title">cmx@unixwin: ~ — 80×24</span>
-        </div>
-        <div class="term-body">
-          <div class="term-carousel" data-term-carousel role="region" aria-label="UNIXWIN capability carousel: install · agent takeover · speed">
-            <div class="term-sessions">
-              <div class="session">
-                <p class="sl sl-cmt"># install · session 1/3</p>
-                <p class="sl"><span class="p-user">PS C:\&gt;</span> irm https://unixwin.dev/install.ps1 | iex</p>
-                <p class="sl"><span class="spin" aria-hidden="true">⠿</span> fetching install.ps1 → parsing the dependency manifest …</p>
-                <p class="sl"><span class="ok">✓</span> niubash 1.4.0 → ~/.unixwin/bin/niu.exe</p>
-                <p class="sl"><span class="ok">✓</span> winuxcmd · niu-git · wpm · oh-my-niu ready in sync</p>
-                <p class="sl"><span class="ok">✓</span> done — reopen the terminal and niu is on PATH (176+ Unix commands)</p>
-              </div>
-              <div class="session">
-                <p class="sl sl-cmt"># agent takeover · session 2/3</p>
-                <p class="sl"><span class="p-user">cmx@unixwin:~$</span> claude</p>
-                <p class="sl"><span class="ok">✓</span> shell: niubash (rubash engine) — $SHELL auto-detected</p>
-                <p class="sl"><span class="p-agent">agent&gt;</span> niu -c 'git log --oneline -1'</p>
-                <p class="sl sl-out">f0c0ffe niubash 1.4.0 — real syntax, real commands, native on three platforms</p>
-                <p class="sl"><span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span></p>
-              </div>
-              <div class="session">
-                <p class="sl sl-cmt"># speed · session 3/3</p>
-                <p class="sl"><span class="p-user">cmx@unixwin:~$</span> time git --version</p>
-                <p class="sl sl-out">git version 2.47.0.nii</p>
-                <p class="sl"><span class="ok">✓</span> real 0m0.014s ← niu-git</p>
-                <p class="sl sl-out">user 0m0.006s · sys 0m0.002s</p>
-                <p class="sl sl-cmt"># Git Bash on the same machine: real 0.045s – 0.103s (3–7× slower)</p>
-              </div>
-            </div>
-            <div class="term-dots">
-              <button class="tdot-btn" type="button" aria-label="Session 1: install"></button>
-              <button class="tdot-btn" type="button" aria-label="Session 2: agent takeover"></button>
-              <button class="tdot-btn" type="button" aria-label="Session 3: speed"></button>
-            </div>
-          </div>
-
+      <div class="hero-grid">
+        <div class="hero-copy">
           <h1 class="hero-wordmark">UNIXWIN</h1>
           <p class="hero-tagline">
             An AI-native family of real Bash — real syntax, real Unix commands, native on
@@ -191,32 +150,79 @@ const softwareAppJsonLd = {
               GitHub ↗
             </a>
           </div>
+          <p class="hero-trust">83/83 GNU suites · 82 byte-identical · 176+ Unix commands · ~14 ms git startup</p>
+        </div>
 
-          <p class="t-cmd">
-            <span class="t-user">cmx@unixwin:~$</span>
-            <span class="cursor" aria-hidden="true">▊</span>
-          </p>
+        <div class="hero-term">
+          <div class="terminal">
+            <div class="term-bar" aria-hidden="true">
+              <span class="tdot td-r"></span>
+              <span class="tdot td-y"></span>
+              <span class="tdot td-g"></span>
+              <span class="term-title">cmx@unixwin: ~ — 80×24</span>
+            </div>
+            <div class="term-body">
+              <div class="term-carousel" data-term-carousel role="region" aria-label="UNIXWIN capability carousel: install · agent takeover · speed">
+                <div class="term-sessions">
+                  <div class="session">
+                    <p class="sl sl-cmt"># install · session 1/3</p>
+                    <p class="sl"><span class="p-user">PS C:\&gt;</span> irm https://unixwin.dev/install.ps1 | iex</p>
+                    <p class="sl"><span class="spin" aria-hidden="true">⠿</span> fetching install.ps1 → parsing the dependency manifest …</p>
+                    <p class="sl"><span class="ok">✓</span> niubash 1.4.0 → ~/.unixwin/bin/niu.exe</p>
+                    <p class="sl"><span class="ok">✓</span> winuxcmd · niu-git · wpm · oh-my-niu ready in sync</p>
+                    <p class="sl"><span class="ok">✓</span> done — reopen the terminal and niu is on PATH (176+ Unix commands)</p>
+                  </div>
+                  <div class="session">
+                    <p class="sl sl-cmt"># agent takeover · session 2/3</p>
+                    <p class="sl"><span class="p-user">cmx@unixwin:~$</span> claude</p>
+                    <p class="sl"><span class="ok">✓</span> shell: niubash (rubash engine) — $SHELL auto-detected</p>
+                    <p class="sl"><span class="p-agent">agent&gt;</span> niu -c 'git log --oneline -1'</p>
+                    <p class="sl sl-out">f0c0ffe niubash 1.4.0 — real syntax, real commands, native on three platforms</p>
+                    <p class="sl"><span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span></p>
+                  </div>
+                  <div class="session">
+                    <p class="sl sl-cmt"># speed · session 3/3</p>
+                    <p class="sl"><span class="p-user">cmx@unixwin:~$</span> time git --version</p>
+                    <p class="sl sl-out">git version 2.47.0.nii</p>
+                    <p class="sl"><span class="ok">✓</span> real 0m0.014s ← niu-git</p>
+                    <p class="sl sl-out">user 0m0.006s · sys 0m0.002s</p>
+                    <p class="sl sl-cmt"># Git Bash on the same machine: real 0.045s – 0.103s (3–7× slower)</p>
+                  </div>
+                </div>
+                <div class="term-dots">
+                  <button class="tdot-btn" type="button" aria-label="Session 1: install"></button>
+                  <button class="tdot-btn" type="button" aria-label="Session 2: agent takeover"></button>
+                  <button class="tdot-btn" type="button" aria-label="Session 3: speed"></button>
+                </div>
+              </div>
+
+              <p class="t-cmd">
+                <span class="t-user">cmx@unixwin:~$</span>
+                <span class="cursor" aria-hidden="true">▊</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-
-      <figure class="banner-fig">
-        <img
-          src="/assets/niubash-banner.svg"
-          alt="niubash brand banner: Bash, native on Windows — no WSL, no VM, no emulation layer"
-          width="1200"
-          height="300"
-          loading="lazy"
-          decoding="async"
-        />
-      </figure>
     </section>
 
-    <!-- ============ Stats ============ -->
+    <!-- ============ Stats: header + one row of big-number cards ============ -->
     <div id="facts">
-      <StatsBand items={stats} />
+      <div class="stats-head">
+        <h2 class="stats-title">Measured numbers · all with sources</h2>
+        <a class="stats-link" href="/en/benchmarks/">Benchmarks →</a>
+      </div>
+      <div class="stats-row" role="list" aria-label="Project data">
+        {stats.map((s) => (
+          <div class="stat" role="listitem">
+            <span class="stat-value">{s.value}</span>
+            <span class="stat-label">{s.label}</span>
+          </div>
+        ))}
+      </div>
     </div>
 
-    <!-- ============ Products ============ -->
+    <!-- ============ Products: 3-column large cards ============ -->
     <Section id="products" title="Product Matrix" kicker="six projects · one family">
       <div class="product-grid">
         {ordered.map((p) => {
@@ -243,7 +249,7 @@ const softwareAppJsonLd = {
                 <div class="cell-install">
                   <Badge tone={bar.tone}>{bar.badge}</Badge>
                   <code class="cell-cmd" title={bar.cmd}>{bar.cmd}</code>
-                  <CopyButton copy={bar.cmd} />
+                  <CopyButton copy={bar.cmd} label="copy" />
                 </div>
               )}
             </div>
@@ -252,11 +258,17 @@ const softwareAppJsonLd = {
       </div>
     </Section>
 
-    <!-- ============ Why ============ -->
+    <!-- ============ Why: 3×2 icon cards ============ -->
     <Section id="why" title="Why UNIXWIN" kicker="why --real --fast --native">
       <div class="why-grid">
         <article class="why-card">
-          <p class="why-num">01</p>
+          <span class="why-num" aria-hidden="true">01</span>
+          <span class="why-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l7 2.7v5.6c0 4.2-2.9 7.2-7 8.7-4.1-1.5-7-4.5-7-8.7V5.7L12 3z" />
+              <path d="M9.2 11.9l2 2 3.6-3.7" />
+            </svg>
+          </span>
           <h3 class="why-title">Truly compatible</h3>
           <p class="why-body">
             All <strong>83</strong> upstream GNU Bash test suites pass, and <strong>82</strong> of
@@ -266,7 +278,12 @@ const softwareAppJsonLd = {
           <code class="why-chip">suites 83/83 · byte-identical 82</code>
         </article>
         <article class="why-card">
-          <p class="why-num">02</p>
+          <span class="why-num" aria-hidden="true">02</span>
+          <span class="why-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2L4.6 13.4h6.2L9.8 22l8.6-11.4h-6.2L13 2z" />
+            </svg>
+          </span>
           <h3 class="why-title">Zero fork</h3>
           <p class="why-body">
             <code>( )</code> and <code>$( )</code> create <strong>zero processes</strong> —
@@ -276,7 +293,14 @@ const softwareAppJsonLd = {
           <code class="why-chip">( ) $( ) → 0 processes</code>
         </article>
         <article class="why-card">
-          <p class="why-num">03</p>
+          <span class="why-num" aria-hidden="true">03</span>
+          <span class="why-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 5.4L3.6 7.3v11.3L9 16.7l6 1.9 5.4-1.9V5.4L15 7.3 9 5.4z" />
+              <path d="M9 5.4v11.3" />
+              <path d="M15 7.3v11.3" />
+            </svg>
+          </span>
           <h3 class="why-title">Every path dialect</h3>
           <p class="why-body">
             <code>C:\</code>, <code>D:/</code>, <code>/d/</code>, <code>/mnt/d</code>,
@@ -287,7 +311,13 @@ const softwareAppJsonLd = {
           <code class="why-chip">C:\ · /d/ · /mnt/d · /cygdrive/d</code>
         </article>
         <article class="why-card">
-          <p class="why-num">04</p>
+          <span class="why-num" aria-hidden="true">04</span>
+          <span class="why-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 11h-4a3 3 0 0 1 0-6h1a3 3 0 0 1 3 3v3a7 7 0 0 1-7 7" />
+              <path d="M21 11h-4a3 3 0 0 1 0-6h1a3 3 0 0 1 3 3v3a7 7 0 0 1-7 7" />
+            </svg>
+          </span>
           <h3 class="why-title">No MSYS incantations</h3>
           <p class="why-body">
             Git Bash heuristically rewrites your arguments before spawn, so you end up learning
@@ -298,7 +328,19 @@ const softwareAppJsonLd = {
           <code class="why-chip">argv verbatim</code>
         </article>
         <article class="why-card">
-          <p class="why-num">05</p>
+          <span class="why-num" aria-hidden="true">05</span>
+          <span class="why-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="9" width="14" height="9.5" rx="2.2" />
+              <path d="M12 9V5.6" />
+              <circle cx="12" cy="4.2" r="1.3" />
+              <path d="M9.4 13.2v.7" />
+              <path d="M14.6 13.2v.7" />
+              <path d="M9.2 16.3h5.6" />
+              <path d="M5 12.2H3.2" />
+              <path d="M20.8 12.2H19" />
+            </svg>
+          </span>
           <h3 class="why-title">AI-native</h3>
           <p class="why-body">
             Launch Claude Code, Codex or Cursor from a niu session and the agent picks up niubash
@@ -308,7 +350,14 @@ const softwareAppJsonLd = {
           <code class="why-chip">niu -c 'ls | grep src'</code>
         </article>
         <article class="why-card">
-          <p class="why-num">06</p>
+          <span class="why-num" aria-hidden="true">06</span>
+          <span class="why-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5.2 17.6a8.6 8.6 0 1 1 13.6 0" />
+              <path d="M12 13.6l3.4-3.4" />
+              <circle cx="12" cy="13.6" r="1.2" />
+            </svg>
+          </span>
           <h3 class="why-title">Fast</h3>
           <p class="why-body">
             <code>git --version</code> in about <strong>~14 ms</strong> where Git Bash needs
@@ -401,28 +450,7 @@ const softwareAppJsonLd = {
         <p class="news-empty">Changelogs haven't been fetched yet — run <code>npm run fetch:github</code>.</p>
       )}
       <p class="news-src-note">Release notes are quoted from the original Chinese changelogs.</p>
-      <p class="news-more"><a href="/changelog/">Full changelog →</a></p>
-    </Section>
-
-    <!-- ============ Theme candidates ============ -->
-    <Section id="themes" title="Theme Candidates" kicker="a / b / c — pick one">
-      <div class="theme-grid">
-        <a class="theme-tile is-current" href="/en/">
-          <span class="tile-key">A</span>
-          <span class="tile-name">Terminal</span>
-          <span class="tile-desc">Monospace type, deep-space background, terminal green. You are here.</span>
-        </a>
-        <a class="theme-tile" href="/theme/clean/">
-          <span class="tile-key">B</span>
-          <span class="tile-name">Clean</span>
-          <span class="tile-desc">White background, sans-serif, 12 px radii, soft shadows.</span>
-        </a>
-        <a class="theme-tile" href="/theme/neon/">
-          <span class="tile-key">C</span>
-          <span class="tile-name">Neon</span>
-          <span class="tile-desc">Violet–cyan duotone, glass cards, 16 px radii.</span>
-        </a>
-      </div>
+      <p class="news-more"><a href="/en/changelog/">Full changelog →</a></p>
     </Section>
   </main>
 
@@ -430,10 +458,18 @@ const softwareAppJsonLd = {
 </BaseLayout>
 
 <style>
-  /* ---------- Hero: terminal window ---------- */
+  /* ---------- Page backdrop: faint accent radial at the very top of body ---------- */
+  :global(body) {
+    background:
+      radial-gradient(56rem 26rem at 50% -8%, color-mix(in srgb, var(--accent) 4%, var(--bg)), var(--bg) 72%),
+      var(--bg);
+    background-repeat: no-repeat;
+  }
+
+  /* ---------- Hero: two columns + fine grid confined to this section ---------- */
   .hero {
     position: relative;
-    padding: 3.5rem 0 2rem;
+    padding: 3.6rem 0 0.5rem;
   }
 
   .hero::before {
@@ -441,18 +477,147 @@ const softwareAppJsonLd = {
     position: absolute;
     inset: -4rem 0 0;
     background:
-      radial-gradient(52rem 26rem at 18% 0%, color-mix(in srgb, var(--accent) 9%, var(--bg)), var(--bg) 70%),
-      radial-gradient(40rem 22rem at 88% 12%, color-mix(in srgb, var(--accent-2) 7%, var(--bg)), var(--bg) 70%);
+      radial-gradient(52rem 26rem at 16% 0%, color-mix(in srgb, var(--accent) 8%, var(--bg)), var(--bg) 70%),
+      radial-gradient(40rem 22rem at 90% 10%, color-mix(in srgb, var(--accent-2) 6%, var(--bg)), var(--bg) 70%);
     z-index: -1;
     pointer-events: none;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--text) 4%, transparent) 0 1px, transparent 1px 30px),
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 4%, transparent) 0 1px, transparent 1px 30px);
+    -webkit-mask-image: radial-gradient(58rem 30rem at 62% 6%, var(--text), transparent 72%);
+    mask-image: radial-gradient(58rem 30rem at 62% 6%, var(--text), transparent 72%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 3.5rem;
+    align-items: center;
+  }
+
+  .hero-copy {
+    min-width: 0;
+  }
+
+  .hero-wordmark {
+    font-family: var(--font-mono);
+    font-size: clamp(2.7rem, 5.2vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: 0.06em;
+    margin: 0 0 1.1rem;
+    background: linear-gradient(92deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-tagline {
+    font-size: 1.18rem;
+    line-height: 1.65;
+    margin: 0 0 0.5rem;
+    max-width: 34em;
+  }
+
+  .hero-tagline-en {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 34em;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 0.9rem;
+    margin: 1.7rem 0 0;
+    flex-wrap: wrap;
+  }
+
+  .hero-trust {
+    margin: 1.15rem 0 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- CTA system: primary solid / secondary outline, 44px tall ---------- */
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    border-radius: var(--radius);
+    padding: 0.65rem 1.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+      box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .cta:hover {
+    text-decoration: none;
+  }
+
+  .cta-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border: 1px solid var(--accent);
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--accent) 30%, transparent),
+      0 8px 20px -8px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+
+  .cta-primary::before {
+    content: '$ ';
+    opacity: 0.85;
+  }
+
+  .cta-primary:hover {
+    background: color-mix(in srgb, var(--accent) 92%, var(--text));
+    border-color: color-mix(in srgb, var(--accent) 92%, var(--text));
+    transform: translateY(-1px);
+  }
+
+  .cta-ghost {
+    color: var(--text);
+    border: 1px solid var(--border);
+    background: transparent;
+  }
+
+  .cta-ghost:hover {
+    background: var(--bg-elev);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  /* ---------- Terminal window: floating shadow, full column width ---------- */
+  .hero-term {
+    min-width: 0;
   }
 
   .terminal {
     background: var(--bg-code);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    box-shadow: var(--shadow);
     overflow: hidden;
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--text) 6%, transparent),
+      0 16px 32px -12px color-mix(in srgb, var(--text) 12%, transparent),
+      0 32px 80px -24px color-mix(in srgb, var(--accent) 18%, transparent);
   }
 
   .term-bar {
@@ -658,75 +823,6 @@ const softwareAppJsonLd = {
     box-shadow: 0 0 0.45rem color-mix(in srgb, var(--accent) 55%, transparent);
   }
 
-  .hero-wordmark {
-    font-family: var(--font-mono);
-    font-size: clamp(2.6rem, 8vw, 4.4rem);
-    letter-spacing: 0.08em;
-    margin: 0;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    text-shadow:
-      0 0 0.8rem color-mix(in srgb, var(--accent) 18%, transparent),
-      0 0 2rem color-mix(in srgb, var(--accent) 9%, transparent);
-  }
-
-  .hero-tagline {
-    font-size: 1.12rem;
-    margin: 0.7rem 0 0;
-  }
-
-  .hero-tagline-en {
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin: 0.35rem 0 0;
-  }
-
-  .hero-cta {
-    display: flex;
-    gap: 0.9rem;
-    margin: 1.5rem 0 0;
-    flex-wrap: wrap;
-  }
-
-  .cta {
-    border-radius: var(--radius);
-    padding: 0.6rem 1.5rem;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .cta:hover {
-    text-decoration: none;
-  }
-
-  .cta-primary {
-    background: var(--accent);
-    color: var(--bg);
-    border: 1px solid var(--accent);
-  }
-
-  .cta-primary::before {
-    content: '$ ';
-  }
-
-  .cta-primary:hover {
-    background: var(--accent-2);
-    border-color: var(--accent-2);
-  }
-
-  .cta-ghost {
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .cta-ghost:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
   .cursor {
     animation: blink 1.1s steps(1) infinite;
   }
@@ -737,62 +833,146 @@ const softwareAppJsonLd = {
     }
   }
 
-  .banner-fig {
-    margin: 1.6rem 0 0;
+  /* ---------- Section rhythm: 4.5rem between sections; kicker/title recast ---------- */
+  main.container > :global(.section) {
+    margin: 4.5rem 0;
   }
 
-  .banner-fig img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: var(--radius);
+  main.container > :global(.section) :global(.kicker) {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.7rem;
   }
 
-  /* ---------- Stats: fine grid backdrop + tabular numbers ---------- */
+  main.container > :global(.section) :global(.kicker)::before {
+    content: '';
+    display: inline-block;
+    width: 1.5rem;
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    flex-shrink: 0;
+  }
+
+  main.container > :global(.section) :global(.section-title) {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0 0 1.4rem;
+  }
+
+  main.container > :global(.section) :global(.section-title)::after {
+    display: none;
+  }
+
+  /* ---------- Stats: header + one row of big-number cards ---------- */
   #facts {
     scroll-margin-top: 5rem;
+    margin: 4.5rem 0;
   }
 
-  #facts :global(.stats-band) {
-    background-image:
-      repeating-linear-gradient(0deg, color-mix(in srgb, var(--text) 5%, transparent) 0 1px, transparent 1px 24px),
-      repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 5%, transparent) 0 1px, transparent 1px 24px);
+  .stats-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 0 0 1.3rem;
   }
 
-  #facts :global(.stat-value) {
+  .stats-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  .stats-link {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.15rem 1.2rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .stat:hover {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  }
+
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
   }
 
-  /* ---------- Products: card + install bar (card inlined, see markup) ---------- */
+  .stat-label {
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  /* ---------- Products: 3-column large cards (≥1200px), cell is the card ---------- */
   .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));
+    gap: 1.4rem;
   }
 
   .product-cell {
+    position: relative;
     display: flex;
     flex-direction: column;
     min-width: 0;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.45rem 1.45rem 1.3rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
-  /* Inlined ProductCard (English labels), same structure/tokens as the component */
-  .product-card {
+  .product-cell:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  /* Inlined ProductCard (English labels) rendered transparent inside the cell */
+  .product-cell > .product-card {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.2rem 1.3rem;
-    box-shadow: var(--shadow);
-    transition: border-color 0.15s, transform 0.15s;
-  }
-
-  .product-card:hover {
-    border-color: var(--card-accent, var(--accent));
-    transform: translateY(-2px);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
   }
 
   .card-head {
@@ -811,19 +991,30 @@ const softwareAppJsonLd = {
   .card-name {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: 1.12rem;
+    font-size: 1.15rem;
+    font-weight: 700;
   }
 
   .card-tagline {
     margin: 0;
     color: var(--text);
     font-size: 0.95rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.5;
+    min-height: 3em;
   }
 
   .card-tagline-en {
     margin: 0;
     color: var(--muted);
     font-size: 0.82rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
   }
 
   .card-foot {
@@ -838,7 +1029,7 @@ const softwareAppJsonLd = {
   .card-cmd {
     background: var(--bg-code);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: calc(var(--radius) * 0.66);
     padding: 0.12rem 0.6rem;
     color: var(--card-accent, var(--accent));
   }
@@ -856,12 +1047,12 @@ const softwareAppJsonLd = {
   .cell-install {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.55rem;
+    gap: 0.55rem;
+    margin-top: 1.15rem;
     background: var(--bg-code);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0.3rem 0.4rem 0.3rem 0.6rem;
+    border-radius: calc(var(--radius) * 0.8);
+    padding: 0.45rem 0.5rem 0.45rem 0.7rem;
   }
 
   .cell-install :global(.badge) {
@@ -884,49 +1075,73 @@ const softwareAppJsonLd = {
     font-size: 0.72rem;
   }
 
-  /* ---------- Why ---------- */
+  /* ---------- Why: 3×2 icon cards ---------- */
   .why-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+    gap: 1.4rem;
   }
 
   .why-card {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
+    gap: 0.55rem;
+    background: var(--bg-elev);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
     border-radius: var(--radius);
-    padding: 1.2rem 1.3rem;
-    box-shadow: var(--shadow);
-    transition: border-color 0.15s, transform 0.15s;
+    padding: 1.5rem 1.5rem 1.35rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .why-card:hover {
+    transform: translateY(-3px);
     border-color: var(--accent);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--accent) 30%, transparent);
   }
 
   .why-num {
+    position: absolute;
+    top: 1.1rem;
+    right: 1.25rem;
     margin: 0;
-    color: var(--accent);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    letter-spacing: 0.25em;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: color-mix(in srgb, var(--text) 7%, transparent);
+    pointer-events: none;
+  }
+
+  .why-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 0.4rem;
+    border-radius: calc(var(--radius) * 0.85);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+
+  .why-icon svg {
+    width: 26px;
+    height: 26px;
   }
 
   .why-title {
     margin: 0;
-    font-size: 1.15rem;
+    font-size: 1.08rem;
+    font-weight: 700;
   }
 
   .why-body {
     margin: 0;
     color: var(--text);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
+    line-height: 1.65;
     flex: 1;
   }
 
@@ -937,12 +1152,13 @@ const softwareAppJsonLd = {
 
   .why-chip {
     align-self: flex-start;
+    margin-top: 0.35rem;
     background: var(--bg-code);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0.15rem 0.6rem;
-    color: var(--accent-2);
-    font-size: 0.78rem;
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+    color: var(--accent);
+    font-size: 0.75rem;
     white-space: nowrap;
     max-width: 100%;
     overflow: hidden;
@@ -950,12 +1166,13 @@ const softwareAppJsonLd = {
   }
 
   .demo-fig {
-    margin: 1.6rem 0 0;
+    margin: 2rem 0 0;
     background: var(--bg-elev);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1rem;
+    padding: 1.2rem 1.2rem 1rem;
     text-align: center;
+    box-shadow: var(--shadow);
   }
 
   .demo-fig img {
@@ -963,7 +1180,7 @@ const softwareAppJsonLd = {
     width: 100%;
     max-width: 692px;
     height: auto;
-    border-radius: var(--radius);
+    border-radius: calc(var(--radius) * 0.8);
   }
 
   .demo-fig figcaption {
@@ -975,11 +1192,11 @@ const softwareAppJsonLd = {
   /* ---------- Install ---------- */
   .install-notes {
     list-style: none;
-    margin: 1rem 0 0;
+    margin: 1.1rem 0 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.5rem;
     color: var(--muted);
     font-size: 0.88rem;
   }
@@ -1044,11 +1261,15 @@ const softwareAppJsonLd = {
   }
 
   .news-item {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
+    background: var(--bg-elev);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 0.85rem 1.1rem;
+    padding: 0.95rem 1.2rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .news-item:hover {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
   }
 
   .news-line {
@@ -1094,52 +1315,42 @@ const softwareAppJsonLd = {
     font-size: 0.9rem;
   }
 
-  /* ---------- Theme candidates ---------- */
-  .theme-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
+  /* ---------- Responsive ---------- */
+  @media (max-width: 960px) {
+    .hero {
+      padding-top: 2.8rem;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: 2.4rem;
+    }
   }
 
-  .theme-tile {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    background: var(--bg-elev);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.1rem 1.2rem;
-    color: var(--text);
-    text-decoration: none;
+  @media (min-width: 1200px) {
+    .product-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
-  .theme-tile:hover {
-    border-color: var(--accent);
-    text-decoration: none;
+  @media (min-width: 1024px) {
+    .why-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
-  .theme-tile.is-current {
-    border-color: var(--accent);
-    box-shadow: var(--shadow);
+  @media (min-width: 680px) {
+    .stats-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
-  .tile-key {
-    font-family: var(--font-mono);
-    color: var(--accent);
-    font-size: 0.85rem;
-    letter-spacing: 0.2em;
+  @media (min-width: 1120px) {
+    .stats-row {
+      grid-template-columns: repeat(6, 1fr);
+    }
   }
 
-  .tile-name {
-    font-weight: 700;
-  }
-
-  .tile-desc {
-    color: var(--muted);
-    font-size: 0.85rem;
-  }
-
-  /* ---------- Narrow screens ---------- */
   @media (max-width: 640px) {
     .term-body {
       padding: 1.05rem 1rem 1.25rem;
@@ -1155,7 +1366,12 @@ const softwareAppJsonLd = {
 
     .cell-install {
       gap: 0.4rem;
-      padding: 0.26rem 0.32rem 0.26rem 0.5rem;
+      padding: 0.4rem 0.36rem 0.4rem 0.55rem;
+    }
+
+    .why-num {
+      font-size: 1.6rem;
+      top: 1.2rem;
     }
   }
 
@@ -1164,6 +1380,20 @@ const softwareAppJsonLd = {
     .cursor,
     .spin {
       animation: none;
+    }
+
+    .cta,
+    .stat,
+    .why-card,
+    .product-cell,
+    .news-item {
+      transition: none;
+    }
+
+    .cta:hover,
+    .why-card:hover,
+    .product-cell:hover {
+      transform: none;
     }
 
     .term-carousel.is-live .session,

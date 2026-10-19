@@ -12,8 +12,13 @@ import Badge from '../../components/Badge.astro';
 import bench from '../../data/benchmarks.json';
 
 const h = bench.headToHead as any;
+const fs = (bench as any).forkSuite;
+const forkRows = (fs?.rows ?? []) as any[];
+const forkOnly = forkRows.filter((r) => r.tag === 'fork');
+const inlineOnly = forkRows.filter((r) => r.tag === 'inline');
 const maxMs = Math.max(...(h.rows as any[]).map((r) => r.gitbash));
 const bar = (ms: number) => `${Math.max(2, Math.round((ms / maxMs) * 100))}%`;
+const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / base) * 100))}%`;
 ---
 
 <BaseLayout
@@ -83,6 +88,50 @@ const bar = (ms: number) => `${Math.max(2, Math.round((ms / maxMs) * 100))}%`;
       </div>
       <p class="foot-note">{h.note}</p>
     </section>
+
+    {forkRows.length > 0 && (
+      <section class="sec">
+        <h2>
+          fork / 子壳专项 <span class="vs">rubash 引擎 vs GNU bash 5.3.20</span>
+          {fs.status === 'placeholder' && <Badge tone="warn">占位 · 待 TSV 转正</Badge>}
+        </h2>
+        <p class="sec-desc">
+          {fs.provenance.date} · rubash {fs.provenance.rubash} / niu {fs.provenance.niu} · 方法：{fs.provenance.method}。
+          {fs.status === 'placeholder' && <em>{fs.statusNote}</em>}
+        </p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>负载</th><th style="width:22%">bash → rubash</th><th>GNU bash</th><th>rubash</th><th>niu</th><th>倍数</th></tr></thead>
+            <tbody>
+              {forkOnly.map((r) => (
+                <tr>
+                  <td>{r.workload}</td>
+                  <td>
+                    <span class="bar bar-them" style={`width:${rowBar(r.bashMs, r.bashMs)}`}></span>
+                    <span class="bar bar-us" style={`width:${rowBar(r.rubashMs, r.bashMs)}`}></span>
+                  </td>
+                  <td class="num">{r.bashMs.toLocaleString()} ms</td>
+                  <td class="num us">{r.rubashMs.toLocaleString()} ms</td>
+                  <td class="num">{r.niuMs.toLocaleString()} ms</td>
+                  <td><Badge tone={parseFloat(r.ratioVsBash) >= 10 ? 'accent' : 'muted'}>{r.ratioVsBash}</Badge></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {inlineOnly.length > 0 && (
+          <>
+            <p class="sec-desc" style="margin-top:1rem">
+              含内联 coreutils 收益的负载（单列，不计入 fork 战绩）：
+              {inlineOnly.map((r) => `${r.workload} ${r.ratioVsBash}（${r.bashMs.toLocaleString()}→${r.rubashMs.toLocaleString()} ms）`).join('；')}。
+            </p>
+          </>
+        )}
+        <ul class="foot-note" style="list-style:disc;padding-left:1.2rem;">
+          {fs.analysis.map((a: string) => <li>{a}</li>)}
+        </ul>
+      </section>
+    )}
 
     <section class="sec">
       <h2>工程数字 <span class="vs">优化前 → 后，均带 PR 锚</span></h2>

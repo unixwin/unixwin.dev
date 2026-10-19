@@ -18,7 +18,7 @@ const basics: Row[] = [
   {
     cmd: 'niubash',
     purpose: '交互 REPL 启动',
-    note: '日常 shell；加载 ~/.niubashrc（无则回落 ~/.winshrc）与交互生命周期钩子。',
+    note: '日常 shell；加载 ~/.niubashrc 与交互生命周期钩子。',
     src: 'advanced-usage.md',
   },
   {
@@ -46,16 +46,202 @@ const basics: Row[] = [
     src: 'niu --help（src/main.rs）',
   },
   {
-    cmd: 'niu --self-update [--check | --dry-run]',
-    purpose: '自更新 shell 本体',
-    note: 'WinHTTP 跟随 GitHub releases/latest 下载并静默安装；REPL 内等价命令 self-update。--check 只报告，--dry-run 只下载不运行。',
-    src: 'installer.md',
-  },
-  {
     cmd: 'niu -V · niu --version',
     purpose: '版本与组件信息',
     note: '诊断首查项：先确认活动二进制版本，再排查其余。',
     src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu <script> [args]',
+    purpose: '运行脚本文件',
+    note: '以文件参数运行脚本并透传参数。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu setup',
+    purpose: '重跑 prompt / 插件设置',
+    note: '向导式重配置，可重复执行。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu font',
+    purpose: 'Nerd Font 检测与安装建议',
+    note: '检测字体缺口并给安装推荐。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu -h · niu --help',
+    purpose: '显示帮助',
+    note: '即本页主干的来源。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu --completion-probe <line> [cursor]',
+    purpose: '调试：打印补全候选',
+    note: '给定输入行（可带光标位），输出补全引擎将产生的候选——写补全插件/排查补全问题时用。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+];
+
+const wt: Row[] = [
+  {
+    cmd: 'niu --install-wt-profile',
+    purpose: '添加/更新 Windows Terminal 配置档',
+    note: '写入 Niubash 的 WT profile。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu --install-wt-profile --set-default',
+    purpose: '同时设为 WT 默认 profile',
+    note: '与上一条同用。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu --install-wt-shortcuts',
+    purpose: '重写桌面 / 开始菜单快捷方式',
+    note: '检测到 WT 时改写为 wt.exe -p Niubash 形态。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu --install-wt-shortcuts --update-only',
+    purpose: '只更新已存在的快捷方式',
+    note: '不新建，只改已有文件。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: '--quiet',
+    purpose: '抑制非错误输出',
+    note: 'profile 与 shortcuts 两组各自带一个同名静音旗标。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+];
+
+const selfupdate: Row[] = [
+  {
+    cmd: 'niu --self-update',
+    purpose: '下载并运行最新 release 安装器',
+    note: 'WinHTTP 跟随 GitHub releases/latest。',
+    src: 'installer.md · niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu --self-update --check',
+    purpose: '只报告最新版本',
+    note: '不执行更新。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu --self-update --dry-run',
+    purpose: '只下载安装器不运行',
+    note: '验证下载链路用。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'self-update（REPL 内命令）',
+    purpose: '更新 Niubash 并退出当前 shell',
+    note: '会话内的等价动词。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'update-niubash',
+    purpose: 'self-update 的别名',
+    note: '同义入口。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+];
+
+const plugin: Row[] = [
+  {
+    cmd: 'niu plugin add <id|owner/repo|url|path>',
+    purpose: '安装外部插件源（不受信）',
+    note: '支持四种定位形式。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin list [--json]',
+    purpose: '列出源、资产与激活状态',
+    note: '--json 机器可读。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin enable|disable <target>',
+    purpose: '激活 / 停用一个源或资产',
+    note: '粒度到资产级。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin update · sync · restore · rollback · clean',
+    purpose: '锁文件动词族',
+    note: 'vim-plug / lazy.nvim 风格的锁定与恢复语义。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin trust <id>',
+    purpose: '审阅并激活某源的资产',
+    note: '信任检查层。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin discover [--verbose]',
+    purpose: '外部插件源总览（只读）',
+    note: '不改任何状态。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin source <command>',
+    purpose: '源协议全集',
+    note: 'add / trust / sign / verify / remove / update / rollback / list。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin recipe <command>',
+    purpose: '配方索引',
+    note: 'list / show / add。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin distro <command>',
+    purpose: '集合分发',
+    note: 'list / import / remove / apply。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin mirror <command>',
+    purpose: 'Git 拉取镜像',
+    note: 'list / show / set——国内网络友好。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'niu plugin ui',
+    purpose: '菜单式 UI',
+    note: '按状态分节，动词与命令行一致。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+];
+
+const env: Row[] = [
+  {
+    cmd: '~/.niubashrc',
+    purpose: '交互启动配置文件',
+    note: '纯 bash 语法；交互 REPL 与 -C 加载，-c 不加载。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'NIU_ENV=<file>',
+    purpose: '非交互一次性 init 文件',
+    note: '-c / 脚本 / stdin 启动前 source；优先于 BASH_ENV；默认不设，保持 -c 快。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'BASH_ENV=<file>',
+    purpose: 'GNU bash 兼容的同义变量',
+    note: '语义相同，优先级低于 NIU_ENV。',
+    src: 'niu --help 实机（1.4.0）',
+  },
+  {
+    cmd: 'NIU_LANG=<zh|en>',
+    purpose: '设置向导语言',
+    note: '回落顺序：Windows UI 语言 → LC_ALL / LANG。',
+    src: 'niu --help 实机（1.4.0）',
   },
 ];
 
@@ -218,13 +404,13 @@ const doctor: Row[] = [
 
 <DocsLayout
   title="CLI 与旗标参考"
-  description="niu 命令行速查：基础调用（-c、--encoded-command、--cwd-state、--repl-command、--self-update）、skill / plugin 子命令全旗标、wpm 包管理速查与 doctor 诊断。每条命令标注来源文档。"
+  description="niu 命令行全量参考：基础调用与全部旗标（-c/-C/--encoded-command/--cwd-state/--completion-probe）、Windows Terminal 集成、自更新、plugin 全部子命令、skill/wpm 速查、GNU bash 兼容调用面与配置环境变量。来源：niu --help 实机输出。"
   path="/docs/cli/"
 >
   <header class="doc-head">
     <h1>CLI 与旗标参考</h1>
     <p class="lead">
-      <code>niu</code> 命令行面的速查表：基础调用、skill / plugin 子命令、wpm 包管理
+      <code>niu</code> 命令行面的全量参考：基础调用与全部旗标、WT 集成、自更新、plugin 全部子命令、skill / wpm
       与诊断。每行给出命令、作用与备注，备注括注事实来源（niubash 仓文档文件名）；
       语义细则与完整手册见页尾外链。
     </p>
@@ -254,6 +440,112 @@ const doctor: Row[] = [
               </tr>
             ))
           }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="wt">Windows Terminal 集成</h2>
+    <p>profile 与快捷方式两组独立旗标，各带静音开关。</p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>命令</th><th>作用</th><th>备注（来源）</th></tr></thead>
+        <tbody>
+          {wt.map((r) => (
+            <tr><td><code>{r.cmd}</code></td><td>{r.purpose}</td><td>{r.note}<span class="src">（{r.src}）</span></td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="self-update">自更新</h2>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>命令</th><th>作用</th><th>备注（来源）</th></tr></thead>
+        <tbody>
+          {selfupdate.map((r) => (
+            <tr><td><code>{r.cmd}</code></td><td>{r.purpose}</td><td>{r.note}<span class="src">（{r.src}）</span></td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="plugin">plugin 子命令（全）</h2>
+    <p>外部 bash 生态（oh-my-bash / bash-it / bash-completion 等）的安装、信任与锁定。</p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>命令</th><th>作用</th><th>备注（来源）</th></tr></thead>
+        <tbody>
+          {plugin.map((r) => (
+            <tr><td><code>{r.cmd}</code></td><td>{r.purpose}</td><td>{r.note}<span class="src">（{r.src}）</span></td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="bash-compat">GNU bash 兼容调用面</h2>
+    <p>
+      以下选项<strong>在 <code>niu --help</code> 中未列出，但全部支持</strong>——rubash
+      引擎与 GNU Bash 5.3 语义对齐，GNU 的调用面照用：
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>面</th><th>内容</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>GNU 长选项</code></td>
+            <td>
+              <code>--debug</code> <code>--debugger</code> <code>--dump-po-strings</code>{' '}
+              <code>--dump-strings</code> <code>--help</code> <code>--init-file</code>{' '}
+              <code>--login</code> <code>--noediting</code> <code>--noprofile</code>{' '}
+              <code>--norc</code> <code>--posix</code> <code>--pretty-print</code>{' '}
+              <code>--rcfile</code> <code>--restricted</code> <code>--verbose</code>{' '}
+              <code>--version</code>
+            </td>
+            <td>与 bash --help 所列 16 个长选项一一对应。</td>
+          </tr>
+          <tr>
+            <td><code>调用组合（仅启动时）</code></td>
+            <td><code>-i -l -r -s -D</code> · <code>-c command</code> · <code>-O shopt_option</code></td>
+            <td>交互 / 登录 / 受限 / 从 stdin 读 / 逐条回显 / 指定 shopt。</td>
+          </tr>
+          <tr>
+            <td><code>set 选项面</code></td>
+            <td><code>-abefhkmnptuvxBCEHPT</code> · <code>-o option</code></td>
+            <td>与 GNU 相同的 set 单字母集与 -o 名录（<code>niu -c 'help set'</code> 可查全表）。</td>
+          </tr>
+          <tr>
+            <td><code>内建帮助</code></td>
+            <td><code>niu -c 'help set'</code> · <code>niu -c help</code></td>
+            <td>set 选项说明与内建命令清单，GNU 同款入口。</td>
+          </tr>
+          <tr>
+            <td><code>rc 指定</code></td>
+            <td><code>--rcfile</code> / <code>--init-file</code></td>
+            <td>指定替代启动文件。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="src-line">来源：<code>bash --help</code> 对照（同机 GNU Bash 5.3.0 输出）；兼容性以 <a href="/docs/compatibility/">83/83 套件台账</a>为准。</p>
+  </section>
+
+  <section>
+    <h2 id="env">配置与环境变量</h2>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>项</th><th>作用</th><th>备注（来源）</th></tr></thead>
+        <tbody>
+          {env.map((r) => (
+            <tr><td><code>{r.cmd}</code></td><td>{r.purpose}</td><td>{r.note}<span class="src">（{r.src}）</span></td></tr>
+          ))}
         </tbody>
       </table>
     </div>

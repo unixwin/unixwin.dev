@@ -1,7 +1,8 @@
 ---
 /**
- * /benchmarks/ — 基准页。原则：有数据才写；每个数字带来源；混合收益单列。
- * 数据源：src/data/benchmarks.json（fork 专项 = 2026-10-18 复测）。
+ * /benchmarks/ — 基准页（2026-10-19 校准版）。
+ * 原则：有产物/PR 锚才写；输赢都展示；WSL 仅参考列。
+ * 数据源：src/data/benchmarks.json；产物原样入库 data/bench/。
  */
 import BaseLayout from '../../components/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
@@ -10,19 +11,14 @@ import ThemeSwitcher from '../../components/ThemeSwitcher.astro';
 import Badge from '../../components/Badge.astro';
 import bench from '../../data/benchmarks.json';
 
-const forkRows = bench.forkSuite.rows as any[];
-const forkOnly = forkRows.filter((r) => r.tag === 'fork');
-const inlineRows = forkRows.filter((r) => r.tag === 'inline');
-const p = bench.forkSuite.provenance as any;
-
-// 纯 CSS 横条：以 bash 耗时满格，按比例缩放
-const barWidth = (ms: number, max: number) => `${Math.max(2, Math.round((ms / max) * 100))}%`;
-const maxMs = Math.max(...forkRows.map((r) => r.bashMs));
+const h = bench.headToHead as any;
+const maxMs = Math.max(...(h.rows as any[]).map((r) => r.gitbash));
+const bar = (ms: number) => `${Math.max(2, Math.round((ms / maxMs) * 100))}%`;
 ---
 
 <BaseLayout
-  title="基准：niubash vs Git Bash / GNU bash"
-  description="实测数据：git 启动 3–7x、prompt git 段 4–10x 快于 Git Bash；命令替换 / 子壳等 fork 类负载 13–62x 快于 GNU bash（2026-10-18 复测）。每个数字附来源与复测方法。"
+  title="基准：niubash vs Git Bash / WSL / GNU bash"
+  description="实测：git 启动 3–7x、一次性执行 2.7x、提示符 git 段 4–12x 快于 Git Bash；Windows 同场 8 项负载全部领先。每个数字带产物或 PR 锚，输赢都展示。"
   theme="terminal"
   path="/benchmarks/"
 >
@@ -33,18 +29,18 @@ const maxMs = Math.max(...forkRows.map((r) => r.bashMs));
       <h1>数字说话<span class="cursor">▊</span></h1>
       <div class="badges">
         <Badge tone="accent">git 启动 3–7x vs Git Bash</Badge>
-        <Badge tone="accent">prompt git 段 4–10x（对方每条 3–5 次 fork）</Badge>
-        <Badge tone="accent">命令替换 / 子壳 13–62x vs GNU bash</Badge>
-        <Badge tone="info">冷启动 ~170ms · 单文件 3.79MB</Badge>
+        <Badge tone="accent">提示符 git 段 4–12x</Badge>
+        <Badge tone="accent">Windows 同场 8/8 领先</Badge>
+        <Badge tone="info">体积 27x 轻量 · 零 DLL</Badge>
       </div>
-      <p class="sub">每个数字都有来源（下方表格逐条标注），未实测的宣称不上这页。</p>
+      <p class="sub">每个数字都有产物或 PR 锚（逐条标注）；未实测的宣称不上这页。</p>
     </section>
 
     <section class="sec">
-      <h2>启动与延迟（vs Git Bash / WSL）</h2>
+      <h2>启动 · 延迟 · 体积</h2>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>指标</th><th>niubash</th><th>对照</th><th>倍数</th><th>来源</th></tr></thead>
+          <thead><tr><th>指标</th><th>niubash / rubash</th><th>对照</th><th>倍数</th><th>来源</th></tr></thead>
           <tbody>
             {(bench.latency as any[]).map((r) => (
               <tr>
@@ -61,51 +57,44 @@ const maxMs = Math.max(...forkRows.map((r) => r.bashMs));
     </section>
 
     <section class="sec">
-      <h2>fork / 子壳专项 <span class="vs">rubash 引擎 vs GNU bash 5.3.20</span></h2>
+      <h2>{h.title}</h2>
       <p class="sec-desc">
-        无 fork 三层执行模型（进程内 ShellState::clone 子壳）的直接收益——
-        {p.date} 复测，rubash {p.rubash} / niu {p.niu}，基线 {p.baseline}，
-        方法：{p.method}。
+        {h.provenance.date} · rubash {h.provenance.rubash} · 方法：{h.provenance.method}。
+        来源：<code>{h.provenance.source}</code>
       </p>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>负载</th><th style="width:26%">GNU bash → rubash</th><th>bash</th><th>rubash</th><th>niu</th><th>倍数</th></tr></thead>
+          <thead><tr><th>负载</th><th style="width:24%">rubash vs Git Bash</th><th>rubash</th><th>Git Bash</th><th>WSL（参考）</th></tr></thead>
           <tbody>
-            {forkOnly.map((r) => (
+            {(h.rows as any[]).map((r) => (
               <tr>
                 <td>{r.workload}</td>
                 <td>
-                  <span class="bar bar-bash" style={`width:${barWidth(r.bashMs, maxMs)}`}></span>
-                  <span class="bar bar-rub" style={`width:${barWidth(r.rubashMs, maxMs)}`}></span>
+                  <span class="bar bar-us" style={`width:${bar(r.rubash)}`}></span>
+                  <span class="bar bar-them" style={`width:${bar(r.gitbash)}`}></span>
                 </td>
-                <td class="num">{r.bashMs.toLocaleString()} ms</td>
-                <td class="num us">{r.rubashMs.toLocaleString()} ms</td>
-                <td class="num">{r.niuMs.toLocaleString()} ms</td>
-                <td><Badge tone={parseFloat(r.ratioVsBash) >= 10 ? 'accent' : 'muted'}>{r.ratioVsBash}</Badge></td>
+                <td class="num us">{r.rubash.toLocaleString()} ms</td>
+                <td class="num">{r.gitbash.toLocaleString()} ms</td>
+                <td class="num wsl">{r.wsl.toLocaleString()} ms</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <ul class="analysis">
-        {(bench.forkSuite.analysis as string[]).filter((s, i) => i < 2 || s.includes('持平') || s.includes('real_ext')).map((a) => <li>{a}</li>)}
-      </ul>
+      <p class="foot-note">{h.note}</p>
     </section>
 
     <section class="sec">
-      <h2>含内联 coreutils 收益的负载 <span class="vs">单列，不计入 fork 战绩</span></h2>
-      <p class="sec-desc">mkdir / touch / cat / sed / grep / wc 等常用命令在进程内执行、不产生子进程，下列倍数是「fork 节省 + 内联」的混合收益，诚实起见与上面的纯 fork 数字分开列。</p>
+      <h2>工程数字 <span class="vs">优化前 → 后，均带 PR 锚</span></h2>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>负载</th><th>bash</th><th>rubash</th><th>niu</th><th>倍数</th></tr></thead>
+          <thead><tr><th>项</th><th>数字</th><th>来源</th></tr></thead>
           <tbody>
-            {inlineRows.map((r) => (
+            {(bench.engineering as any[]).map((r) => (
               <tr>
-                <td>{r.workload}</td>
-                <td class="num">{r.bashMs.toLocaleString()} ms</td>
-                <td class="num us">{r.rubashMs.toLocaleString()} ms</td>
-                <td class="num">{r.niuMs.toLocaleString()} ms</td>
-                <td><Badge tone="info">{r.ratioVsBash}</Badge></td>
+                <td>{r.item}</td>
+                <td class="us">{r.detail}</td>
+                <td class="src">{r.source}</td>
               </tr>
             ))}
           </tbody>
@@ -116,10 +105,9 @@ const maxMs = Math.max(...forkRows.map((r) => r.bashMs));
     <section class="sec methodology">
       <h2>方法论与来源</h2>
       <ul>
-        <li>fork 专项：{p.date} 复测，产物 <code>{p.artifacts}</code>（待入库本仓库 data/bench/）</li>
-        <li>启动/延迟：niubash 仓库 README「Receipts」、CHANGELOG 实测票据、docs/src/why-niubash.md</li>
-        <li>对照版本以各来源文档标注为准；数字随版本更新，本页由 <code>src/data/benchmarks.json</code> 驱动</li>
-        <li>原则：未实测不写；输赢都展示（外部进程循环 ≈1.01x 持平即是真实 exec 成本）</li>
+        <li>环境：{(bench._meta as any).env}；产物原样入库 <code>data/bench/</code>（15 份，含 BENCH-README.md 的环境与方法清单）</li>
+        <li>纪律：未实测不写；持平与落后维度照列（单次 spawn 持平 = 真实 exec 地板；WSL 参考列注明其架构代价）</li>
+        <li>口径权威：FACTS.json（portal-dump 分支，2026-10-19）——README 与其冲突处以 FACTS 为准</li>
       </ul>
     </section>
   </main>
@@ -140,6 +128,7 @@ const maxMs = Math.max(...forkRows.map((r) => r.bashMs));
   .sec h2 { font-size: 1.2rem; margin: 0 0 0.5rem; }
   .vs { color: var(--muted); font-size: 0.85rem; font-weight: 400; margin-left: 0.5rem; }
   .sec-desc { color: var(--muted); font-size: 0.9rem; line-height: 1.7; margin: 0 0 0.9rem; }
+  .sec-desc code { color: var(--accent-2); }
 
   .tbl-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
@@ -147,13 +136,14 @@ const maxMs = Math.max(...forkRows.map((r) => r.bashMs));
   td { border-bottom: 1px solid var(--border); padding: 0.55rem 0.6rem; vertical-align: middle; }
   td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
   td.us { color: var(--accent); font-weight: 600; }
-  td.src { color: var(--muted); font-size: 0.8rem; max-width: 16rem; }
+  td.wsl { color: var(--muted); }
+  td.src { color: var(--muted); font-size: 0.8rem; max-width: 18rem; }
 
-  .bar { display: block; height: 0.55rem; border-radius: 2px; margin: 2px 0; }
-  .bar-bash { background: var(--muted); opacity: 0.55; }
-  .bar-rub { background: var(--accent); }
+  .bar { display: block; height: 0.5rem; border-radius: 2px; margin: 2px 0; }
+  .bar-us { background: var(--accent); }
+  .bar-them { background: var(--muted); opacity: 0.55; }
 
-  .analysis { margin: 1rem 0 0; padding-left: 1.2rem; color: var(--muted); line-height: 1.85; font-size: 0.9rem; }
+  .foot-note { color: var(--muted); font-size: 0.85rem; margin: 0.8rem 0 0; line-height: 1.7; }
   .methodology ul { padding-left: 1.2rem; color: var(--muted); line-height: 1.85; font-size: 0.9rem; }
   .methodology code { color: var(--accent-2); }
 </style>

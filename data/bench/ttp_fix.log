@@ -1,0 +1,16 @@
+niu binary : C:\Users\cmx\AppData\Local\Temp\nb373-target\release\niu.exe
+bash binary: D:\Git\bin\bash.exe
+runs       : 5 (median of TTP spawn->'P1> ', ConPTY transport floor included on both sides)
+TTP  niu: median   3139.8 ms   samples [3165.9, 3198.0, 3127.4, 3139.8, 3127.2]
+TTP bash: median   3289.3 ms   samples [3405.3, 3247.6, 3233.5, 3436.6, 3289.3]
+niu attribution (NIU_TRACE_STARTUP, cumulative ms):
+       0.0 ms  config loaded
+      98.8 ms  winuxcmd selected
+     104.1 ms  shell root prepared
+     105.6 ms  executor created
+     107.3 ms  executor env ready
+     108.2 ms  aliases
+     110.1 ms  prompt backend
+     111.7 ms  completion state
+     134.7 ms  completion + widgets
+     136.6 ms  Shell::new done

@@ -1,0 +1,11 @@
+bin	env	cwd	status	time	stdout	stderr	detail
+rubash-41de8319	clean	reporoot	NOMARKER	418ms	stdout=0B	stderr=0B	
+rubash-41de8319	polluted	reporoot	NOMARKER	161ms	stdout=0B	stderr=127B	benchmarks/24-nvm-load.sh: line 10: /mnt/d/repo/research/nvm-verify/rubash/benchmarks/corpus/nvm.sh: No such file or dir
+rubash-41de8319	clean	tmp	OK	459ms	stdout=12B	stderr=0B	
+rubash-41de8319	polluted	tmp	NOMARKER	188ms	stdout=0B	stderr=104B	bash: line 1: /mnt/c/Users/cmx/AppData/Local/Temp/nvm-hang-verify/tmp/nvm.sh: No such file or directory 
+rubash-764b9dde	clean	reporoot	NOMARKER	415ms	stdout=0B	stderr=0B	
+rubash-764b9dde	polluted	reporoot	NOMARKER	133ms	stdout=0B	stderr=127B	benchmarks/24-nvm-load.sh: line 10: /mnt/d/repo/research/nvm-verify/rubash/benchmarks/corpus/nvm.sh: No such file or dir
+rubash-764b9dde	clean	tmp	OK	401ms	stdout=12B	stderr=0B	
+rubash-764b9dde	polluted	tmp	NOMARKER	185ms	stdout=0B	stderr=104B	bash: line 1: /mnt/c/Users/cmx/AppData/Local/Temp/nvm-hang-verify/tmp/nvm.sh: No such file or directory 
+gnu-bash-5.3.0	clean	reporoot	NOMARKER	125ms	stdout=0B	stderr=0B	
+gnu-bash-5.3.0	clean	tmp	OK	116ms	stdout=12B	stderr=0B	

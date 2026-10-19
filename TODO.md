@@ -89,3 +89,11 @@ npm run build              # 出 dist/
 - [ ] 内联 coreutils 完整名单（现在页面只举例 mkdir/touch/cat/sed/grep/wc）
 
 **侧边栏决策（调研结论：nuxt.com/nodejs.org 先例）**：营销页无栏 + 内容页侧栏；自写 Sidebar.astro/SidebarGroup/SidebarLink/TocRight/DocsLayout 五件套，nav.json 升级为树形；暂不上 Starlight（整站迁移成本 > 收益，50+ 文档页后再议）。
+
+## 6. 2026-10-19 材料包校准（portal-dump 分支，已完成）
+
+- 基准页重写：会话截图的 fork 套件数字按 FACTS 纪律**撤下**（recheck_fork_*.tsv 全盘未找到，待落盘后回填 benchmarks.json.retracted 位）；改上有档数字：启动 27–48 vs 60–93 vs 202–278ms（startup.tsv）、Windows 同场 8/8 领先（results.tsv，min-of-3 已核算）、提示符 git 税 ≤29 vs 113–362ms、体积 16MB vs 440MB+20MB（GITBASH-KILLER）
+- 首页 Why 扩为六卡：+零 fork、+路径方言全收（PATH-MATRIX）、+无 MSYS 咒语（GITBASH-KILLER 面1）；facts.json 换 FACTS 口径（options 1,924、一次性执行 26.3ms、单测 rubash 698/niubash 1026）
+- BENCH/ 15 份产物原样入库 data/bench/（含 BENCH-README 环境/方法）
+- README 侧待修（FACTS 记录，非门户阻塞）：rubash 40+→62、WinuxCmd 84→67、组织描述 75-100→45-103；wpm-gui 已评估归档
+- CARDS.md 牌组 28 张仅用 6 张，P1 产品页/对比页继续取材

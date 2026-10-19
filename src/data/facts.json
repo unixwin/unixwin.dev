@@ -2,10 +2,12 @@
   "bashSuites": "83/83",
   "byteIdentical": "82 套逐字节一致",
   "commands": "176+",
-  "options": "1,900+",
+  "options": "1,924",
   "gitStartup": "~14 ms",
-  "shellColdStart": "~170 ms",
+  "oneShot": "26.3 ms",
+  "promptGit": "≤29 ms",
   "binarySize": "3.79 MB",
-  "unitTests": "2,420 · 99.6%",
-  "platforms": 5
+  "unitTests": "rubash 698 · niubash 1026 · 0 失败",
+  "platforms": 5,
+  "note": "口径与证据：FACTS.json（portal-dump 分支 2026-10-19 总控审计）；数字随版本更新，构建期由 fetch:github 刷新版本号"
 }

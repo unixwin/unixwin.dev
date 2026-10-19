@@ -1,40 +1,45 @@
 {
   "_meta": {
-    "principle": "每个上页的数字必须有可指认的来源；未实测的宣称不写。",
-    "updatedAt": "2026-10-19",
-    "note": "fork 专项数据来自 2026-10-18 复测（见 forkSuite.provenance）；启动/延迟数据来自 niubash 仓库 README 与 CHANGELOG。旧账本 performance.md 的数组节为历史快照，不再用于页面表述。"
-  },
-  "forkSuite": {
-    "provenance": {
-      "date": "2026-10-18",
-      "rubash": "HEAD 141b460",
-      "niu": "1.4.0",
-      "baseline": "GNU bash 5.3.20（aarch64）",
-      "method": "顺序轮换（interleaved），min-of-N，单项超时保护",
-      "artifacts": "recheck_fork_20261018-1628.tsv · recheck_fork2_20261018-1637.tsv（TODO：入库到本仓库 data/bench/）"
-    },
-    "rows": [
-      { "workload": "$( ) 命令替换 ×3000", "bashMs": 4382, "rubashMs": 90, "niuMs": 119, "ratioVsBash": "48.7x", "tag": "fork" },
-      { "workload": "反引号替换 ×3000", "bashMs": 4903, "rubashMs": 79, "niuMs": 107, "ratioVsBash": "62x", "tag": "fork" },
-      { "workload": "子壳 ( : ) ×5000", "bashMs": 5799, "rubashMs": 358, "niuMs": 382, "ratioVsBash": "16.2x", "tag": "fork" },
-      { "workload": "递归 fib $() ×100", "bashMs": 37300, "rubashMs": 2866, "niuMs": 3019, "ratioVsBash": "13.0x", "tag": "fork" },
-      { "workload": "外部进程循环 /bin/true ×2000", "bashMs": 16229, "rubashMs": 16404, "niuMs": 16478, "ratioVsBash": "1.01x", "tag": "fork" },
-      { "workload": "后台 sleep & wait ×750", "bashMs": 928, "rubashMs": 2293, "niuMs": 2423, "ratioVsBash": "2.47x", "tag": "fork" },
-      { "workload": "管道 echo | cat ×2000", "bashMs": 17347, "rubashMs": 91, "niuMs": 105, "ratioVsBash": "190x", "tag": "inline" },
-      { "workload": "真实脚本 mkdir/wc ×250", "bashMs": 4123, "rubashMs": 1928, "niuMs": 2009, "ratioVsBash": "2.14x", "tag": "inline" }
-    ],
-    "analysis": [
-      "纯 fork/子壳类负载（命令替换、反引号、子壳、递归）实测 13–62x 快于 GNU bash：无 fork 三层执行模型（ShellState::clone 进程内子壳）的直接收益",
-      "外部进程循环 ≈1.01x 持平——真实 exec 成本仍在，无虚假加速",
-      "管道与真实脚本两行含内联 coreutils 收益（mkdir/touch/cat/sed/grep/wc 等在进程内执行，不产生子进程），因此单列，不计入 fork 战绩",
-      "real_ext 路径 0.980 → 1.02x faster；niu(产品壳) 与 rubash(引擎) 比例基本一致"
-    ]
+    "principle": "每个上页的数字必须有可指认的产物或 PR/issue 锚；未实测不写；输赢都展示。",
+    "asOf": "2026-10-19",
+    "authority": "FACTS.json / HIGHLIGHTS.md / CARDS.md（unixwin.dev 仓库 portal-dump 分支，2026-10-19 总控审计）",
+    "benchArtifacts": "data/bench/（原样拷贝：results.tsv / startup.tsv / run_bench.sh / PERF-TABLE.md 等 15 份 + BENCH-README.md 环境与方法）",
+    "env": "Intel Xeon w5-3435 · Windows 10 19045 · 同机 WSL2 Ubuntu（GNU Bash 5.3.0 对照）· Git Bash 5.3.0 (msys)",
+    "retracted": "曾见于会话截图的 recheck_fork_20261018-*.tsv 数字：产物经全盘搜索未找到，按 FACTS 纪律不上页，待产物落盘后再入库。"
   },
   "latency": [
-    { "metric": "git --version 启动", "us": "~14 ms", "them": "Git Bash 45–103 ms", "badge": "3–7x faster", "source": "niubash README / CHANGELOG（Receipts）" },
-    { "metric": "git status", "us": "~23 ms", "them": "—", "badge": "", "source": "niubash CHANGELOG" },
-    { "metric": "shell 冷启动到 prompt", "us": "~170 ms", "them": "Git Bash ~1 s · PowerShell ~280 ms · WSL 秒级", "badge": "3–6x faster", "source": "niubash docs/src/why-niubash.md" },
-    { "metric": "prompt 内 git 段（p50）", "us": "26 ms（max 37）", "them": "Git Bash __git_ps1 100–300 ms（每条 prompt 3–5 次 fork）", "badge": "4–10x faster", "source": "niubash CHANGELOG（实测票据）" },
-    { "metric": "WinuxCmd 冷启动 / 体积", "us": "~19 ms · 3.79 MB 单文件", "them": "—", "badge": "", "source": "WinuxCmd README（PGO 后）" }
+    { "metric": "git 启动（git --version）", "us": "~14 ms", "them": "Git Bash 45–103 ms", "badge": "3–7x faster", "source": "niubash README:32 · niu-git（MSVC+schannel，无 MSYS）" },
+    { "metric": "一次性执行 niu -c true", "us": "26.3 ms", "them": "Git Bash 71 ms", "badge": "2.7x faster", "source": "GITBASH-KILLER 面 6" },
+    { "metric": "提示符 git 段", "us": "读 .git/HEAD ≤29 ms", "them": "每条提示符 spawn git 113–362 ms", "badge": "4–12x faster", "source": "GITBASH-KILLER 面 3（真仓 min-of-20）" },
+    { "metric": "shell 启动（5 次实测）", "us": "rubash 27–48 ms", "them": "Git Bash 60–93 ms · WSL 202–278 ms", "badge": "2–3x faster", "source": "data/bench/startup.tsv" },
+    { "metric": "安装体积", "us": "niu ≈16 MB · 零 DLL", "them": "Git Bash 440 MB + 20 MB msys-2.0.dll", "badge": "27x lighter", "source": "GITBASH-KILLER 面 4（装机位实测）" },
+    { "metric": "WinuxCmd", "us": "3.79 MB 携带 176 命令 / 1,924 选项 · ~19 ms 冷启", "them": "—", "badge": "", "source": "WinuxCmd README:32,:74（PGO：sort −18%、nl −17%）" }
+  ],
+  "headToHead": {
+    "title": "Windows 同场：8/8 全部快于 Git Bash",
+    "provenance": {
+      "date": "2026-10-18",
+      "rubash": "master 8ab35e89（含 #807/#808）",
+      "method": "交错轮换（每轮 rubash→Git Bash→WSL），弃 1 轮热身，min-of-3，timeout 120s，三方同一计时法（inner window date +%s%N）",
+      "source": "data/bench/results.tsv + data/bench/run_bench.sh"
+    },
+    "note": "WSL 列仅作参考：后台作业占优（Linux 内核 fork），但前台外部命令 857 ms（跨 OS 文件操作）、冷启动 202–278 ms，且带走整套虚拟机。",
+    "rows": [
+      { "workload": "后台等待 sleep & wait ×750", "rubash": 1696, "gitbash": 1967, "wsl": 154 },
+      { "workload": "后台等待 ×1500", "rubash": 3366, "gitbash": 3980, "wsl": 324 },
+      { "workload": "后台等待 ×300", "rubash": 694, "gitbash": 814, "wsl": 57 },
+      { "workload": "后台等待 ×100", "rubash": 263, "gitbash": 298, "wsl": 19 },
+      { "workload": "后台子壳 ( ) ×750", "rubash": 1643, "gitbash": 2192, "wsl": 123 },
+      { "workload": "纯 spawn ×750", "rubash": 1696, "gitbash": 2119, "wsl": 158 },
+      { "workload": "前台外部命令 ×750", "rubash": 37, "gitbash": 41, "wsl": 857 },
+      { "workload": "内建循环 ×750", "rubash": 32, "gitbash": 40, "wsl": 3 }
+    ]
+  },
+  "engineering": [
+    { "item": "一次性执行优化（xgr 六连）", "detail": "niu -c true 105.6 ms → 19.8 ms", "source": "niubash PR #267–#272" },
+    { "item": "多行粘贴", "detail": "自动误执行 186 次 → 0；257 行载荷 300s 超时 → 4.6s", "source": "PR #252/#288 · paste_multiline_bench.py" },
+    { "item": "nvm.sh 重词法 checkpoint", "detail": "与 GNU 差距 720x → 8x，重词法字节 −40%", "source": "rubash PR #486" },
+    { "item": "数组元素写 O(n²)→O(1)", "detail": "K=5000 单次写：关联数组快 45 倍、索引数组快 177 倍（对旧版）", "source": "rubash PR #650/#652" },
+    { "item": "单次 spawn 成本", "detail": "rubash 1.183 ms vs GNU 1.121 ms——持平（真实 exec 地板）", "source": "data/bench/unix-spawn-cost-20261012.md（min-of-3）" }
   ]
 }

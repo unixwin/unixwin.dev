@@ -1,0 +1,7 @@
+bin	env	cwd	status	time	stdout	stderr	detail
+rubash-764b9dde-win	clean	reporoot	TIMEOUT	60022ms	stdout=0B	stderr=0B	
+rubash-764b9dde-win	polluted	reporoot	TIMEOUT	60020ms	stdout=0B	stderr=0B	
+rubash-764b9dde-win	clean	tmp	TIMEOUT	60051ms	stdout=0B	stderr=0B	
+rubash-764b9dde-win	polluted	tmp	TIMEOUT	60015ms	stdout=0B	stderr=0B	
+rubash-41de8319-win	clean	tmp	TIMEOUT	60014ms	stdout=0B	stderr=0B	
+rubash-41de8319-win	polluted	tmp	TIMEOUT	60013ms	stdout=0B	stderr=0B	

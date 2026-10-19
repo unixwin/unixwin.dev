@@ -28,7 +28,7 @@ const stats = [
   { label: identicalRest.join('') || '逐字节一致', value: identicalCount },
   { label: 'Unix 命令', value: facts.commands },
   { label: 'git 启动', value: facts.gitStartup },
-  { label: 'shell 冷启动', value: facts.shellColdStart },
+  { label: '一次性执行 niu -c', value: facts.oneShot },
   { label: '单文件体积', value: facts.binarySize },
 ];
 
@@ -187,12 +187,40 @@ const latestNews = newsItems.slice(0, 4);
           <h3 class="why-title">真兼容</h3>
           <p class="why-body">
             GNU Bash 上游 <strong>83 套</strong>测试套件全部通过，其中 <strong>82 套</strong>输出与 bash
-            逐字节一致——存量脚本、别名和 CI 不用改一个字。
+            逐字节一致——唯一残差经逐字节论证是 GNU 自己的竞态。存量脚本零修改。
           </p>
           <code class="why-chip">suites 83/83 · byte-identical 82</code>
         </article>
         <article class="why-card">
           <p class="why-num">02</p>
+          <h3 class="why-title">零 fork</h3>
+          <p class="why-body">
+            <code>( )</code> 与 <code>$( )</code> <strong>零进程创建</strong>——子壳在进程内完成，fd
+            继承、共享偏移、退出码、信号处置与 GNU 行为一致。全平台同一模型，无 POSIX 模拟层。
+          </p>
+          <code class="why-chip">( ) $( ) → 0 processes</code>
+        </article>
+        <article class="why-card">
+          <p class="why-num">03</p>
+          <h3 class="why-title">路径方言全收</h3>
+          <p class="why-body">
+            <code>C:\</code>、<code>D:/</code>、<code>/d/</code>、<code>/mnt/d</code>、<code>/cygdrive/d</code>——
+            <strong>四大生态</strong>的路径写法一个 shell 全收且真折叠。换 shell，不用改脚本。
+          </p>
+          <code class="why-chip">C:\ · /d/ · /mnt/d · /cygdrive/d</code>
+        </article>
+        <article class="why-card">
+          <p class="why-num">04</p>
+          <h3 class="why-title">无 MSYS 咒语</h3>
+          <p class="why-body">
+            Git Bash 会在 spawn 前启发式改写你的参数，你得学会
+            <code>MSYS_NO_PATHCONV</code>；niu 没有 MSYS 运行时——argv
+            <strong>逐字节原样抵达</strong>，这个词不存在，因为它不需要存在。
+          </p>
+          <code class="why-chip">argv verbatim</code>
+        </article>
+        <article class="why-card">
+          <p class="why-num">05</p>
           <h3 class="why-title">AI-native</h3>
           <p class="why-body">
             从 niu 会话启动 Claude Code、Codex、Cursor，agent 按 $SHELL 约定直接用上
@@ -202,22 +230,13 @@ const latestNews = newsItems.slice(0, 4);
           <code class="why-chip">niu -c 'ls | grep src'</code>
         </article>
         <article class="why-card">
-          <p class="why-num">03</p>
+          <p class="why-num">06</p>
           <h3 class="why-title">快</h3>
           <p class="why-body">
-            <code>git --version</code> 约 <strong>~14ms</strong>，Git Bash 要 45–103ms；shell
-            冷启动 <strong>~170ms</strong>，prompt 不卡、补全不顿。
+            <code>git --version</code> 约 <strong>~14ms</strong>，Git Bash 要 45–103ms；提示符直接读
+            <code>.git/HEAD</code>（≤29ms），对方每条提示符给 git 交 113–362ms 的税。
           </p>
-          <code class="why-chip">git ~14ms · cold start ~170ms</code>
-        </article>
-        <article class="why-card">
-          <p class="why-num">04</p>
-          <h3 class="why-title">原生</h3>
-          <p class="why-body">
-            <strong>3.79MB</strong> 单文件、无 POSIX 模拟层；Windows x64 / ARM64、Linux、macOS
-            五平台原生构建，一个二进制走到哪都能跑。
-          </p>
-          <code class="why-chip">3.79MB · 5 platforms</code>
+          <code class="why-chip">git ~14ms · prompt ≤29ms</code>
         </article>
       </div>
 

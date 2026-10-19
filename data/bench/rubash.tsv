@@ -1,0 +1,29 @@
+# rubash GNU bash, version 5.3.0(1)-release (x86_64-pc-msys)
+# exe /d/repo/rubash/target/release/rubash.exe (10390528 bytes)
+# commit unknown
+# uname MSYS_NT-10.0-19045 10.0-19045 x86_64
+# date 2026-10-12T00:40:57Z
+01-startup-empty	OK	26	24	30	5	0
+02-startup-fndef	OK	27	26	33	5	0
+04-loop-true-builtin-x2000	OK	117	100	147	5	0
+05-arith-x5000	OK	98	95	102	5	0
+06-strconcat-x5000	OK	269	234	288	5	0
+07-fncall-noop-x5000	OK	301	272	351	5	0
+08-cmdsub-true-x1000	OK	90	77	102	5	0
+09-external-uname-x300	OK	50	43	50	5	0
+10-pathmiss-x100	OK	2039	1985	2151	5	0
+11-pipeline-yes-head	OK	55	53	65	5	0
+12-pipe-echo-read-x2000	OK	1144	1101	1197	5	0
+13-readloop-gen-x2000	OK	174	151	193	5	0
+14-glob-srcrels-x100	OK	40	38	47	5	0
+15-expansion-x5000	OK	551	479	574	5	0
+16-parse-flat8000	OK	438	429	472	5	0
+17-parse-flat8000-n	OK	114	106	128	5	0
+18-nested-brace-nst1-d200	OK	61	46	70	5	0
+19-nested-brace-nst2-d200	OK	116	110	128	5	0
+20-as-fn-mkdir-p-rep40	OK	53	51	54	5	0
+21-configure-head1374-n	OK	55	47	57	3	0
+22-configure-full-n	OK	287	282	383	3	0
+23-nvm-parse-n	OK	180	171	265	3	0
+24-nvm-load	TIMEOUT	-	-	-	3	124
+25-yes-head-read	OK	1515	1508	1544	3	0

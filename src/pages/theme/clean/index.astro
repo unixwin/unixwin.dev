@@ -1,7 +1,10 @@
 ---
 /**
- * 主题候选 B（clean）预览页 — /theme/clean/
- * 与首页同结构骨架；文案为占位（TODO-CONTENT），供后续代理精修。
+ * 主题候选 B（clean）首页 — /theme/clean/
+ * 亮色极简 · 现代 SaaS 官网：白底、蓝 accent、系统无衬线、大量留白。
+ * 结构：居中窄栏 Hero → 浅色统计条 → 全宽产品带（3×2）→ 三列特性
+ *       → 快速安装 → 信任行 → FAQ。
+ * 全部文案为正式稿；指标一律取自 facts.json / repo-meta.json。
  */
 import BaseLayout from '../../../components/BaseLayout.astro';
 import SiteHeader from '../../../components/SiteHeader.astro';
@@ -10,67 +13,162 @@ import ThemeSwitcher from '../../../components/ThemeSwitcher.astro';
 import StatsBand from '../../../components/StatsBand.astro';
 import ProductCard from '../../../components/ProductCard.astro';
 import Section from '../../../components/Section.astro';
-import Badge from '../../../components/Badge.astro';
+import InstallTabs from '../../../components/InstallTabs.astro';
 import products from '../../../data/products.json';
 import facts from '../../../data/facts.json';
 import repoMeta from '../../../data/repo-meta.json';
+import nav from '../../../data/nav.json';
 
 const ordered = [...products].sort((a, b) => a.order - b.order);
 
+// 统计条四格：全部取自 facts.json
 const stats = [
-  { label: 'bash 测试套件', value: facts.bashSuites },
-  { label: '字节级一致性', value: facts.byteIdentical },
   { label: 'Unix 命令', value: facts.commands },
-  { label: '命令选项', value: facts.options },
-  { label: 'niu-git 启动', value: facts.gitStartup },
-  { label: 'shell 冷启动', value: facts.shellColdStart },
+  { label: 'GNU 兼容套件', value: facts.bashSuites },
+  { label: 'git 启动', value: facts.gitStartup },
+  { label: '单元测试', value: facts.unitTests },
+];
+
+const installTabs = [
+  { label: 'PowerShell', code: 'irm https://dl.caomengxuan666.com/install.ps1 | iex' },
+  { label: 'wpm', code: 'wpm install winuxcmd' },
 ];
 ---
 
 <BaseLayout
-  title="主题候选 B · 亮色 clean — UNIXWIN"
-  description="UNIXWIN 官网主题候选 B（clean）：白底无衬线亮色方案预览。"
+  title="真 Bash，原生跑在所有平台 · 主题候选 B 亮色"
+  description="UNIXWIN：AI-native 的 Bash 家族——真语法、真 Unix 命令、原生 Windows / Linux / macOS，无 WSL、无 MSYS。主题候选 B（clean 亮色）首页。"
   theme="clean"
   path="/theme/clean/"
 >
   <SiteHeader />
 
-  <main class="container">
-    <!-- Hero -->
+  <main>
+    <!-- 1 · Hero：居中窄栏 -->
     <section class="hero">
-      <p class="hero-kicker"><Badge tone="accent">主题候选 B · clean</Badge></p>
-      <h1 class="hero-wordmark">UNIXWIN</h1>
-      <!-- TODO-CONTENT：clean 主题 hero 文案待精修 -->
-      <p class="hero-tagline">AI-native 的真·Bash：真语法、真 Unix 命令、原生三平台。</p>
-      <p class="hero-tagline-en">AI-native bash family — real bash syntax, real Unix commands, native Windows / Linux / macOS.</p>
+      <p class="hero-kicker">UNIXWIN · 开源</p>
+      <h1 class="hero-title">真 Bash，<span class="hero-accent">原生</span>跑在所有平台</h1>
+      <p class="hero-sub">
+        AI-native 的 Bash 家族：真语法、真 Unix 命令、原生 Windows / Linux / macOS，无 WSL、无 MSYS。
+      </p>
       <div class="hero-cta">
-        <a class="cta cta-primary" href="#products">查看产品</a>
-        <a class="cta cta-ghost" href="https://github.com/unixwin" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+        <a class="cta cta-primary" href="#install">快速安装</a>
+        <a
+          class="cta cta-ghost"
+          href={nav.github}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub <span aria-hidden="true">→</span>
+        </a>
       </div>
+      <p class="hero-meta">MIT 协议 · Windows x64 / ARM64 · Linux · macOS</p>
     </section>
 
-    <!-- Stats -->
-    <div id="facts">
+    <!-- 2 · 浅色统计条 -->
+    <div class="container stats-outer" id="facts">
       <StatsBand items={stats} />
     </div>
 
-    <!-- Products -->
-    <Section id="products" title="产品矩阵" kicker="six projects · one family">
-      <div class="product-grid">
-        {ordered.map((p) => (
-          <ProductCard product={p} stars={repoMeta.repos?.[p.id]?.stars} />
-        ))}
+    <!-- 3 · 产品六卡：全宽产品带 -->
+    <section class="band">
+      <div class="container">
+        <Section id="products" title="六款产品，一个家族" kicker="six projects · one family">
+          <div class="product-grid">
+            {ordered.map((p) => (
+              <ProductCard product={p} stars={repoMeta.repos?.[p.id]?.stars} />
+            ))}
+          </div>
+        </Section>
       </div>
-    </Section>
+    </section>
 
-    <!-- Theme candidates -->
-    <Section id="themes" title="主题候选" kicker="a / b / c — pick one">
-      <div class="theme-grid">
-        <a class="theme-tile" href="/">A · 终端 terminal</a>
-        <a class="theme-tile is-current" href="/theme/clean/">B · 亮色 clean（当前）</a>
-        <a class="theme-tile" href="/theme/neon/">C · 霓虹 neon</a>
-      </div>
-    </Section>
+    <!-- 4 · 为什么选 UNIXWIN：三列 -->
+    <div class="container">
+      <Section id="why" title="为什么选 UNIXWIN" kicker="why unixwin">
+        <div class="feature-grid">
+          <article class="feature">
+            <span class="feature-index">01</span>
+            <h3>不妥协的兼容</h3>
+            <p>
+              GNU Bash 上游测试套件 {facts.bashSuites} 全部通过，其中 {facts.byteIdentical}。
+            </p>
+          </article>
+          <article class="feature">
+            <span class="feature-index">02</span>
+            <h3>为 AI 而生</h3>
+            <p>
+              Claude Code、Codex、Cursor 等开箱即可接管；
+              <code class="inline-code">niu -c</code>
+              确定性输出、精确退出码。
+            </p>
+          </article>
+          <article class="feature">
+            <span class="feature-index">03</span>
+            <h3>一个文件搞定</h3>
+            <p>
+              单文件约 {facts.binarySize}，无 POSIX 模拟层，冷启动 {facts.shellColdStart}。
+            </p>
+          </article>
+        </div>
+      </Section>
+    </div>
+
+    <!-- 5 · 快速安装 -->
+    <div class="container">
+      <Section id="install" title="快速安装" kicker="quick start">
+        <div class="install-wrap">
+          <InstallTabs id="install" tabs={installTabs} />
+          <p class="install-note">
+            其他平台：前往
+            <a href="https://github.com/unixwin/niubash/releases" target="_blank" rel="noopener noreferrer">
+              GitHub Releases
+            </a>
+            下载对应版本，Linux / macOS 便携包即解即用。
+          </p>
+        </div>
+      </Section>
+    </div>
+
+    <!-- 6 · 信任行 -->
+    <p class="trust-row">
+      <a href={nav.docs} target="_blank" rel="noopener noreferrer">文档</a>
+      <span aria-hidden="true"> · </span>
+      <a href="/changelog/">更新日志</a>
+      <span aria-hidden="true"> · </span>
+      <a href={nav.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+      <span aria-hidden="true"> · </span>
+      <span>MIT 协议</span>
+    </p>
+
+    <!-- 7 · FAQ -->
+    <div class="container">
+      <Section id="faq" title="常见问题" kicker="faq">
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>和 Git Bash / WSL 有什么区别？</summary>
+            <p class="faq-a">
+              没有 MSYS 模拟层，也没有虚拟机：UNIXWIN 是原生编译的二进制。以 git
+              为例，启动从 Git Bash 的 45–103ms 降到 {facts.gitStartup}。
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>AI agent 怎么用？</summary>
+            <p class="faq-a">
+              安装完成后，Claude Code、Codex、Cursor
+              等工具会自动将其探测为默认 shell，无需额外配置。
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>开源吗？</summary>
+            <p class="faq-a">
+              MIT 协议，六个子项目全部开源，仓库都在
+              <a href={nav.github} target="_blank" rel="noopener noreferrer">github.com/unixwin</a>。
+            </p>
+          </details>
+        </div>
+      </Section>
+    </div>
   </main>
 
   <SiteFooter />
@@ -78,46 +176,71 @@ const stats = [
 </BaseLayout>
 
 <style>
+  /* ---------- Hero：居中窄栏 ---------- */
   .hero {
-    padding: 4rem 0 2.2rem;
+    max-width: 46rem;
+    margin-inline: auto;
+    padding: 5rem 1.25rem 3.4rem;
+    text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    align-items: center;
+    background: radial-gradient(
+      56rem 30rem at 50% -14%,
+      color-mix(in srgb, var(--accent) 8%, transparent),
+      transparent 70%
+    );
   }
 
   .hero-kicker {
-    margin: 0;
-  }
-
-  .hero-wordmark {
-    font-size: clamp(2.6rem, 8vw, 4.6rem);
-    letter-spacing: 0.02em;
-    margin: 0;
+    margin: 0 0 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
     color: var(--accent);
   }
 
-  .hero-tagline {
-    font-size: 1.15rem;
-    margin: 0.4rem 0 0;
+  .hero-title {
+    margin: 0;
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.16;
+    letter-spacing: -0.02em;
   }
 
-  .hero-tagline-en {
+  .hero-accent {
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    margin: 1.1rem 0 0;
+    max-width: 40rem;
+    font-size: 1.12rem;
+    line-height: 1.7;
     color: var(--muted);
-    margin: 0;
   }
 
   .hero-cta {
     display: flex;
-    gap: 0.9rem;
-    margin-top: 1.4rem;
     flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.9rem;
+    margin-top: 1.9rem;
   }
 
   .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     border-radius: var(--radius);
-    padding: 0.6rem 1.5rem;
+    border: 1px solid transparent;
+    padding: 0.65rem 1.6rem;
     font-weight: 600;
+    font-size: 0.98rem;
     text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, color 0.15s;
   }
 
   .cta:hover {
@@ -127,56 +250,179 @@ const stats = [
   .cta-primary {
     background: var(--accent);
     color: var(--bg);
-    border: 1px solid var(--accent);
+    border-color: var(--accent);
   }
 
   .cta-primary:hover {
-    background: var(--accent-2);
-    border-color: var(--accent-2);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
   }
 
   .cta-ghost {
+    background: var(--bg);
     color: var(--text);
-    border: 1px solid var(--border);
+    border-color: var(--border);
   }
 
   .cta-ghost:hover {
     border-color: var(--accent);
+    color: var(--accent);
   }
 
-  #facts {
+  .hero-meta {
+    margin: 1.2rem 0 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  /* ---------- 统计条 ---------- */
+  .stats-outer {
+    margin-bottom: 4rem;
     scroll-margin-top: 5rem;
+  }
+
+  /* ---------- 全宽产品带 ---------- */
+  .band {
+    background: var(--bg-elev);
+    border-block: 1px solid var(--border);
+    padding-block: 1.6rem 3rem;
+  }
+
+  /* Section 自带 3.2rem 纵向 margin，带内归零，由 band 的 padding 控制节奏 */
+  .band :global(.section) {
+    margin-block: 0;
   }
 
   .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.1rem;
+    gap: 1.25rem;
   }
 
-  .theme-grid {
+  /* ---------- 三列特性 ---------- */
+  .feature-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.6rem 2.4rem;
   }
 
-  .theme-tile {
-    display: block;
-    background: var(--bg-elev);
+  .feature {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .feature-index {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+  }
+
+  .feature h3 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  .feature p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .inline-code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.42);
+    padding: 0.08rem 0.45rem;
+    font-size: 0.86em;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* ---------- 安装 ---------- */
+  .install-wrap {
+    max-width: 48rem;
+  }
+
+  .install-note {
+    margin: 0.9rem 0 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  /* ---------- 信任行 ---------- */
+  .trust-row {
+    margin: 0;
+    padding: 0 1.25rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .trust-row a {
+    color: var(--muted);
+  }
+
+  .trust-row a:hover {
+    color: var(--accent);
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-list {
+    max-width: 46rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .faq-item {
+    background: var(--bg);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1rem 1.2rem;
-    color: var(--text);
-    text-decoration: none;
     box-shadow: var(--shadow);
   }
 
-  .theme-tile:hover {
-    border-color: var(--accent);
-    text-decoration: none;
+  .faq-item[open] {
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
   }
 
-  .theme-tile.is-current {
-    border-color: var(--accent);
+  .faq-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.95rem 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-item summary::after {
+    content: '+';
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 1.15rem;
+    line-height: 1;
+    color: var(--muted);
+    transition: transform 0.15s;
+  }
+
+  .faq-item[open] summary::after {
+    transform: rotate(45deg);
+  }
+
+  .faq-a {
+    margin: 0;
+    padding: 0 1.25rem 1rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--muted);
   }
 </style>

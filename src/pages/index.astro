@@ -344,13 +344,16 @@ const softwareAppJsonLd = {
       <figure class="demo-fig">
         <img
           src="/assets/demo-gitbash.gif"
-          alt="实测录屏：git --version 启动速度对比，Git Bash 45–103 毫秒，niu-git 约 14 毫秒"
+          alt="实录：Git Bash 的 MSYS 运行时改写参数，cd、cmd /c、git grep -n 三条命令接连失败"
           width="692"
           height="334"
           loading="lazy"
           decoding="async"
         />
-        <figcaption><code>git --version</code> 实测录屏：Git Bash 45–103ms → niu-git ~14ms。</figcaption>
+        <figcaption>
+          Git Bash 实录：<code>cd</code>、<code>cmd /c</code>、<code>git grep -n</code>
+          被 MSYS 运行时改写参数后接连失败——niu 没有 MSYS 层，argv 逐字节原样，这类问题不存在（见「无 MSYS 咒语」）。
+        </figcaption>
       </figure>
     </Section>
 

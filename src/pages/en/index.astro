@@ -371,13 +371,18 @@ const softwareAppJsonLd = {
       <figure class="demo-fig">
         <img
           src="/assets/demo-gitbash.gif"
-          alt="Recorded run: git --version startup comparison — Git Bash 45–103 ms, niu-git about 14 ms"
+          alt="Recorded run: Git Bash's MSYS runtime rewrites arguments and breaks cd, cmd /c and git grep -n in turn"
           width="692"
           height="334"
           loading="lazy"
           decoding="async"
         />
-        <figcaption><code>git --version</code> recorded live: Git Bash 45–103 ms → niu-git ~14 ms.</figcaption>
+        <figcaption>
+          Recorded in Git Bash: <code>cd</code>, <code>cmd /c</code> and <code>git grep -n</code>
+          break one after another as the MSYS runtime rewrites their arguments — niu has no MSYS
+          layer; argv arrives byte-for-byte, so this class of failure does not exist (see the
+          "no MSYS incantations" card).
+        </figcaption>
       </figure>
     </Section>
 

@@ -57,7 +57,7 @@ interface InstallBar {
 }
 const installBars: Record<string, InstallBar> = {
   niubash: { cmd: 'irm https://unixwin.dev/install.ps1 | iex', badge: 'stable', tone: 'accent' },
-  winuxcmd: { note: 'Preinstalled with niubash on Windows · non-niubash users: Releases', badge: 'stable', tone: 'accent' },
+  winuxcmd: { cmd: 'winuxcmd --version', badge: 'preinstalled', tone: 'accent' },
   rubash: { cmd: 'cargo add rubash', badge: 'beta · embeddable', tone: 'warn' },
   'niu-git': { cmd: 'git --version', badge: 'preinstalled', tone: 'accent' },
   wpm: { cmd: 'wpm install ripgrep', badge: 'built-in', tone: 'accent' },
@@ -237,6 +237,7 @@ const softwareAppJsonLd = {
           const shownStars = repoMeta.repos?.[p.id]?.stars ?? p.stars;
           return (
             <div class="product-cell">
+              <a class="cell-cover" href={`/products/${p.id}/`} aria-label={`查看 ${p.name} 文档`}></a>
               {/* Inlined product card (English labels); markup mirrors ProductCard.astro */}
               <a class="cell-docs" href={`/products/${p.id}/`}>Docs →</a>
               <article class="product-card" id={p.id} style={`--card-accent: ${p.accent};`}>
@@ -1057,6 +1058,25 @@ const softwareAppJsonLd = {
   .card-repo {
     margin-left: auto;
     color: var(--link);
+  }
+
+  /* 整卡可点：透明覆盖链接铺满卡片；内层真实交互元素抬到其上 */
+  .product-cell {
+    position: relative;
+  }
+
+  .cell-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: var(--radius);
+  }
+
+  .product-cell :global(.card-repo),
+  .product-cell :global(.copy-btn),
+  .cell-docs {
+    position: relative;
+    z-index: 2;
   }
 
   .cell-note {

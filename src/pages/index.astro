@@ -56,7 +56,7 @@ interface InstallBar {
 }
 const installBars: Record<string, InstallBar> = {
   niubash: { cmd: 'irm https://unixwin.dev/install.ps1 | iex', badge: 'stable', tone: 'accent' },
-  winuxcmd: { note: '预装于 Windows 版 niubash · 非 niubash 用户见 Releases', badge: 'stable', tone: 'accent' },
+  winuxcmd: { cmd: 'winuxcmd --version', badge: '预装', tone: 'accent' },
   rubash: { cmd: 'cargo add rubash', badge: 'beta · 嵌入', tone: 'warn' },
   'niu-git': { cmd: 'git --version', badge: '预装', tone: 'accent' },
   wpm: { cmd: 'wpm install ripgrep', badge: '内置', tone: 'accent' },
@@ -230,6 +230,7 @@ const softwareAppJsonLd = {
           const bar = installBars[p.id];
           return (
             <div class="product-cell">
+              <a class="cell-cover" href={`/products/${p.id}/`} aria-label={`查看 ${p.name} 文档`}></a>
               <ProductCard product={p} stars={repoMeta.repos?.[p.id]?.stars} />
               <a class="cell-docs" href={`/products/${p.id}/`}>文档 →</a>
               {bar && (
@@ -986,6 +987,25 @@ const softwareAppJsonLd = {
 
   .product-cell :global(.card-cmd) {
     border-radius: calc(var(--radius) * 0.66);
+  }
+
+  /* 整卡可点：透明覆盖链接铺满卡片；内层真实交互元素抬到其上 */
+  .product-cell {
+    position: relative;
+  }
+
+  .cell-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: var(--radius);
+  }
+
+  .product-cell :global(.card-repo),
+  .product-cell :global(.copy-btn),
+  .cell-docs {
+    position: relative;
+    z-index: 2;
   }
 
   .cell-note {

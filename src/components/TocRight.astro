@@ -112,7 +112,12 @@
   initToc();
 </script>
 
-<style>
+<style is:global>
+  /*
+   * 条目由客户端 JS 创建（createElement），拿不到 Astro scoped 的
+   * data-astro-cid 属性，因此本组件样式必须 is:global；所有选择器
+   * 一律以 .toc 前缀收口，防全局泄漏。
+   */
   .toc {
     position: sticky;
     top: 5rem;
@@ -151,10 +156,12 @@
     color: var(--muted);
     text-decoration: none;
     line-height: 1.45;
+    transition: color 0.15s;
   }
 
   .toc-item.is-h3 a {
     padding-left: 1.5rem;
+    font-size: 0.78rem;
   }
 
   .toc-item a:hover {

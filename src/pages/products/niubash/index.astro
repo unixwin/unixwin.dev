@@ -217,7 +217,7 @@ const news: News[] = [
       Windows 装完即有完整命令层：安装器自带完整 WinuxCmd root（176 个 Unix 命令与内建包管理器
       wpm，落在 <code>&#123;app&#125;\winuxcmd\</code>，PATH 指向 <code>winuxcmd\bin</code>），发行包并按
       <code>preinstall.json</code> 预装 gawk（含 awk shim）、niu-git、ripgrep、fd——PATH 上的
-      git 即原生 git（~14 ms）；其中 gawk/niu-git 为 x64 资产，ARM64 腿预装 ripgrep 与 fd。
+      git 即原生 git（~14 ms）；其中仅 gawk 为 x64 资产；ARM64 安装同样预装 niu-git / ripgrep / fd。
     </p>
     <p>Linux / macOS 取可移植 tar.gz 解压即用：</p>
     <div class="cmd">

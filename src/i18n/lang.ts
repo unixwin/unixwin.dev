@@ -16,6 +16,7 @@ export const PAIRED_ZH_ROUTES: ReadonlySet<string> = new Set([
   '/benchmarks/',
   '/ai/',
   '/docs/',
+  '/changelog/',
 ]);
 
 export type PageLang = 'zh' | 'en';
@@ -121,7 +122,7 @@ export function resolveSwitchPair(pathname: string): SwitchPair {
   if (p.startsWith('/docs/')) return { lang: 'zh', otherPath: '/en/docs/' };
   if (p.startsWith('/agents/')) return { lang: 'zh', otherPath: '/en/agents/' };
   if (p.startsWith('/products/')) return { lang: 'zh', otherPath: '/en/' };
-  if (p === '/changelog/') return { lang: 'zh', otherPath: '/en/' };
+
   return { lang: 'zh', otherPath: null };
 }
 

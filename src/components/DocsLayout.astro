@@ -1,0 +1,87 @@
+---
+/**
+ * DocsLayout — 文档区布局（门户第一个带侧栏的区域）。
+ *
+ * 结构：BaseLayout 外壳（theme 固定 'terminal'）+ SiteHeader/SiteFooter +
+ *       三栏 grid：左 Sidebar（240px sticky）/ 中 内容（max-w-prose）/ 右 暂无（占位，窄屏隐藏）。
+ *
+ * Props（透传给 BaseLayout）：
+ *   title       string  页面 <title>（自动拼 " · UNIXWIN"）
+ *   description string  页面 meta description
+ *   path        string  规范化路径（如 '/docs/compatibility/'）
+ *
+ * ThemeSwitcher 在此统一挂载，文档区每页自动携带。
+ */
+import BaseLayout from './BaseLayout.astro';
+import SiteHeader from './SiteHeader.astro';
+import SiteFooter from './SiteFooter.astro';
+import ThemeSwitcher from './ThemeSwitcher.astro';
+import Sidebar from './Sidebar.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+}
+
+const { title, description, path } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} theme="terminal" path={path}>
+  <SiteHeader />
+
+  <div class="container docs-grid">
+    <Sidebar />
+    <main class="docs-main">
+      <slot />
+    </main>
+    <!-- 暂无右栏：保留三栏骨架，内容后续可挂 TOC / on-this-page -->
+    <div class="docs-right" aria-hidden="true"></div>
+  </div>
+
+  <SiteFooter />
+  <ThemeSwitcher current="terminal" />
+</BaseLayout>
+
+<style>
+  .docs-grid {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr) 240px;
+    gap: 2rem;
+    align-items: start;
+    min-height: 60vh;
+  }
+
+  .docs-main {
+    max-width: 66ch; /* max-w-prose 口径 */
+    width: 100%;
+    padding: 2.5rem 0 4rem;
+  }
+
+  .docs-right {
+    position: sticky;
+    top: 4.5rem;
+    min-height: 1px;
+  }
+
+  @media (max-width: 1240px) {
+    .docs-grid {
+      grid-template-columns: 240px minmax(0, 1fr);
+    }
+
+    .docs-right {
+      display: none;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .docs-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .docs-main {
+      padding-top: 1.5rem;
+    }
+  }
+</style>

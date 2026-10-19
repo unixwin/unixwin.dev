@@ -21,12 +21,21 @@ irm https://dl.caomengxuan666.com/install.ps1 | iex
 
 ${ordered.map((p) => `- [${p.name}](https://unixwin.dev/#${p.id}): ${p.tagline_en}`).join('\n')}
 
+## For AI Agents
+
+- [AI portal](https://unixwin.dev/ai/): paste-ready install prompt, official skill, machine entry points.
+- [agents.md](https://unixwin.dev/agents.md): markdown version of the AI portal.
+- [Agent directory](https://unixwin.dev/agents/): per-agent switch scripts with verify & rollback.
+- [Universal agent wiring guide](https://unixwin.dev/agents/universal/): the four shell-detection mechanisms.
+
 ## Docs
 
+- [niubash vs bash: differences](https://unixwin.dev/docs/): compatibility overview, paths & MSYS, zero-fork execution model, performance.
 - [niubash documentation](https://unixwin.github.io/niubash/): manuals, guides and CLI reference.
 
 ## Optional
 
+- [Benchmarks](https://unixwin.dev/benchmarks/): measured numbers vs Git Bash / WSL / GNU bash.
 - [Changelog](https://unixwin.dev/changelog/): aggregated release timeline across the family.
 - [Theme candidate B · clean](https://unixwin.dev/theme/clean/): light theme preview.
 - [Theme candidate C · neon](https://unixwin.dev/theme/neon/): neon theme preview.

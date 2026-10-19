@@ -5,9 +5,9 @@
   "items": [
     { "label": "产品", "href": "/#products" },
     { "label": "Agents", "href": "/agents/" },
+    { "label": "文档", "href": "/docs/" },
     { "label": "基准", "href": "/benchmarks/" },
-    { "label": "数据", "href": "/#facts" },
-    { "label": "安装", "href": "/#install" },
+    { "label": "AI 门户", "href": "/ai/" },
     { "label": "更新日志", "href": "/changelog/" }
   ]
 }

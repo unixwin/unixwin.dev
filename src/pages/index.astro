@@ -1,7 +1,8 @@
 ---
 /**
  * 首页 — 主题候选 A（terminal）· 品牌正统旗舰。
- * 结构：Hero(终端窗口打印式开场 + 家族横幅) → StatsBand 六格 → 产品矩阵
+ * 结构：Hero(终端窗口三段会话轮播：安装 / Agent 接管 / 速度 + 家族横幅)
+ *       → StatsBand 六格 → 产品矩阵(产品卡 + 安装命令条 + 成熟度徽章)
  *       → Why 四卡 + 性能录屏 → Install 三 tab → Agent 一瞥 → 最新动态 → 主题候选。
  * 颜色全部走 tokens.css 变量；文案已全部实写，无占位符。
  */
@@ -14,6 +15,7 @@ import ProductCard from '../components/ProductCard.astro';
 import Section from '../components/Section.astro';
 import InstallTabs from '../components/InstallTabs.astro';
 import Badge from '../components/Badge.astro';
+import CopyButton from '../components/CopyButton.astro';
 import products from '../data/products.json';
 import facts from '../data/facts.json';
 import repoMeta from '../data/repo-meta.json';
@@ -38,6 +40,22 @@ const installTabs = [
   { label: 'wpm', code: 'wpm install winuxcmd' },
   { label: 'Linux / macOS', code: 'https://github.com/unixwin/niubash/releases' },
 ];
+
+// ---- 产品卡增强（oxc/bun 式）：每卡下方一行安装命令条 + 成熟度徽章。
+// ProductCard 是共享组件不动它，页内包一层 .product-cell 实现。----
+interface InstallBar {
+  cmd: string;
+  badge: string;
+  tone: 'accent' | 'warn';
+}
+const installBars: Record<string, InstallBar> = {
+  niubash: { cmd: 'irm https://dl.caomengxuan666.com/install.ps1 | iex', badge: 'stable', tone: 'accent' },
+  winuxcmd: { cmd: 'wpm install winuxcmd', badge: 'stable', tone: 'accent' },
+  rubash: { cmd: 'cargo add rubash', badge: 'beta · 嵌入 API 1.5.0', tone: 'warn' },
+  'niu-git': { cmd: 'wpm install niugit', badge: 'stable', tone: 'accent' },
+  wpm: { cmd: 'wpm update', badge: 'stable', tone: 'accent' },
+  'oh-my-niu': { cmd: 'niu plugin add oh-my-niu', badge: 'v2 beta', tone: 'warn' },
+};
 
 // ---- 最新动态：每仓最新一个已发布版本，取第一个非空分组的第一条，截断 60 字 ----
 interface ChangelogVersion {
@@ -95,7 +113,7 @@ const latestNews = newsItems.slice(0, 4);
   <SiteHeader />
 
   <main class="container">
-    <!-- ============ Hero：终端窗口打印式开场 ============ -->
+    <!-- ============ Hero：终端窗口 · 三段会话轮播（cli.github.com 式） ============ -->
     <section class="hero" aria-label="UNIXWIN 家族开场">
       <div class="terminal">
         <div class="term-bar" aria-hidden="true">
@@ -105,31 +123,39 @@ const latestNews = newsItems.slice(0, 4);
           <span class="term-title">cmx@unixwin: ~ — 80×24</span>
         </div>
         <div class="term-body">
-          <p class="t-cmd">
-            <span class="t-user">cmx@unixwin:~$</span> ./unixwin --introduce --family
-          </p>
-          <ul class="boot" role="list">
-            <li>
-              <span class="ok">[ ok ]</span><span class="k">真语法</span>
-              <span class="leader" aria-hidden="true"></span>
-              <span class="v">GNU Bash 5.3 兼容（rubash 引擎）</span>
-            </li>
-            <li>
-              <span class="ok">[ ok ]</span><span class="k">真命令</span>
-              <span class="leader" aria-hidden="true"></span>
-              <span class="v">176+ Unix 命令 · 83/83 测试套件全过</span>
-            </li>
-            <li>
-              <span class="ok">[ ok ]</span><span class="k">无模拟</span>
-              <span class="leader" aria-hidden="true"></span>
-              <span class="v">无 WSL · 无 MSYS · 无 POSIX 模拟层</span>
-            </li>
-            <li>
-              <span class="ok">[ ok ]</span><span class="k">全平台</span>
-              <span class="leader" aria-hidden="true"></span>
-              <span class="v">Windows x64/ARM64 · Linux · macOS</span>
-            </li>
-          </ul>
+          <div class="term-carousel" data-term-carousel role="region" aria-label="UNIXWIN 能力演示轮播：安装 · Agent 接管 · 速度">
+            <div class="term-sessions">
+              <div class="session">
+                <p class="sl sl-cmt"># 安装 · session 1/3</p>
+                <p class="sl"><span class="p-user">PS C:\&gt;</span> irm https://dl.caomengxuan666.com/install.ps1 | iex</p>
+                <p class="sl"><span class="spin" aria-hidden="true">⠿</span> 拉取 install.ps1 → 解析依赖清单 …</p>
+                <p class="sl"><span class="ok">✓</span> niubash 1.4.0 → ~/.unixwin/bin/niu.exe</p>
+                <p class="sl"><span class="ok">✓</span> winuxcmd · niu-git · wpm · oh-my-niu 同步就绪</p>
+                <p class="sl"><span class="ok">✓</span> done — 重开终端，niu 即在 PATH（176+ Unix 命令）</p>
+              </div>
+              <div class="session">
+                <p class="sl sl-cmt"># agent 接管 · session 2/3</p>
+                <p class="sl"><span class="p-user">cmx@unixwin:~$</span> claude</p>
+                <p class="sl"><span class="ok">✓</span> shell: niubash (rubash engine) — $SHELL 自动识别</p>
+                <p class="sl"><span class="p-agent">agent&gt;</span> niu -c 'git log --oneline -1'</p>
+                <p class="sl sl-out">f0c0ffe niubash 1.4.0 — 真语法，真命令，原生三平台</p>
+                <p class="sl"><span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span></p>
+              </div>
+              <div class="session">
+                <p class="sl sl-cmt"># 速度 · session 3/3</p>
+                <p class="sl"><span class="p-user">cmx@unixwin:~$</span> time git --version</p>
+                <p class="sl sl-out">git version 2.47.0.nii</p>
+                <p class="sl"><span class="ok">✓</span> real 0m0.014s ← niu-git</p>
+                <p class="sl sl-out">user 0m0.006s · sys 0m0.002s</p>
+                <p class="sl sl-cmt"># Git Bash 同机对照：real 0.045s – 0.103s（3–7× 慢）</p>
+              </div>
+            </div>
+            <div class="term-dots">
+              <button class="tdot-btn" type="button" aria-label="会话 1：安装"></button>
+              <button class="tdot-btn" type="button" aria-label="会话 2：Agent 接管"></button>
+              <button class="tdot-btn" type="button" aria-label="会话 3：速度"></button>
+            </div>
+          </div>
 
           <h1 class="hero-wordmark">UNIXWIN</h1>
           <p class="hero-tagline">
@@ -173,9 +199,21 @@ const latestNews = newsItems.slice(0, 4);
     <!-- ============ Products ============ -->
     <Section id="products" title="产品矩阵" kicker="six projects · one family">
       <div class="product-grid">
-        {ordered.map((p) => (
-          <ProductCard product={p} stars={repoMeta.repos?.[p.id]?.stars} />
-        ))}
+        {ordered.map((p) => {
+          const bar = installBars[p.id];
+          return (
+            <div class="product-cell">
+              <ProductCard product={p} stars={repoMeta.repos?.[p.id]?.stars} />
+              {bar && (
+                <div class="cell-install">
+                  <Badge tone={bar.tone}>{bar.badge}</Badge>
+                  <code class="cell-cmd" title={bar.cmd}>{bar.cmd}</code>
+                  <CopyButton copy={bar.cmd} />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </Section>
 
@@ -414,14 +452,14 @@ const latestNews = newsItems.slice(0, 4);
     padding: 1.3rem 1.5rem 1.5rem;
   }
 
-  /* 极淡的 CRT 扫描线，两层 token 色混合，不引入新颜色 */
+  /* CRT 细扫描线（1px 线 / 3px 周期）：加强到可见但克制，两层 token 色混合，不引入新颜色 */
   .term-body::after {
     content: '';
     position: absolute;
     inset: 0;
     background: repeating-linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--bg) 42%, var(--bg-code)) 0 1px,
+      color-mix(in srgb, var(--bg) 60%, var(--bg-code)) 0 1px,
       var(--bg-code) 1px 3px
     );
     pointer-events: none;
@@ -450,20 +488,44 @@ const latestNews = newsItems.slice(0, 4);
     color: var(--accent);
   }
 
-  .boot {
-    list-style: none;
-    margin: 0 0 1.5rem;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    font-size: 0.92rem;
+  /* ---------- Hero 三段会话轮播 ---------- */
+  .term-carousel {
+    margin: 0 0 1.4rem;
   }
 
-  .boot li {
-    display: flex;
-    align-items: baseline;
-    gap: 0.55rem;
+  .term-sessions {
+    display: grid;
+  }
+
+  /* 无 JS 时的默认形态：三段会话纵向静态排列，全部文本可读（SEO 完整） */
+  .session:not(:last-child) {
+    margin-bottom: 1.15rem;
+  }
+
+  .sl {
+    margin: 0 0 0.28rem;
+    font-size: 0.92rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sl:last-child {
+    margin-bottom: 0;
+  }
+
+  .sl-cmt {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .sl-out {
+    color: var(--muted);
+  }
+
+  .spin {
+    color: var(--accent-2);
+    animation: blink 1.1s steps(1) infinite;
   }
 
   .ok {
@@ -472,21 +534,87 @@ const latestNews = newsItems.slice(0, 4);
     white-space: nowrap;
   }
 
-  .k {
-    color: var(--text);
-    white-space: nowrap;
+  /* JS 就绪后由脚本加 .is-live：三段会话同格叠放（高度取最高者，无跳动），
+     淡入淡出轮播 + 逐行打印式进场 */
+  .term-carousel.is-live .session {
+    grid-area: 1 / 1;
+    margin: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0s linear 0.4s;
   }
 
-  .leader {
-    flex: 1;
-    min-width: 1.5rem;
-    border-bottom: 1px dotted var(--border);
-    transform: translateY(-0.25em);
+  .term-carousel.is-live .session.is-active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.4s ease;
   }
 
-  .v {
-    color: var(--muted);
-    text-align: right;
+  .term-carousel.is-live .session.is-active .sl {
+    animation: print-in 0.32s ease-out both;
+  }
+
+  .term-carousel.is-live .session.is-active .sl:nth-child(1) { animation-delay: 0.05s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(2) { animation-delay: 0.17s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(3) { animation-delay: 0.31s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(4) { animation-delay: 0.47s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(5) { animation-delay: 0.63s; }
+  .term-carousel.is-live .session.is-active .sl:nth-child(6) { animation-delay: 0.79s; }
+
+  @keyframes print-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.28em);
+    }
+  }
+
+  /* 圆点指示器：无 JS 时没有可切换目标，隐藏 */
+  .term-dots {
+    display: none;
+  }
+
+  .term-carousel.is-live .term-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0.95rem 0 0;
+  }
+
+  .tdot-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .tdot-btn::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .tdot-btn:hover::before {
+    background: var(--muted);
+  }
+
+  .tdot-btn:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .tdot-btn.is-on::before {
+    background: var(--accent);
+    box-shadow: 0 0 0.45rem color-mix(in srgb, var(--accent) 55%, transparent);
   }
 
   .hero-wordmark {
@@ -498,6 +626,10 @@ const latestNews = newsItems.slice(0, 4);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    /* 双层荧光：内层 accent 18% 紧贴，外层 accent 9% 扩散 */
+    text-shadow:
+      0 0 0.8rem color-mix(in srgb, var(--accent) 18%, transparent),
+      0 0 2rem color-mix(in srgb, var(--accent) 9%, transparent);
   }
 
   .hero-tagline {
@@ -576,16 +708,63 @@ const latestNews = newsItems.slice(0, 4);
     border-radius: var(--radius);
   }
 
-  /* ---------- Stats ---------- */
+  /* ---------- Stats：Heropatterns 式细网格背景 + 表格数字 ---------- */
   #facts {
     scroll-margin-top: 5rem;
   }
 
-  /* ---------- Products ---------- */
+  #facts :global(.stats-band) {
+    background-image:
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--text) 5%, transparent) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 5%, transparent) 0 1px, transparent 1px 24px);
+  }
+
+  #facts :global(.stat-value) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Products：卡 + 安装命令条（页面级包一层，组件不动） ---------- */
   .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.1rem;
+  }
+
+  .product-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .cell-install {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.3rem 0.4rem 0.3rem 0.6rem;
+  }
+
+  .cell-install :global(.badge) {
+    flex-shrink: 0;
+  }
+
+  .cell-cmd {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+    font-size: 0.8rem;
+  }
+
+  .cell-install :global(.copy-btn) {
+    flex-shrink: 0;
+    padding: 0.08rem 0.5rem;
+    font-size: 0.72rem;
   }
 
   /* ---------- Why ---------- */
@@ -767,12 +946,14 @@ const latestNews = newsItems.slice(0, 4);
     color: var(--accent-2);
     font-family: var(--font-mono);
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 
   .news-date {
     color: var(--muted);
     font-family: var(--font-mono);
     font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
   }
 
   .news-summary {
@@ -835,19 +1016,94 @@ const latestNews = newsItems.slice(0, 4);
     font-size: 0.85rem;
   }
 
-  /* ---------- 窄屏：boot 引导点退化为换行 ---------- */
+  /* ---------- 窄屏：hero 终端字号降级，长行 pre-wrap 软换行，不溢出 ---------- */
   @media (max-width: 640px) {
-    .boot li {
-      display: block;
+    .term-body {
+      padding: 1.05rem 1rem 1.25rem;
     }
 
-    .leader {
-      display: none;
+    .sl {
+      font-size: 0.85rem;
     }
 
-    .v {
-      text-align: left;
-      display: block;
+    .sl-cmt {
+      font-size: 0.72rem;
+    }
+
+    .cell-install {
+      gap: 0.4rem;
+      padding: 0.26rem 0.32rem 0.26rem 0.5rem;
+    }
+  }
+
+  /* ---------- prefers-reduced-motion：停自动进场的全部动画（轮播切换本身由脚本停播） ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .cursor,
+    .spin {
+      animation: none;
+    }
+
+    .term-carousel.is-live .session,
+    .term-carousel.is-live .session.is-active {
+      transition: none;
+    }
+
+    .term-carousel.is-live .session.is-active .sl {
+      animation: none;
+    }
+
+    .tdot-btn::before {
+      transition: none;
     }
   }
 </style>
+
+<script>
+  // Hero 终端轮播（最少原生 JS）：加 .is-live 启用同格叠放 + 定时切换；
+  // 无 JS 时三段会话保持纵向静态全读（渐进增强，不留死按钮）。
+  // prefers-reduced-motion: reduce 时不自动轮播，仅保留圆点手动切换。
+  const root = document.querySelector<HTMLElement>('[data-term-carousel]');
+  if (root) {
+    const sessions = Array.from(root.querySelectorAll<HTMLElement>('.session'));
+    const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('.tdot-btn'));
+    if (sessions.length > 1 && dots.length === sessions.length) {
+      const DWELL_MS = 6000;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let index = 0;
+      let timer: number | undefined;
+
+      const stop = (): void => {
+        if (timer !== undefined) {
+          window.clearInterval(timer);
+          timer = undefined;
+        }
+      };
+
+      const show = (next: number): void => {
+        index = ((next % sessions.length) + sessions.length) % sessions.length;
+        sessions.forEach((session, i) => session.classList.toggle('is-active', i === index));
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('is-on', i === index);
+          if (i === index) dot.setAttribute('aria-current', 'true');
+          else dot.removeAttribute('aria-current');
+        });
+      };
+
+      const play = (): void => {
+        stop();
+        if (!reducedMotion) timer = window.setInterval(() => show(index + 1), DWELL_MS);
+      };
+
+      dots.forEach((dot, i) => dot.addEventListener('click', () => { show(i); play(); }));
+      // 悬停 / 键盘聚焦时暂停，移开再续播
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', play);
+      root.addEventListener('focusin', stop);
+      root.addEventListener('focusout', stop);
+
+      root.classList.add('is-live');
+      show(0);
+      play();
+    }
+  }
+</script>

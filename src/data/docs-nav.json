@@ -1,0 +1,25 @@
+{
+  "sections": [
+    {
+      "label": "文档",
+      "items": [
+        { "label": "文档区首页", "href": "/docs/" }
+      ]
+    },
+    {
+      "label": "niubash 与 bash 的差异",
+      "items": [
+        { "label": "兼容总览：83/83 是什么意思", "href": "/docs/compatibility/" },
+        { "label": "路径与 MSYS：最大的行为差异", "href": "/docs/paths-and-msys/" },
+        { "label": "执行模型：零 fork 三层", "href": "/docs/execution-model/" },
+        { "label": "性能特征：哪里快、哪里持平", "href": "/docs/performance-model/" }
+      ]
+    },
+    {
+      "label": "完整文档",
+      "items": [
+        { "label": "unixwin.github.io/niubash", "href": "https://unixwin.github.io/niubash/", "external": true }
+      ]
+    }
+  ]
+}

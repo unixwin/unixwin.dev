@@ -1,0 +1,520 @@
+---
+/**
+ * /agents/universal/ — 通用 Agent 接入指南：教用户把「任意」AI agent 的默认 shell
+ * 换成 niubash（不限于目录里已核验的那几个）。
+ *
+ * 事实唯一来源：niubash 仓库 docs/src/agents.md
+ * （线上版 https://unixwin.github.io/niubash/agents.html，核验于 2026-10-16）。
+ * 页面结构：面包屑+H1 → 四机制表 → 三步接线决策流（含三段可复制块）→
+ * 未收录 agent 自查指引 → Known traps 四条 → 来源与返回目录。
+ */
+import BaseLayout from '../../../components/BaseLayout.astro';
+import SiteHeader from '../../../components/SiteHeader.astro';
+import SiteFooter from '../../../components/SiteFooter.astro';
+import ThemeSwitcher from '../../../components/ThemeSwitcher.astro';
+import Badge from '../../../components/Badge.astro';
+import CopyButton from '../../../components/CopyButton.astro';
+
+const VERIFY_CMD = 'echo "SHELL=$SHELL"; uname -s; uname -a';
+
+const CODE_STEP1 = String.raw`# 1) 进入 niu 会话（SHELL 在这里导出，指向 niu.exe）
+niu
+
+# 2) 在 niu 会话里启动你的 agent（示例）：
+opencode          # 或 codex / claude / 任意 CLI agent
+
+# 3) 让 agent 跑下面这条验证命令，再按第 2 步对号入座
+#    echo "SHELL=$SHELL"; uname -s; uname -a`;
+
+const CODE_SHELL = String.raw`# 把 SHELL 写入用户环境变量（安装器同款做法：一处注册表值，免提权）
+# 路径按实际安装位置调整；默认装在 %LOCALAPPDATA%\Programs\Niubash
+[Environment]::SetEnvironmentVariable('SHELL', "$env:LOCALAPPDATA\Programs\Niubash\niu.exe", 'User')
+
+# 撤销（与安装器卸载语义一致）：
+# [Environment]::SetEnvironmentVariable('SHELL', $null, 'User')
+
+# 注意：只对之后新开的进程生效——写完请重开终端 / agent`;
+
+const CODE_PROFILE = String.raw`// VS Code 家族 settings.json（VS Code / Windsurf / Trae / ZCode，以及走编辑器
+// 终端或 automation profile 的 Cline、Roo Code、Kilo Code、Continue 等扩展）
+// path 换成你的实际安装路径，默认 %LOCALAPPDATA%\Programs\Niubash\niu.exe：
+"terminal.integrated.automationProfile.windows": {
+  "path": "C:\\Users\\<你的用户名>\\AppData\\Local\\Programs\\Niubash\\niu.exe",
+  "args": []
+}`;
+
+const CODE_PROBE = String.raw`# 安装器的可选提权步骤（管理员跑一次）会放置机制③所需的占位：
+#   C:\Program Files\Git\bin\bash.exe         <- Claude Code / VS Code 家族硬编码探针 1
+#   C:\Program Files (x86)\Git\bin\bash.exe   <- 第二候选路径
+#   C:\Program Files\Git\bin\sh.exe           <- 要求 bash 旁边有 sh 的工具
+# 验证占位是否到位（第一行应输出 True；第二行应输出 MSYS_NT-...）：
+Test-Path 'C:\Program Files\Git\bin\bash.exe'
+& 'C:\Program Files\Git\bin\bash.exe' -c 'uname -s'`;
+---
+
+<BaseLayout
+  title="通用 Agent 接入指南"
+  description="四机制 × 三步决策流：把任意 AI agent（不限目录已列名单）的默认 shell 换成 niubash——$SHELL 约定、显式配置、Git for Windows 探针、裸名解析，附验证命令、可复制配置片段与已知陷阱。"
+  theme="terminal"
+  path="/agents/universal/"
+>
+  <SiteHeader />
+
+  <main class="container narrow">
+    <p class="crumb"><a href="/agents/">← Agent 目录</a><span> / 通用指南</span></p>
+
+    <header class="head">
+      <h1>给任意 Agent 接上 <span class="hl">niubash</span></h1>
+      <div class="badges">
+        <Badge tone="accent">通用指南</Badge>
+        <Badge tone="info">适用任意 agent</Badge>
+        <Badge tone="muted">事实来源：agents.md</Badge>
+      </div>
+      <p class="one">
+        agent 怎么选 shell 是有规律的——摸清它的探测机制，就能接线。
+        你的 agent 从不在「你正用的 shell」里跑命令：它自己挑一个，而在 Windows 上
+        这个挑选只由四种探测机制决定。下面把它们逐一拆开，再给一条三步决策流，
+        目录里没列过的 agent 也能照此接上。
+      </p>
+    </header>
+
+    <!-- ============ 2. 四机制 ============ -->
+    <section class="sec" id="mechanisms">
+      <h2>四种探测机制</h2>
+      <p class="lead">
+        出自 agents.md「The four mechanisms」。前三种都能由你接线；
+        第四种是所有裸名调用的硬伤，也是另外三种存在的原因。
+        每行的「怎么接线」落到第 <a href="#flow">3 步决策流</a> 里的对应可复制块。
+      </p>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>机制</th><th>覆盖面</th><th>怎么接线</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="mname">① $SHELL · POSIX 约定</span></td>
+              <td>
+                读进程环境的 agent——最大的一类，含所有 POSIX 风格 CLI
+                （opencode 是纯样本：二进制里 0 处 <code>niu</code>、无 shell 配置项，
+                <code>$SHELL</code> 就是全部机制）。
+                <span class="sub">niu 会话内自动生效：niu 导出 <code>SHELL=&lt;niu.exe 路径&gt;</code>。
+                但 <code>$SHELL</code> 不持久化——从开始菜单 / Explorer 启动的同一个 agent 拿到的是空值。</span>
+              </td>
+              <td>在 niu 里启动 agent（第 3 步·第 1 步试跑），或把 <code>SHELL</code> 写入用户环境变量持久化（块 a）。</td>
+            </tr>
+            <tr>
+              <td><span class="mname">② per-agent 显式配置</span></td>
+              <td>
+                提供 shell 配置文件字段 / CLI 旗标的 agent：
+                Zed（<code>terminal.shell.program</code>）、Claude Code
+                （<code>CLAUDE_CODE_GIT_BASH_PATH</code>）、VS Code 家族
+                （<code>automationProfile</code>）、DSH（profile 插件）。
+                <span class="sub">读配置项的机制与启动方式无关——设一次，永久生效。</span>
+              </td>
+              <td>先按第 4 节自查法找到它的 shell 设置项，再指到 <code>niu.exe</code> 或安装器占位的 <code>bash.exe</code>（块 b 是 VS Code 家族的通用片段）。</td>
+            </tr>
+            <tr>
+              <td><span class="mname">③ Git for Windows 探针</span></td>
+              <td>
+                硬编码 Git 路径、或从 PATH 上的 <code>git</code> 反推的 agent：
+                Claude Code（先扫 <code>C:\Program Files\Git</code> 与 x86 目录，再从 <code>git</code> 反推）、
+                VS Code 全家（Copilot / Windsurf / Trae / ZCode + Cline、Roo Code、Kilo Code、Continue 等扩展）。
+                <span class="sub">探的是固定位置：<code>C:\Program Files\Git\bin\bash.exe</code> 等。</span>
+              </td>
+              <td>niubash 安装器已在该路径占位 <code>bash.exe</code>（含 x86 候选与 <code>sh.exe</code>），需管理员跑一次（块 c 验证）。</td>
+            </tr>
+            <tr>
+              <td><span class="mname">④ 裸名解析</span></td>
+              <td>
+                把 <code>bash</code> / <code>sh</code> 裸名丢给 <code>PATH</code> / <code>ComSpec</code> / <code>PATHEXT</code> 解析的调用方。
+                <span class="sub">硬伤：CreateProcess 的搜索序里系统目录（System32）排在 PATH 之前——裸 <code>bash</code> 永远先命中
+                <code>C:\Windows\System32\bash.exe</code>（WSL）。详见 agents.md「Why PATH cannot win against System32」。</span>
+              </td>
+              <td>用户 PATH 抢不过 System32：要么给完整路径指到 Git 探针（并入③），要么让调用方改用 <code>sh</code>（System32 没有 <code>sh</code> 同名者）。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 3. 接线决策流 ============ -->
+    <section class="sec" id="flow">
+      <h2>接线决策流（三步）</h2>
+
+      <div class="step">
+        <div class="step-no" aria-hidden="true">1</div>
+        <div class="step-body">
+          <h3>第一步 · 永远先试「在 niu 会话里启动」</h3>
+          <p class="note">
+            这是唯一「通常直接就成」的做法：<strong>niu 导出 <code>SHELL=&lt;niu.exe 路径&gt;</code></strong>，
+            遵循 POSIX 约定的 agent 原样采用。agents.md 的作者就这么跑：
+            进程树 <code>powershell.exe ← niu.exe ← opencode.exe</code>，
+            而 opencode 的 shell 选择器就是
+            <code>process.env.SHELL ?? which("bash") ?? "/bin/sh"</code>。
+            成本为零，先试它。
+          </p>
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-label">niu 会话内启动 + 验证</span>
+              <CopyButton copy={CODE_STEP1} label="复制全部" />
+            </div>
+            <pre><code>{CODE_STEP1}</code></pre>
+          </div>
+          <div class="verify-row">
+            <span class="v-label">让 agent 跑的验证命令：</span>
+            <code>{VERIFY_CMD}</code>
+            <CopyButton copy={VERIFY_CMD} />
+          </div>
+          <p class="note">
+            但 <code>$SHELL</code> <strong>不持久化</strong>：它只存在于 niu 会话的后代进程里。
+            从开始菜单 / Explorer 启动的同一个 agent 拿到空 <code>$SHELL</code>，
+            回落 <code>which("bash")</code>——在装了 WSL 的机器上解析到
+            <code>C:\Windows\System32\bash.exe</code>，命令就跑在 Linux 里。
+            所以还需要下面两步把结果钉住。
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-no" aria-hidden="true">2</div>
+        <div class="step-body">
+          <h3>第二步 · 看结果对号入座</h3>
+          <p class="note">把 agent 跑出的三行输出对照签名表：</p>
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>你看到</th><th>实际 shell</th><th>下一步</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>uname -s</code> = <code>MSYS_NT-…</code>，且 <code>uname -a</code> 结尾 <code>x86_64 Msys</code></td>
+                  <td><strong>niu</strong>（winuxcmd shim）</td>
+                  <td><span class="m-chip good">成功</span> <code>$SHELL</code> 已指向 <code>niu.exe</code>；要跨启动方式钉住就补块 a。</td>
+                </tr>
+                <tr>
+                  <td><code>uname -s</code> = <code>MINGW64_NT-…</code>，<code>MSYSTEM=MINGW64</code></td>
+                  <td><strong>Git Bash</strong>（Git for Windows 自家运行时）</td>
+                  <td>被探针型机制抢了：走<span class="m-chip">机制③</span>（占位路径生效后，探针改打 niubash 的 <code>bash.exe</code>）或<span class="m-chip">机制②</span>（显式指定），也可持久化 <code>$SHELL</code> 兜底。</td>
+                </tr>
+                <tr>
+                  <td><code>uname -s</code> = <code>Linux</code></td>
+                  <td><strong>WSL</strong>——agent 回落 <code>which("bash")</code> 命中 <code>System32\bash.exe</code></td>
+                  <td>中招最深的静默错壳：走<span class="m-chip">机制②</span>或<span class="m-chip">机制③</span>，并用<span class="m-chip">机制①</span>（块 a）防回落。</td>
+                </tr>
+                <tr>
+                  <td><code>uname</code> 不存在，<code>$SHELL</code> 为空</td>
+                  <td><strong>PowerShell 或 cmd</strong>（用 <code>$PSVersionTable.PSVersion</code> vs <code>%COMSPEC%</code> 区分）</td>
+                  <td>安全但不兼容 bash 语法：走<span class="m-chip">机制②</span>（VS Code 家族即块 b）。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note">
+            这套签名检查同样出现在 Cursor 官方支持帖里：修复的判定就是
+            <code>uname -a</code> 结尾从 <code>microsoft-standard-WSL2</code> 变成
+            <code>MINGW64_NT-…</code>——换成 niu 的目标则是 <code>MSYS_NT-…</code>（结尾 <code>x86_64 Msys</code>）。
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-no" aria-hidden="true">3</div>
+        <div class="step-body">
+          <h3>第三步 · 按机制给配置（三段可复制块）</h3>
+
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-label">块 a · 持久化 $SHELL（机制① · PowerShell · 用户级 · 免管理员）</span>
+              <CopyButton copy={CODE_SHELL} />
+            </div>
+            <pre><code>{CODE_SHELL}</code></pre>
+          </div>
+          <p class="note">
+            安装器本身也会把 <code>SHELL</code> 写进用户环境（卸载时移除）——这是
+            agents.md「Recommended order of work」的第 1 项：一个注册表值、无需提权，
+            覆盖最大一类 agent（所有 POSIX 风格 CLI），并让 <code>$SHELL</code>
+            不再依赖启动方式。上面命令是同款做法的手动版。
+          </p>
+
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-label">块 b · settings.json automationProfile（机制② · VS Code 家族通用）</span>
+              <CopyButton copy={CODE_PROFILE} />
+            </div>
+            <pre><code>{CODE_PROFILE}</code></pre>
+          </div>
+          <p class="note">
+            通过 automation profile 外呼命令的 agent 会继承该配置（VS Code 家族的显式控制法）。
+            占位路径之外，把 profile 指到 <code>niu.exe</code> 是跳过 <code>bash.exe</code> 启动器一跳的写法。
+          </p>
+          <p class="warn-note">
+            <strong>Cursor 例外：</strong>Cursor 的 IDE agent 无视
+            <code>terminal.integrated.defaultProfile.windows</code> 与
+            <code>automationProfile.windows</code>，仍跑 PowerShell（变通是开启
+            Legacy Terminal Tool 设置）；其 Agent CLI 更是硬编码 PowerShell。详见
+            <a href="/agents/cursor/">Cursor 详情页</a>。
+          </p>
+
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-label">块 c · 验证安装器占位的 Git 探针路径（机制③）</span>
+              <CopyButton copy={CODE_PROBE} />
+            </div>
+            <pre><code>{CODE_PROBE}</code></pre>
+          </div>
+          <p class="note">
+            这几个文件由<strong>安装器的可选提权步骤</strong>放置——需要管理员权限跑一次
+            （<code>Program Files</code> 不是用户 PATH 能写的地方），属「一次成本、全家受益」：
+            Claude Code 与 VS Code 家族的硬编码探针从此都打到 niubash 的启动器上。
+            该 <code>bash.exe</code> 不是 niu 本体，而是启动 <code>niu.exe</code> 子进程的启动器
+            （<code>agent → bash.exe → niu.exe</code>）：多花约 <strong>17.6 ms</strong>/次 <code>-c</code>
+            调用（niubash#377）；历史上的「每条命令闪一个 console 窗口」问题（niubash#379）
+            已在 rubash#668 修复，随下一次 rubash 升级发布——升级后可顺手验证闪窗消失。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 4. 自查指引 ============ -->
+    <section class="sec" id="diy">
+      <h2>目录没列的 agent？自查三问</h2>
+      <p class="lead">
+        已核验名单只有九个，而 agent 生态远不止。大多数 agent 的 shell 探测
+        藏在三处之一——按顺序问：
+      </p>
+      <ul class="qa-list">
+        <li class="qa">
+          <h3>一问设置</h3>
+          <p>
+            翻它的文档、设置界面、配置文件 schema，搜 <code>shell</code>、<code>terminal</code>、
+            <code>bash</code>、<code>profile</code> 字样；<code>--help</code> 里找 <code>--shell</code> 类旗标。
+            已核验 agent 的可配置点长这样：Zed → <code>terminal.shell.program</code>；
+            Claude Code → settings.json 里的 <code>CLAUDE_CODE_GIT_BASH_PATH</code>；
+            VS Code 家族 → <code>terminal.integrated.automationProfile.windows</code>；
+            DSH → <code>dsh plugin --profile web add @cmx666/dsh-niu-bundle@&lt;版本&gt;</code>。
+            找到即归入<strong>机制②</strong>，指到 <code>niu.exe</code> 或占位的 <code>bash.exe</code>。
+          </p>
+        </li>
+        <li class="qa">
+          <h3>二问代码</h3>
+          <p>
+            读得到源码或二进制的话，搜 <code>detect</code> / <code>shell</code> 字样。真实样本：
+            Cursor 的 <code>detectShellType()</code>、Gemini CLI 的 <code>getShellConfiguration()</code>、
+            Codex 的 <code>codex-rs/shell-command/src/shell_detect.rs</code>、VS Code 家族藏在
+            <code>app.asar</code> 里的探针数组（硬编码 <code>C:\Program Files\Git\bin\bash.exe</code>
+            与 x86 候选，再从 <code>which("git")</code> 反推）。看它<strong>读什么</strong>——
+            环境变量→机制①；配置字段→机制②；硬编码 Git 路径 / git 反推→机制③；
+            PATH 裸名→机制④——然后回第 2 节的表格接线。
+          </p>
+        </li>
+        <li class="qa">
+          <h3>三问死活</h3>
+          <p>
+            如果它无条件返回 PowerShell（Gemini CLI 现状：<code>getShellConfiguration()</code>
+            在 Windows 上无 bash 分支），或硬编码 PowerShell（Cursor CLI 现状：
+            <code>$SHELL</code> / <code>$COMSPEC</code> 都被无视）——配置救不了，
+            归为「暂不支持」，等上游开放 shell 路径再接。
+          </p>
+        </li>
+      </ul>
+      <div class="pr-cta">
+        <p>
+          <strong>查明白了？欢迎提 PR</strong>把结论补进 <a href="/agents/">/agents/ 目录</a>
+          （agent 名、机制归类、配置方法、验证输出四件套）：
+          <a href="https://github.com/unixwin/unixwin.dev" target="_blank" rel="noopener noreferrer">github.com/unixwin/unixwin.dev ↗</a>。
+          agents.md 的「未核验」名单还很长——Amazon Q Developer CLI、Goose、Amp、OpenHands、
+          Devin……每一份实测侦察都算贡献。
+        </p>
+      </div>
+      <p class="warn-note">
+        <strong>接线时别干这两件事</strong>（agents.md「Two things not to do」）：
+        一是别把 <code>winuxcmd\usr\bin</code> 加进 PATH——几百个名字，其中不少与 System32 撞名；
+        二是别去替换 <code>C:\Windows\System32\bash.exe</code>。
+      </p>
+    </section>
+
+    <!-- ============ 5. Known traps ============ -->
+    <section class="sec" id="traps">
+      <h2>Known traps · 四条</h2>
+      <ul class="trap-list">
+        <li class="trap">
+          <h3>MSYSTEM 为空</h3>
+          <p>
+            niu 会话里 <code>MSYSTEM</code> 是空的。想靠它嗅探 MSYS 的工具（例如 Gemini CLI
+            社区提案的修法）根本看不见 niu；自己动手设它属于实验性行为——没测过，
+            还会改变其他 MSYS 感知工具的行为。
+            <span class="src">来源：<a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.md · Known traps 第 1 条</a></span>
+          </p>
+        </li>
+        <li class="trap">
+          <h3>uname 报 MSYS_NT 是有意兼容</h3>
+          <p>
+            winuxcmd shim 的 <code>uname</code> 会报 <code>MSYS_NT-…</code>——这是为了兼容
+            <strong>故意设计</strong>的：凡按 <code>uname</code> 分支的工具都会把宿主判成 MSYS，
+            autotools 一类工具能明确观察到这一点。别当 bug 修。
+            <span class="src">来源：<a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.md · Known traps 第 2 条</a></span>
+          </p>
+        </li>
+        <li class="trap">
+          <h3>WSL bash 静默跑 Linux</h3>
+          <p>
+            解析到 Windows 自带 WSL 启动器的 <code>bash</code> 会启动 Linux 里的 bash，
+            <strong>全程没有任何报错</strong>——agent 只是安静地把你的命令跑在了另一个操作系统上。
+            这就是第二步里 <code>uname -s = Linux</code> 的由来。
+            <span class="src">来源：<a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.md · Known traps 第 4 条</a></span>
+          </p>
+        </li>
+        <li class="trap">
+          <h3>System32 搜索序</h3>
+          <p>
+            裸名 <code>bash</code> 交给 CreateProcess 时搜索序是：应用目录 → 当前目录 →
+            系统目录 → Windows 目录 → PATH。系统目录永远排在 PATH 前面，所以用户级
+            PATH 抢不过 <code>System32\bash.exe</code>——实测 <code>subprocess(['bash', ...])</code>
+            就这样落进 WSL，而 <code>cmd /c bash</code> 与 PowerShell <code>&amp; bash</code>
+            由 shell 自行解析、PATH 说了算。
+            <span class="src">来源：<a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.md · Why PATH cannot win against System32</a></span>
+          </p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============ 6. 来源 ============ -->
+    <section class="sec">
+      <h2>来源</h2>
+      <ul class="sources">
+        <li>
+          事实唯一来源：<a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">Coding agents on Windows, and the shell they run ↗</a>
+          （niubash 仓库 <code>docs/src/agents.md</code> 线上版）——本页四机制、验证签名表、
+          路径归属与全部陷阱均出自该文。
+        </li>
+        <li>该文核验环境：niu 1.4.0、niu-git 2.55.0.5（flat 布局）、Git for Windows 2.50.1、装有 WSL2 发行版；核验日期 2026-10-16。</li>
+        <li class="back">
+          <a href="/agents/">← 返回 Agent 目录</a>：opencode、Claude Code、Codex、VS Code 家族、
+          Zed、DSH、Cursor、Gemini CLI、Aider 各有专用换壳页。
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <SiteFooter />
+  <ThemeSwitcher current="terminal" />
+</BaseLayout>
+
+<style>
+  .narrow { max-width: 54rem; }
+
+  .crumb { margin: 1.6rem 0 0.6rem; font-size: 0.88rem; color: var(--muted); }
+  .crumb a { color: var(--link); }
+
+  .head h1 { margin: 0 0 0.6rem; font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.3; }
+  .hl {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .one { color: var(--muted); margin: 0.9rem 0 0; line-height: 1.75; }
+  .one strong { color: var(--text); }
+
+  .sec { margin: 2.2rem 0; }
+  .sec > h2 { font-size: 1.15rem; margin: 0 0 0.4rem; color: var(--accent); letter-spacing: 0.04em; }
+  .lead { color: var(--muted); line-height: 1.75; margin: 0 0 1rem; font-size: 0.92rem; }
+  .lead a { color: var(--link); }
+
+  .tbl code, .note code, .qa code, .verify-row code, .warn-note code, .pr-cta code, .trap code, .sources code, .lead code {
+    background: var(--bg-code); border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.5); padding: 0.05rem 0.35rem;
+    font-size: 0.82em; overflow-wrap: anywhere;
+  }
+  .code-card pre code { background: var(--bg-code); border: 0; padding: 0; font-size: inherit; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+  .tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
+  .tbl th {
+    text-align: left; font-size: 0.78rem; letter-spacing: 0.05em; color: var(--muted);
+    background: var(--bg-elev); padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .tbl td {
+    border-top: 1px solid var(--border); padding: 0.7rem 0.8rem; vertical-align: top;
+    font-size: 0.88rem; line-height: 1.7; color: var(--text);
+  }
+  .tbl tbody tr:first-child td { border-top: 0; }
+  .mname { font-weight: 700; white-space: nowrap; }
+  .tbl .sub { display: block; margin-top: 0.3rem; color: var(--muted); font-size: 0.82rem; line-height: 1.65; }
+
+  .m-chip {
+    display: inline-flex; align-items: center; border: 1px solid var(--accent-2); color: var(--accent-2);
+    border-radius: calc(var(--radius) * 0.75); padding: 0.06rem 0.5rem;
+    font-family: var(--font-mono); font-size: 0.72rem; white-space: nowrap;
+  }
+  .m-chip.good { border-color: var(--accent); color: var(--accent); }
+
+  .step { display: flex; gap: 0.9rem; margin: 1.9rem 0 0; }
+  .step-no {
+    flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%;
+    border: 1px solid var(--accent); color: var(--accent); font-family: var(--font-mono);
+    display: flex; align-items: center; justify-content: center; font-size: 0.95rem; margin-top: 0.15rem;
+  }
+  .step-body { flex: 1; min-width: 0; }
+  .step-body h3 { margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--text); }
+
+  .code-card {
+    background: var(--bg-code); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: var(--radius);
+    margin: 0.9rem 0; overflow: hidden;
+  }
+  .code-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+    padding: 0.55rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-elev);
+  }
+  .code-label { color: var(--muted); font-size: 0.82rem; }
+  .code-card pre {
+    margin: 0; padding: 0.95rem 1.15rem; overflow-x: auto; white-space: pre;
+    font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.7; color: var(--accent);
+  }
+
+  .verify-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0.8rem 0 0; }
+  .v-label { color: var(--muted); font-size: 0.88rem; }
+
+  .note { color: var(--muted); font-size: 0.9rem; line-height: 1.75; margin: 0.7rem 0 0; }
+  .note strong { color: var(--text); }
+  .warn-note {
+    border: 1px solid var(--border); border-left: 3px solid var(--warn);
+    border-radius: var(--radius); padding: 0.75rem 1rem; margin: 0.9rem 0 0;
+    color: var(--muted); font-size: 0.88rem; line-height: 1.7;
+  }
+  .warn-note strong { color: var(--warn); }
+  .warn-note a { color: var(--link); }
+
+  .qa-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.9rem; }
+  .qa { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1.1rem; }
+  .qa h3 { margin: 0 0 0.4rem; font-size: 0.98rem; color: var(--accent); }
+  .qa p { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.75; }
+  .qa p strong { color: var(--text); }
+
+  .pr-cta {
+    background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 1rem 1.2rem; margin-top: 1.1rem;
+    color: var(--muted); line-height: 1.75; font-size: 0.9rem;
+  }
+  .pr-cta p { margin: 0; }
+  .pr-cta a { color: var(--link); }
+  .pr-cta strong { color: var(--text); }
+
+  .trap-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.9rem; }
+  .trap {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-left: 3px solid var(--warn); border-radius: var(--radius); padding: 0.8rem 1.05rem;
+  }
+  .trap h3 { margin: 0 0 0.3rem; font-size: 0.95rem; color: var(--text); }
+  .trap p { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.7; }
+  .trap .src { display: block; margin-top: 0.4rem; font-size: 0.76rem; }
+  .trap .src a { color: var(--link); }
+
+  .sources { margin: 0; padding-left: 1.2rem; line-height: 1.85; color: var(--muted); font-size: 0.9rem; }
+  .sources a { color: var(--link); }
+  .back { margin-top: 0.4rem; }
+  .back a { font-weight: 600; }
+</style>

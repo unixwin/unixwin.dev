@@ -1,0 +1,224 @@
+---
+/**
+ * /docs/compatibility/ — 兼容总览：83/83 是什么意思（terminal 主题）。
+ * 事实来源：rubash README「Compatibility at a Glance」台账（2026-10-12 全量复跑）、
+ * nameref 残差竞态归因文档、niubash docs/src/rubash-bash-compat-matrix.md。
+ */
+import DocsLayout from '../../../components/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="兼容总览：83/83 是什么意思"
+  description="niubash 引擎对 GNU Bash 5.3 上游 83 套测试语料 83/83 通过、82 套逐字节一致；true-baseline 差分方法、byte-identical 语义、超额语料与「兼容≠相同实现」的定位。"
+  path="/docs/compatibility/"
+>
+  <header class="doc-head">
+    <p class="crumb"><a href="/docs/">← 文档区</a></p>
+    <h1>兼容总览：83/83 是什么意思</h1>
+    <p class="lead">
+      「兼容 bash」是一句谁都会说的话。niubash 的版本是<strong>测出来的，不是宣称的</strong>：
+      拿 GNU Bash 自己的 83 套上游测试语料，在真机 Windows 上做 true-baseline 双向差分，
+      结果是 83/83 通过、82 套输出逐字节一致，唯一残差被逐字节证明是 GNU Bash
+      自身的竞态。这一页解释这些数字的确切含义与测量方法。
+    </p>
+  </header>
+
+  <section>
+    <h2>什么是 true-baseline 差分</h2>
+    <p>
+      兼容性测量最容易掺水的环节是「基线」。跑上游测试却不固定环境、或让脚本桩替代
+      真实工具，测出的通过率毫无意义。rubash 的台账（2026-10-12 在 master
+      <code>764b9dde</code> 全量复跑）记录了基线纪律：不使用上游脚本桩、由 niu
+      挂载真实的 <code>/bin/sh</code>、每套件独立 <code>TMPDIR</code>、前台超时控制；
+      同机同环境先跑纯基线失败集，<strong>双向 comm 为空才放行</strong>——即 GNU
+      失败而引擎通过、或引擎失败而 GNU 通过的方向性差异都要归零。环境绑定差异
+      （NTFS 属性位、locale、宿主工具输出、<code>/dev/tty</code> 等）逐项审计后才计为零。
+    </p>
+    <p>
+      语义判定的一手依据是仓内 vendored 的 GNU bash-5.3 源码：每个行为主张给出
+      <code>file:line</code> 坐标；WSL 里的 GNU 5.3.0 只做行为验证。GPL 代码零拷贝，
+      判定纪律成文于 PROVENANCE 文档。
+    </p>
+  </section>
+
+  <section>
+    <h2>83/83 与 82 套 byte-identical 的语义</h2>
+    <table class="doc-table">
+      <thead>
+        <tr><th>指标</th><th>数值</th><th>含义</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>PASS</td>
+          <td><strong>83/83（100%）</strong></td>
+          <td>GNU Bash 5.3 上游测试语料 83 个套件全部通过，含 nameref。</td>
+        </tr>
+        <tr>
+          <td>Byte-identical</td>
+          <td><strong>82 套（0 diff）</strong></td>
+          <td>输出与 GNU 逐字节相同——不是「语义等价」，是字节级 diff 为空。</td>
+        </tr>
+        <tr>
+          <td>nameref 残差</td>
+          <td>1 行</td>
+          <td>coproc 后 <code>declare -r RO_PID</code> 可见性差异，被证明是 GNU 5.3.0 自己的 coproc 回收竞态（见下）。</td>
+        </tr>
+        <tr>
+          <td>环境性差异</td>
+          <td>9 套计零</td>
+          <td>glob/extglob/read/coproc 等套件的差异项均为 NTFS、locale、信号表等环境绑定因素，A/B 双 commit 逐套一致后审计计零。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      那一行 nameref 残差值得单独讲：在同一套 harness 文件系统上，<strong>GNU Bash
+      对自己</strong>就能在 59/60 与 1/60 之间翻转这一行的输出；而在 ext4 上 GNU
+      60/60 稳定，其输出与 rubash 逐字节一致（stdout 与 stderr 皆是）。结论：
+      残差属于 GNU 自身的 reap 时序竞态，不是引擎缺陷——归因论证以逐字节证据成文。
+      作为参照，2026-09-09 原始差分尚有 3427 处，此后削减 99% 以上：83/83
+      是长跑的终点，不是起点的宣言。
+    </p>
+  </section>
+
+  <section>
+    <h2>超出 GNU 套件的语料</h2>
+    <p>
+      同一套 true-baseline 方法（脚本文件、对 GNU 5.3.0 的字节级 diff）也被用在
+      GNU 套件之外的评估语料与真实生态资产上，全部判定与清点存档于 rubash issue #477：
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr><th>语料面</th><th>结果</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>modernish 能力套件（跨 shell 怪癖探针）</td><td><strong>166/166 rc 向量一致</strong></td></tr>
+        <tr><td>mvdan/sh 解析器语料</td><td>559 个片段，解析接受与退出码对齐</td></tr>
+        <tr><td>bash-completion 补全矩阵</td><td>452/452；<code>bash -n</code> 金丝雀逐字节一致</td></tr>
+        <tr><td>git-completion</td><td>140/140</td></tr>
+        <tr><td>oh-my-bash</td><td>22 个库加载、252/252 函数环境一致，5 套主题 PS1 逐字节一致</td></tr>
+        <tr><td>ble.sh（29,601 行行编辑框架）</td><td><code>bash -n</code> rc=0 对齐；source 模式可正常终止</td></tr>
+        <tr><td>nvm.sh v0.40.x 加载器</td><td>载入逐字节干净（含 Windows 原生下空 <code>NVM_DIR</code> 自动使用）</td></tr>
+        <tr><td>FFmpeg / OpenSSH / PHP / ltmain / cmake configure</td><td><code>--help</code> 与错误路径输出逐字节一致</td></tr>
+        <tr><td>git 自家测试框架 t/test-lib.sh</td><td>在引擎下端到端运行</td></tr>
+      </tbody>
+    </table>
+    <p>
+      上述资产全部钉为回归夹具在 CI 每次推送时运行；真实生态收割语料（数千仓、近万
+      资产，夜间巡检）持续把发现的真实缺陷回流为修复。
+    </p>
+  </section>
+
+  <section>
+    <h2>兼容 ≠ 相同实现</h2>
+    <p>
+      这组数字证明的是<strong>脚本可观察面</strong>的一致：退出码、stdout/stderr
+      字节、fd 行为、信号处置。它们不表示内部实现与 bash 相同——事实恰恰相反：
+      子壳与命令替换零进程创建（见<a href="/docs/execution-model/">执行模型</a>），
+      路径翻译表驱动、无 MSYS 层（见<a href="/docs/paths-and-msys/">路径与 MSYS</a>）。
+      差异被契约文档框定、被台账公开（环境差异计零项逐套列名），这是「兼容是测出来的」
+      的另一半含义：不仅证明一致的地方，也把不一致与尚未收口的地方写在明处。
+    </p>
+  </section>
+
+  <footer class="further">
+    <h2>深入阅读</h2>
+    <ul>
+      <li><a href="https://unixwin.github.io/niubash/rubash-bash-compat-matrix/" target="_blank" rel="noopener noreferrer">Bash 兼容矩阵（niubash 官方文档）↗</a></li>
+      <li><a href="https://github.com/unixwin/rubash#compatibility-at-a-glance" target="_blank" rel="noopener noreferrer">rubash 兼容台账（README · Compatibility at a Glance）↗</a></li>
+      <li><a href="https://github.com/unixwin/rubash/blob/master/docs/nameref-suite-residual-gnu-race-20261012.md" target="_blank" rel="noopener noreferrer">nameref 残差 = GNU 竞态的逐字节归因 ↗</a></li>
+    </ul>
+  </footer>
+</DocsLayout>
+
+<style>
+  .crumb {
+    font-size: 0.85rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .crumb a {
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .doc-table th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0.5rem 0.6rem;
+  }
+
+  .doc-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.6rem;
+    vertical-align: top;
+  }
+
+  .doc-table td strong {
+    color: var(--accent);
+  }
+
+  .further {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.1rem 1.4rem;
+    font-size: 0.92rem;
+  }
+
+  .further h2 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    border-bottom: none;
+  }
+
+  .further ul {
+    margin: 0;
+    padding-left: 1.3rem;
+  }
+
+  .further li {
+    margin-bottom: 0.35rem;
+  }
+</style>

@@ -1,0 +1,241 @@
+---
+/**
+ * /docs/paths-and-msys/ — 路径与 MSYS：最大的行为差异（terminal 主题）。
+ * 事实来源：niubash docs/src/windows-path-contract.md、rubash docs/platform-identity.md、
+ * niubash docs/src/platform-support.md（persona 节）、HIGHLIGHTS #2/#3（PATH-MATRIX/GITBASH-KILLER 实测）。
+ */
+import DocsLayout from '../../../components/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="路径与 MSYS：最大的行为差异"
+  description="niubash 收四大路径方言（C:\\、/d/、/mnt/d、/cygdrive/d），argv 逐字节原样、没有 MSYS 运行时；uname 报 MSYS_NT 是有意的兼容人设，写侧裸盘符缺口收口中。"
+  path="/docs/paths-and-msys/"
+>
+  <header class="doc-head">
+    <p class="crumb"><a href="/docs/">← 文档区</a></p>
+    <h1>路径与 MSYS：最大的行为差异</h1>
+    <p class="lead">
+      对「bash on Windows」的每个前任，路径都是一道必答题：要么像 Git Bash 一样在
+      spawn 前启发式改写参数，要么像 WSL 一样要求你换一套 <code>/mnt/c</code> 写法。
+      niubash 的答案是第三种：<strong>四大生态的路径方言全部接受且真实折叠，而
+      argv 本身逐字节原样</strong>——因为路径翻译是表驱动的引擎职责，不是藏在子进程
+      里的模拟层。
+    </p>
+  </header>
+
+  <section>
+    <h2>四大方言，一个引擎全收</h2>
+    <table class="doc-table">
+      <thead>
+        <tr><th>方言</th><th>写法示例</th><th>折叠行为</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Windows 原生</td>
+          <td><code>C:\repo</code>、<code>C:/repo</code></td>
+          <td>第一公民——原生形态就是 shell 的内部表示，不存在「转换成」的问题。</td>
+        </tr>
+        <tr>
+          <td>MSYS / Git Bash 形</td>
+          <td><code>/d/repo</code>、<code>/tmp</code>、<code>/usr/bin</code></td>
+          <td>native 子进程收到 <code>D:\repo</code>；<code>/usr/bin</code>、<code>/etc</code>、<code>/tmp</code> 映射到安装根下的真实 Windows 目录。例外：<code>cmd.exe</code> 收到 <code>/d/repo</code> 原样（<code>/d</code> 与其自身开关无法区分）。</td>
+        </tr>
+        <tr>
+          <td>WSL 形</td>
+          <td><code>/mnt/d/repo</code></td>
+          <td><strong>真实折叠</strong>到 <code>D:\repo</code>（<code>pwd -P</code> 报 <code>/d/repo</code>）。对照：Git Bash 的 <code>/mnt/d</code> 是假阳性——静默落到安装根 <code>D:\Git\mnt\d</code>。</td>
+        </tr>
+        <tr>
+          <td>Cygwin 形</td>
+          <td><code>/cygdrive/d/repo</code></td>
+          <td>外部命令层全认；内建面的分支补齐中（rubash#850）。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      翻译规则是<strong>表驱动且与上下文无关</strong>的（rubash#600）：不猜「这个参数
+      像不像路径」、不看参数位置、不看目标存在与否——即将创建的路径也得到合法的
+      Win32 形态。随包的 PATH-MATRIX 以约 100 条探针逐格实跑了方言 × 执行层的全量
+      矩阵，缺口全部开票在案（WinuxCmd#1244、rubash#850、niu-git#18）。
+    </p>
+  </section>
+
+  <section>
+    <h2>argv 逐字节原样：MSYS_NO_PATHCONV 不存在</h2>
+    <p>
+      Git Bash 的 MSYS 运行时会在 spawn 前<strong>启发式改写</strong>看起来像路径的参数：
+      <code>/c</code> 变 <code>C:\</code>，不存在的 <code>/foo</code> 被展开成 Git
+      安装路径，<code>git grep "/fn main"</code> 的模式被静默改写。所以每个老用户都被迫
+      学会 <code>MSYS_NO_PATHCONV</code> / <code>MSYS2_ARG_CONV_EXCL</code> 这两个咒语——
+      <strong>关闭开关的存在本身就是官方对问题的承认</strong>。
+    </p>
+    <p>
+      niubash 没有 MSYS 运行时，这两个环境变量在这里<strong>不存在，也不需要存在</strong>。
+      界线是成文的核心不变量「该 verbatim 的不转换」：commit 消息、分支名、引号内的
+      操作数，以及 grep/sed/awk/find 的语法数据（模式、脚本文本、<code>-name</code>
+      类值）、<code>/cygdrive/…</code>、<code>/dev/*</code>、环境变量通道、所有非路径
+      形态的词——逐字节抵达子进程。唯一的开关
+      <code>__RUBASH_ARGV_DIALECT=legacy</code> 是文档化映射的方言选择器（应急回退到
+      旧行为），不是「可能猜错的启发式」的救生闸。
+    </p>
+    <p>
+      <code>$PWD</code> 恒为 POSIX 形态（如 <code>/d/repo</code>）是配套裁决：这是
+      nvm 死循环根因（rubash#537）修复的同一决定，生态脚本对 <code>$PWD</code> 的
+      POSIX 假设因此成立。
+    </p>
+  </section>
+
+  <section>
+    <h2>uname 报 MSYS_NT：有意的兼容人设</h2>
+    <p>
+      在 Windows 上，<code>uname -s</code> 报 <code>MSYS_NT-…</code>
+      （设置了 <code>MSYSTEM</code> 时按 MSYS2 的方式映射为
+      <code>MINGW64_NT-</code> 等），<code>$OSTYPE=msys</code>、
+      <code>$MACHTYPE=x86_64-pc-msys</code>。这不是在伪装一个运行时，而是
+      <strong>兼容 persona</strong>（rubash#154）：大量生态脚本以
+      <code>case "$(uname -s)"</code> 匹配 <code>MINGW*|MSYS*|CYGWIN*</code>
+      作为分支门，人设让这些门打开、脚本走它们被测得最多的路径。标签之下
+      <strong>没有任何 MSYS2 运行时</strong>：没有 <code>msys-2.0.dll</code>、
+      没有 <code>cygwin1.dll</code>、子进程内没有任何 POSIX argv 转换层。
+    </p>
+    <p>
+      一行对照：<strong>Git Bash = MSYS2 运行时 + 真 bash；niubash = 原生引擎 +
+      兼容人设。</strong>人设随处披露（<code>--help</code>/<code>--identity</code>），
+      且 <code>RUBASH_IDENTITY=native</code> 可切换为诚实原生面
+      （<code>uname -s → Windows_NT</code>、<code>OSTYPE=windows</code>）。
+    </p>
+  </section>
+
+  <section>
+    <h2>诚实段：写侧缺口收口中</h2>
+    <div class="note">
+      <p>
+        边界契约不等于零缺口。<strong>写侧命令的裸盘符根缺口</strong>正在收口：
+        #1230 审计了 15 个写侧命令，其中 <code>mkdir</code> 的真写格（#1233）
+        最急。边界契约的价值正在于此——缺口可枚举、可开票、可修，而不是散落在
+        「有时像 Linux 有时不像」的雾里。每收一格，PATH-MATRIX 就多一格绿灯。
+      </p>
+    </div>
+  </section>
+
+  <footer class="further">
+    <h2>深入阅读</h2>
+    <ul>
+      <li><a href="https://unixwin.github.io/niubash/windows-path-contract/" target="_blank" rel="noopener noreferrer">Windows 路径契约（niubash 官方文档）↗</a></li>
+      <li><a href="https://unixwin.github.io/niubash/platform-support/" target="_blank" rel="noopener noreferrer">平台支持：无 MSYS 运行时与身份人设 ↗</a></li>
+      <li><a href="https://github.com/unixwin/rubash/blob/master/docs/platform-identity.md" target="_blank" rel="noopener noreferrer">rubash 平台身份与路径方言（引擎侧全文）↗</a></li>
+    </ul>
+  </footer>
+</DocsLayout>
+
+<style>
+  .crumb {
+    font-size: 0.85rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .crumb a {
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .doc-table th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0.5rem 0.6rem;
+  }
+
+  .doc-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.6rem;
+    vertical-align: top;
+  }
+
+  .doc-table td strong {
+    color: var(--accent);
+  }
+
+  .note {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--radius);
+    background: var(--bg-code);
+    padding: 0.9rem 1.2rem;
+    font-size: 0.92rem;
+    margin: 1.4rem 0;
+  }
+
+  .note p {
+    margin: 0;
+  }
+
+  .note strong {
+    color: var(--warn);
+  }
+
+  .further {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.1rem 1.4rem;
+    font-size: 0.92rem;
+  }
+
+  .further h2 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    border-bottom: none;
+  }
+
+  .further ul {
+    margin: 0;
+    padding-left: 1.3rem;
+  }
+
+  .further li {
+    margin-bottom: 0.35rem;
+  }
+</style>

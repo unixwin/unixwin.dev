@@ -1,0 +1,210 @@
+---
+/**
+ * /docs/execution-model/ — 执行模型：零 fork 三层（terminal 主题）。
+ * 事实来源：rubash docs/architecture.md（Subshells without fork）、
+ * rubash docs/builtins.md（62 真内建 / fast-path / 管线内联臂，文档同步测试守护）、
+ * niubash docs/src/builtins.md、HIGHLIGHTS #1/#4。
+ */
+import DocsLayout from '../../../components/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="执行模型：零 fork 三层"
+  description="niubash 引擎复刻 fork 的语义而非机制：进程内子壳、真句柄 fd 表（POSIX dup 语义）、真进程只在边界；62 真内建 + 12 内联 coreutils + 管道内联臂，可观察行为与 GNU Bash 零差异。"
+  path="/docs/execution-model/"
+>
+  <header class="doc-head">
+    <p class="crumb"><a href="/docs/">← 文档区</a></p>
+    <h1>执行模型：零 fork 三层</h1>
+    <p class="lead">
+      POSIX <code>fork()</code> 在 Win32 上没有等价物。MSYS2/Cygwin 的解法是在
+      syscall 层<strong>伪造</strong>它——昂贵、脆弱、并以怪癖闻名。niubash 的引擎
+      （rubash）走了另一条路：<strong>复刻 fork 的语义，不复刻它的机制</strong>。
+      结果是子壳与命令替换零进程创建成本，而脚本可观察的一切——退出码、fd 继承、
+      共享偏移、信号处置——与 GNU Bash 行为一致。
+    </p>
+  </header>
+
+  <section>
+    <h2>三层模型</h2>
+    <table class="doc-table">
+      <thead>
+        <tr><th>层</th><th>机制</th><th>对应 fork 的哪一面</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. 进程内子壳</strong></td>
+          <td><code>( list )</code> 与 <code>$( )</code> 从不产生进程：以 <code>ShellState::clone</code> 复制变量、别名、函数、trap、历史，子壳结束即弃。</td>
+          <td>fork 复制的「内存面」。</td>
+        </tr>
+        <tr>
+          <td><strong>2. 真句柄 fd 表</strong></td>
+          <td>槽位持有原生 Windows <code>HANDLE</code>；<code>DuplicateHandle</code> 复制的句柄共享同一内核文件对象——因此共享文件偏移，正是 POSIX「dup 共享 open file description」（落地前有 POC 实证）。<code>fork_table()</code> 逐句柄复制整表。</td>
+          <td>fork 复制 fd 表但不复制文件对象。</td>
+        </tr>
+        <tr>
+          <td><strong>3. 真进程只在边界</strong></td>
+          <td>外部命令与管道成员经 <code>CreateProcess</code> + <code>os_pipe</code> 启动；后台作业与 coproc 各持真进程，作业控制基于 Job Objects，SIGCONT 经 <code>ResumeThread</code>。</td>
+          <td>fork 真正无法避免的地方：进程边界。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      换句话说：能不建进程的（子壳、命令替换）一律不建；必须建进程的（外部命令、
+      管道、后台作业）用 Win32 的原生路径直接建。没有一层「模拟的 POSIX」横在中间。
+    </p>
+  </section>
+
+  <section>
+    <h2>62 真内建 + 12 内联 coreutils + 管道内联臂</h2>
+    <p>
+      命令词按三层分发。<strong>62 个真内建</strong>进程内执行（GNU Bash 5.3 的
+      61 个内建<strong>全覆盖、无缺失</strong>，外加进程内 <code>env</code>——
+      coreutils 语义、排序输出、支持 <code>-0</code>）。另有隐藏 fast-path
+      （<code>sleep</code>/<code>dirname</code>/<code>basename</code>/<code>uname</code>/<code>arch</code>）：
+      简单参数形态进程内执行，复杂形态回退外部命令，而 introspection
+      （<code>type</code>/<code>command -v</code>/<code>enable</code>）报告为
+      <strong>外部命令——与 GNU Bash 的报告一致</strong>。
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr><th>进程内层</th><th>名单</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>内联文件命令（12）</td>
+          <td><code>pwd</code> <code>printf</code> <code>mkdir</code> <code>touch</code> <code>chmod</code> <code>cp</code> <code>rm</code> <code>rmdir</code> <code>cat</code> <code>sed</code> <code>mkfifo</code> <code>tty</code></td>
+          <td>高频文件类命令在引擎内进程内模拟执行（对齐 GNU coreutils 的 stdout/rc；带标志等复杂形态回退外部命令）。</td>
+        </tr>
+        <tr>
+          <td>管道内联臂</td>
+          <td><code>true</code> <code>:</code> <code>false</code> <code>echo</code> <code>printf</code> <code>trap</code> <code>head</code> <code>cat</code> <code>sed</code> <code>grep</code> <code>wc</code> <code>tr</code></td>
+          <td>按命令在<strong>管线中的位置</strong>匹配：管道成员命中即在进程内运行，遇到拒绝形态（如 <code>grep</code> 的正则元字符）才回退外部二进制。</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      组合起来，<code>echo | cat</code> 这样的管道<strong>一整个零进程</strong>。
+      名单不是文档口号：内建白名单与 fast-path 清单由 <code>cargo test</code> 的
+      文档同步测试守护——代码与文档任何一侧变动，另一侧不改则构建失败。
+    </p>
+  </section>
+
+  <section>
+    <h2>可观察行为：零差异是被证明的</h2>
+    <p>
+      「实现不同」不是「行为不同」的委婉说法。这套模型的可观察面——退出码传播、
+      fd 继承与共享偏移、信号处置——正是 GNU 上游 83 套测试语料覆盖的对象：
+      83/83 通过、82 套逐字节一致（见
+      <a href="/docs/compatibility/">兼容总览</a>）。作为旁证，引擎还能端到端运行
+      bashdb 调试器的核心循环（list/step/next/where/continue/quit），以及 git
+      自家的测试框架 <code>t/test-lib.sh</code>——两者都对执行模型的细节极其敏感。
+    </p>
+    <p>
+      性能面上这层设计的收益（子壳、命令替换、后台作业）与持平的外部进程成本，
+      见<a href="/docs/performance-model/">性能特征</a>。
+    </p>
+  </section>
+
+  <footer class="further">
+    <h2>深入阅读</h2>
+    <ul>
+      <li><a href="https://unixwin.github.io/niubash/architecture/" target="_blank" rel="noopener noreferrer">niubash 架构（官方文档：rubash lib + winuxcmd 三层）↗</a></li>
+      <li><a href="https://unixwin.github.io/niubash/builtins/" target="_blank" rel="noopener noreferrer">Built-ins 与 Fast Path（官方文档）↗</a></li>
+      <li><a href="https://github.com/unixwin/rubash/blob/master/docs/builtins.md" target="_blank" rel="noopener noreferrer">rubash 内建/fast-path 单一事实清单（中文，文档同步测试守护）↗</a></li>
+    </ul>
+  </footer>
+</DocsLayout>
+
+<style>
+  .crumb {
+    font-size: 0.85rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .crumb a {
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .doc-table th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0.5rem 0.6rem;
+  }
+
+  .doc-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.6rem;
+    vertical-align: top;
+  }
+
+  .doc-table td strong {
+    color: var(--accent);
+  }
+
+  .further {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.1rem 1.4rem;
+    font-size: 0.92rem;
+  }
+
+  .further h2 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    border-bottom: none;
+  }
+
+  .further ul {
+    margin: 0;
+    padding-left: 1.3rem;
+  }
+
+  .further li {
+    margin-bottom: 0.35rem;
+  }
+</style>

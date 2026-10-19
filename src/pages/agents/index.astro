@@ -55,6 +55,10 @@ const statusLabel: Record<string, string> = { ready: '可用', partial: '部分'
       </table>
     </section>
 
+    <a class="universal-link" href="/agents/universal/">
+      <strong>没找到你的 agent？</strong> 通用接入指南：四种探测机制 + 接线决策流，任何 agent 都能接上 niubash →
+    </a>
+
     {groups.map((g) => {
       const list = (agentsData.agents as any[]).filter((a) => a.status === g.key);
       if (!list.length) return null;

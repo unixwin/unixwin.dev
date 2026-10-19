@@ -80,8 +80,8 @@ const T: Record<string, string> = {
   '纯 spawn ×750': 'Pure spawn ×750',
   '前台外部命令 ×750': 'Foreground external command ×750',
   '内建循环 ×750': 'Built-in loop ×750',
-  'WSL 列仅作参考：后台作业占优（Linux 内核 fork），但前台外部命令 857 ms（跨 OS 文件操作）、冷启动 202–278 ms，且带走整套虚拟机。':
-    'The WSL column is for reference only: it wins on background jobs (Linux kernel fork), but foreground external commands take 857 ms (cross-OS file operations), cold start is 202–278 ms, and it drags an entire VM along.',
+  'WSL 为跨系统参考、与 Windows 原生对比无意义，已移出主表；rubash 在原生 Linux（含 Android 构建）上，fork/子壳类负载同样显著快于 GNU bash——专项基准产物入库后单列。':
+    'WSL is a cross-OS reference and meaningless against native Windows, so it is no longer shown in the main table; on native Linux (Android builds included), rubash is also significantly faster than GNU bash on fork/subshell workloads — a dedicated suite will be listed once its artifacts land.',
   // engineering numbers
   '一次性执行优化（xgr 六连）': 'One-shot execution optimization (xgr series of six)',
   '多行粘贴': 'Multi-line paste',
@@ -103,8 +103,9 @@ const t = (s: string): string => T[s] ?? s;
 ---
 
 <BaseLayout
-  title="Benchmarks: niubash vs Git Bash / WSL / GNU bash"
-  description="Measured: git startup 3–7x, one-shot execution 2.7x, prompt git segment 4–12x faster than Git Bash; 8/8 workloads ahead on the same Windows machine. Every number carries an artifact or PR anchor; wins and losses both shown."
+  title="Benchmarks: niubash vs Git Bash / WSL / GNU bash — the measured Git Bash alternative"
+  description="niubash benchmark results: git startup 3–7x, one-shot execution 2.7x and the prompt git segment 4–12x faster than Git Bash — the Git Bash alternative, measured; 8/8 workloads ahead of GNU bash and WSL on the same Windows machine. Every number carries an artifact or PR anchor; wins and losses both shown."
+  keywords="niubash benchmark,git bash alternative,vs git bash,gnu bash,wsl,bash benchmark,windows bash performance,bash for windows"
   theme="day"
   path="/en/benchmarks/"
   lang="en"
@@ -152,7 +153,7 @@ const t = (s: string): string => T[s] ?? s;
       </p>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Workload</th><th style="width:24%">rubash vs Git Bash</th><th>rubash</th><th>Git Bash</th><th>WSL (ref.)</th></tr></thead>
+          <thead><tr><th>Workload</th><th style="width:24%">rubash vs Git Bash</th><th>rubash</th><th>Git Bash</th></tr></thead>
           <tbody>
             {(h.rows as any[]).map((r) => (
               <tr>
@@ -163,7 +164,6 @@ const t = (s: string): string => T[s] ?? s;
                 </td>
                 <td class="num us">{r.rubash.toLocaleString()} ms</td>
                 <td class="num">{r.gitbash.toLocaleString()} ms</td>
-                <td class="num wsl">{r.wsl.toLocaleString()} ms</td>
               </tr>
             ))}
           </tbody>
@@ -239,7 +239,7 @@ const t = (s: string): string => T[s] ?? s;
       <h2>Methodology &amp; sources</h2>
       <ul>
         <li>Environment: {t((bench._meta as any).env)}; raw artifacts checked into <code>data/bench/</code> (15 files, incl. BENCH-README.md with the environment and method notes)</li>
-        <li>Discipline: nothing unmeasured gets written down; ties and losses are listed too (single-spawn parity = the real exec floor; the WSL reference column calls out its architectural cost)</li>
+        <li>Discipline: nothing unmeasured gets written down; ties and losses are listed too (single-spawn parity = the real exec floor; the cross-OS WSL reference has been removed from the main table)</li>
         <li>Source of truth: FACTS.json (portal-dump branch, 2026-10-19) — where the README disagrees, FACTS wins</li>
       </ul>
     </section>

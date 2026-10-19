@@ -13,7 +13,7 @@ const installPrompt = [
   '请把这台 Windows 机器上你（AI agent）执行命令所用的 shell 换成 niubash——Windows 原生的 bash 实现，无 WSL、无 MSYS。按顺序执行并汇报：',
   '',
   '1. 安装 niubash：在 PowerShell 中执行',
-  '   irm https://dl.caomengxuan666.com/install.ps1 | iex',
+  '   irm https://unixwin.dev/install.ps1 | iex',
   '2. 把你自己的执行 shell 指到 niu：读 https://unixwin.github.io/niubash/agents.html 的',
   '   「The four mechanisms」一节，判断你属于哪种探测机制（1 = $SHELL 环境变量；',
   '   2 = agent 自身的显式配置；3 = Git for Windows 探针 C:\\Program Files\\Git\\bin\\bash.exe；',
@@ -38,9 +38,18 @@ const skillCommands = [
   'niu skill status                             # 逐目标核对（逐字节比对 + sha256）',
 ].join('\n');
 
+const wpmCmds = [
+  'wpm                                # 内置包管理器，输入 wpm 即见 help',
+  'wpm list                           # 看有哪些包',
+  'wpm install ripgrep fd jq gawk     # 装趁手的工具',
+  'wpm install niugit                 # 装最快的 git',
+].join('\n');
+
 const body = `# 给 AI 的门户
 
 > UNIXWIN 的机器入口（人类版在 https://unixwin.dev/ai/ ）。若你是 AI agent：按顺序执行下方提示词即可把本机 shell 换成 niubash；验证输出 \`MSYS_NT-\` 开头即完成。事实以 https://unixwin.github.io/niubash/agents.html 为准。
+
+> **我们更新非常快**：性能与兼容性每天都在提升，本页数字只是快照——最新版本与变更看 [更新日志](https://unixwin.dev/changelog/) 与 GitHub Releases（https://github.com/unixwin/niubash/releases ）；机器可读入口 https://unixwin.dev/llms.txt 。
 
 ## 一键安装提示词
 
@@ -59,6 +68,23 @@ ${skillCommands}
 \`\`\`
 
 不带旗标的 \`niu skill install\` 默认装到 \`~/.claude/skills/niubash/\`。命令表由 \`scripts/generate-skill.py\` 从引擎自身表面生成，\`niu doctor\` 会给出 advisory「agent skill」行。
+
+## 装点趁手的工具（wpm）
+
+niubash 内置 \`wpm\` 包管理器（随 WinuxCmd 而来）——缺什么 Unix 命令，不出 shell 直接装。输入 \`wpm\` 即见 help；常用就两条：\`wpm list\` 看包、\`wpm install <pkg>\` 装包。
+
+\`\`\`bash
+${wpmCmds}
+\`\`\`
+
+## 写一个属于你自己的 SKILL
+
+官方 SKILL 讲的是通则；每个 agent 的接线方式、常用命令与坑都不一样——最好的文档是你为自己总结的那份。按四步走：
+
+1. 先读 https://unixwin.github.io/niubash/agents.html 与本页（https://unixwin.dev/agents.md ），弄清四机制与验证判据。
+2. 实际用起来：完成安装与验证，\`wpm\` 装一两个趁手工具，再跑一段你自己的常用脚本。
+3. 参考官方 SKILL（\`niu skill install\` 装的那份）的结构，**自己总结一份适用于自身工作流的 SKILL**——因地制宜：记录你自己的接线机制、常用命令、踩过的坑、验证方法。
+4. 存到你自己的 skills 目录；愿意的话把成果提 PR 回馈 https://github.com/unixwin/unixwin.dev 。
 
 ## 四机制速查表
 
@@ -90,6 +116,10 @@ echo "SHELL=$SHELL"; uname -s; uname -a
 - winuxcmd shim 的 \`uname\` 报 \`MSYS_NT-…\`（有意为兼容）——按 \`uname\` 分支的工具会把宿主判成 MSYS。
 - Claude Code 的 \`CLAUDE_CODE_GIT_BASH_PATH\` 只接受名为 \`bash.exe\`/\`sh.exe\`/\`bash\`/\`sh\` 的文件——指到 \`git-bash.exe\` 或 \`niu.exe\` 会被忽略并告警。
 - 解析到 \`C:\\Windows\\System32\\bash.exe\` 的裸名 \`bash\` 是 WSL 启动器，命令无声跑进 Linux，没有任何报错；裸名交给 CreateProcess 时系统目录先于用户 \`PATH\`，所以裸 \`bash\` 无法从用户 PATH 完全接管——完整答案是 Git 探针路径或改用 \`sh\`。
+
+## 亮点速览
+
+零 fork（\`( )\` 与 \`$( )\` 不建进程）· 四方言路径（\`C:\\\` / \`/d/\` / \`/mnt/d\` / \`/cygdrive/d\` 全收）· GNU 套件 83/83 全过 · git 启动 ~14ms · 3.79MB 单文件。数字细节见 [基准页](https://unixwin.dev/benchmarks/) 与 [文档](https://unixwin.dev/docs/)。
 
 ## 相关链接
 

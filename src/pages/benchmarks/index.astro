@@ -21,8 +21,9 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
 ---
 
 <BaseLayout
-  title="基准：niubash vs Git Bash / WSL / GNU bash"
-  description="实测：git 启动 3–7x、一次性执行 2.7x、提示符 git 段 4–12x 快于 Git Bash；Windows 同场 8 项负载全部领先。每个数字带产物或 PR 锚，输赢都展示。"
+  title="niubash 基准：vs Git Bash / WSL / GNU bash（Git Bash alternative 实测）"
+  description="niubash 基准测试（benchmark）：git 启动 3–7x、一次性执行 2.7x、提示符 git 段 4–12x 快于 Git Bash——Git Bash alternative 的实测对照；Windows 同场 8 项负载全部领先 GNU bash 与 WSL。每个数字带产物或 PR 锚，输赢都展示。"
+  keywords="niubash benchmark,git bash alternative,vs git bash,gnu bash,wsl,bash benchmark,windows bash performance,bash for windows"
   theme="day"
   path="/benchmarks/"
 >
@@ -68,7 +69,7 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
       </p>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>负载</th><th style="width:24%">rubash vs Git Bash</th><th>rubash</th><th>Git Bash</th><th>WSL（参考）</th></tr></thead>
+          <thead><tr><th>负载</th><th style="width:24%">rubash vs Git Bash</th><th>rubash</th><th>Git Bash</th></tr></thead>
           <tbody>
             {(h.rows as any[]).map((r) => (
               <tr>
@@ -79,7 +80,7 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
                 </td>
                 <td class="num us">{r.rubash.toLocaleString()} ms</td>
                 <td class="num">{r.gitbash.toLocaleString()} ms</td>
-                <td class="num wsl">{r.wsl.toLocaleString()} ms</td>
+                
               </tr>
             ))}
           </tbody>
@@ -154,7 +155,7 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
       <h2>方法论与来源</h2>
       <ul>
         <li>环境：{(bench._meta as any).env}；产物原样入库 <code>data/bench/</code>（15 份，含 BENCH-README.md 的环境与方法清单）</li>
-        <li>纪律：未实测不写；持平与落后维度照列（单次 spawn 持平 = 真实 exec 地板；WSL 参考列注明其架构代价）</li>
+        <li>纪律：未实测不写；持平与落后维度照列（单次 spawn 持平 = 真实 exec 地板；WSL 跨系统参考已移出主表）</li>
         <li>口径权威：FACTS.json（portal-dump 分支，2026-10-19）——README 与其冲突处以 FACTS 为准</li>
       </ul>
     </section>

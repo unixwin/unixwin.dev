@@ -19,7 +19,7 @@ const installPrompt = [
   '请把这台 Windows 机器上你（AI agent）执行命令所用的 shell 换成 niubash——Windows 原生的 bash 实现，无 WSL、无 MSYS。按顺序执行并汇报：',
   '',
   '1. 安装 niubash：在 PowerShell 中执行',
-  '   irm https://dl.caomengxuan666.com/install.ps1 | iex',
+  '   irm https://unixwin.dev/install.ps1 | iex',
   '2. 把你自己的执行 shell 指到 niu：读 https://unixwin.github.io/niubash/agents.html 的',
   '   「The four mechanisms」一节，判断你属于哪种探测机制（1 = $SHELL 环境变量；',
   '   2 = agent 自身的显式配置；3 = Git for Windows 探针 C:\\Program Files\\Git\\bin\\bash.exe；',
@@ -67,6 +67,14 @@ const skillCommands = [
 ].join('\n');
 
 const verifyCmd = 'echo "SHELL=$SHELL"; uname -s; uname -a';
+
+// ---- wpm 速览命令块（轻量区块：三五行说明 + 一个命令块足矣） ----
+const wpmCmds = [
+  'wpm                                # 内置包管理器，输入 wpm 即见 help',
+  'wpm list                           # 看有哪些包',
+  'wpm install ripgrep fd jq gawk     # 装趁手的工具',
+  'wpm install niugit                 # 装最快的 git',
+].join('\n');
 
 // ---- 四机制速查（来源：docs/src/agents.md「The four mechanisms」） ----
 const mechanisms = [
@@ -148,8 +156,9 @@ const skillSummary = [
 ---
 
 <BaseLayout
-  title="给 AI 的门户"
-  description="给 AI 看的 UNIXWIN 门户：一键安装提示词（粘给你的 agent 即装 niubash）、官方 skill 一键安装、agent 自助接入模板与机器可读入口。真 bash 语法、真 Unix 命令、原生 Windows。"
+  title="给 AI 的门户：为 AI Agent 安装 niubash"
+  description="给 AI 看的 UNIXWIN 门户：一键安装提示词（粘给你的 agent 即装 niubash）、官方 skill 一键安装、wpm 包管理速览、agent 自助接入模板与机器可读入口——install niubash for AI agents（Claude Code、Codex、Cursor、VS Code、opencode、Zed）。真 bash 语法、真 Unix 命令、原生 Windows。"
+  keywords="install niubash for ai agents,niubash,winuxcmd,rubash,niu-git,wpm,ai agent shell,bash for windows,git bash alternative,claude code,codex,cursor,vs code,opencode,zed"
   theme="day"
   path="/ai/"
 >
@@ -173,6 +182,19 @@ const skillSummary = [
       </p>
     </section>
 
+    <!-- ============ 醒目提示条：我们更新非常快 ============ -->
+    <aside class="fast-updates" role="note" aria-label="我们更新非常快">
+      <p class="fu-title">我们更新非常快</p>
+      <p class="fu-body">
+        性能与兼容性<strong>每天都在提升</strong>——本页数字只是快照。最新版本与变更看
+        <a href="/changelog/">/changelog/</a> 与 GitHub Releases（<a
+          href="https://github.com/unixwin/niubash/releases"
+          target="_blank"
+          rel="noopener noreferrer">github.com/unixwin/niubash/releases</a>）；
+        机器可读入口 <a href="/llms.txt">/llms.txt</a>。
+      </p>
+    </aside>
+
     <!-- ============ b) 一键安装提示词（主 CTA） ============ -->
     <Section id="install-prompt" title="一键安装提示词" kicker="paste me into any agent">
       <p class="lead">
@@ -193,6 +215,22 @@ const skillSummary = [
         <code class="v-ok">SHELL=C:\Users\me\AppData\Local\Programs\Niubash\niu.exe</code>
         <code class="v-ok">MSYS_NT-10.0-26100 WORKSTATION 3.1.x x86_64 Msys</code>
         <span class="v-hint">Linux = WSL 回落、MINGW64_NT- = Git Bash，均需回机制排查。</span>
+      </div>
+    </Section>
+
+    <!-- ============ b2) 装点趁手的工具（wpm） ============ -->
+    <Section id="wpm" title="装点趁手的工具（wpm）" kicker="the built-in package manager">
+      <p class="lead">
+        niubash 内置 <code>wpm</code> 包管理器（随 WinuxCmd 而来）——缺什么 Unix
+        命令，不出 shell 直接装。输入 <code>wpm</code> 即见 help；常用就两条：
+        <code>wpm list</code> 看包、<code>{'wpm install <pkg>'}</code> 装包。
+      </p>
+      <div class="codebox">
+        <div class="code-head">
+          <span class="code-lang">bash</span>
+          <CopyButton copy={wpmCmds} />
+        </div>
+        <pre><code>{wpmCmds}</code></pre>
       </div>
     </Section>
 
@@ -222,6 +260,33 @@ const skillSummary = [
           </article>
         ))}
       </div>
+    </Section>
+
+    <!-- ============ c2) 写一个属于你自己的 SKILL ============ -->
+    <Section id="own-skill" title="写一个属于你自己的 SKILL" kicker="distill your own workflow">
+      <p class="lead">
+        官方 SKILL 讲的是通则；每个 agent 的接线方式、常用命令与坑都不一样——
+        最好的文档是你为自己总结的那份。按四步走：
+      </p>
+      <ol class="steps">
+        <li>
+          先读 <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.html</a>
+          与本页，弄清四机制与验证判据。
+        </li>
+        <li>
+          实际用起来：完成安装与验证，<code>wpm</code> 装一两个趁手工具，
+          再跑一段你自己的常用脚本。
+        </li>
+        <li>
+          参考官方 SKILL（<code>niu skill install</code> 装的那份）的结构，
+          <strong>自己总结一份适用于自身工作流的 SKILL</strong>——因地制宜：
+          记录你自己的接线机制、常用命令、踩过的坑、验证方法。
+        </li>
+        <li>
+          存到你自己的 skills 目录；愿意的话把成果提 PR 回馈
+          <a href="https://github.com/unixwin/unixwin.dev" target="_blank" rel="noopener noreferrer">github.com/unixwin/unixwin.dev</a>。
+        </li>
+      </ol>
     </Section>
 
     <!-- ============ d) 让 agent 自己写接入 ============ -->
@@ -282,6 +347,12 @@ const skillSummary = [
           </a>
         ))}
       </div>
+      <p class="hl-line">
+        <strong>亮点速览：</strong>零 fork（<code>( )</code> 与 <code>$( )</code> 不建进程）·
+        四方言路径（<code>C:\</code> / <code>/d/</code> / <code>/mnt/d</code> / <code>/cygdrive/d</code> 全收）·
+        GNU 套件 83/83 全过 · git 启动 ~14ms · 3.79MB 单文件——
+        数字细节见 <a href="/benchmarks/">/benchmarks/</a> 与 <a href="/docs/">/docs/</a>。
+      </p>
     </Section>
 
     <!-- ============ f) 来源与免责 ============ -->
@@ -492,6 +563,69 @@ const skillSummary = [
   .entry-name { font-family: var(--font-mono); font-weight: 700; font-size: 1rem; color: var(--accent-2); }
   .entry-desc { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.6; flex: 1; }
   .entry-go { margin-left: auto; color: var(--link); font-size: 0.85rem; }
+
+  /* 亮点速览一行（机器可读入口清单之外的事实速览） */
+  .hl-line {
+    margin: 1.1rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px dashed var(--border);
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.8;
+  }
+  .hl-line strong { color: var(--text); }
+  .hl-line code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.05rem 0.35rem;
+    font-size: 0.88em;
+  }
+  .hl-line a { color: var(--link); }
+
+  /* ---------- 醒目提示条：我们更新非常快 ---------- */
+  .fast-updates {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 1.4rem 0 0.4rem;
+    padding: 0.9rem 1.2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--radius);
+  }
+  .fu-title {
+    margin: 0;
+    color: var(--warn);
+    font-weight: 700;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+  .fu-body { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.75; flex: 1; min-width: 16rem; }
+  .fu-body strong { color: var(--text); }
+  .fu-body a { color: var(--link); }
+
+  /* ---------- 自己的 SKILL：四步列表 ---------- */
+  .steps {
+    margin: 0;
+    padding-left: 1.4rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.8;
+  }
+  .steps li { margin: 0.45rem 0; }
+  .steps strong { color: var(--text); }
+  .steps a { color: var(--link); }
+  .steps code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.05rem 0.35rem;
+    font-size: 0.88em;
+  }
 
   /* ---------- f) 来源与免责 ---------- */
   .footnote {

@@ -24,7 +24,7 @@ const installPrompt = [
   'through the steps below in order, then report back:',
   '',
   '1. Install niubash — in PowerShell, run:',
-  '   irm https://dl.caomengxuan666.com/install.ps1 | iex',
+  '   irm https://unixwin.dev/install.ps1 | iex',
   '2. Point your own command shell at niu. Read the "The four mechanisms" section of',
   '   https://unixwin.github.io/niubash/agents.html and work out which detection',
   '   mechanism you use (1 = the $SHELL environment variable; 2 = the agent\'s own',
@@ -89,6 +89,14 @@ const skillCommands = [
 ].join('\n');
 
 const verifyCmd = 'echo "SHELL=$SHELL"; uname -s; uname -a';
+
+// ---- wpm command block (lightweight section: a few lines + one block) ----
+const wpmCmds = [
+  'wpm                                # built-in package manager; typing wpm prints help',
+  'wpm list                           # browse available packages',
+  'wpm install ripgrep fd jq gawk     # kit out the classics',
+  'wpm install niugit                 # the fastest git',
+].join('\n');
 
 // ---- Four mechanisms cheat sheet (source: docs/src/agents.md) ----
 const mechanisms = [
@@ -170,8 +178,9 @@ const skillSummary = [
 ---
 
 <BaseLayout
-  title="The Portal for AI"
-  description="The UNIXWIN portal built for AI: a one-click install prompt (paste it into your agent and niubash gets installed), official skill bundles, a self-service agent onboarding template, and machine-readable entries. Real bash syntax, real Unix commands, native Windows."
+  title="The Portal for AI: Install niubash for AI Agents"
+  description="The UNIXWIN portal built for AI: a one-click install prompt (paste it into your agent and niubash gets installed), the official skill bundle, a wpm package-manager quick look, a self-service agent onboarding template, and machine-readable entries. Install niubash for AI agents — Claude Code, Codex, Cursor, VS Code, opencode, Zed. Real bash syntax, real Unix commands, native Windows."
+  keywords="install niubash for ai agents,niubash,winuxcmd,rubash,niu-git,wpm,ai agent shell,bash for windows,git bash alternative,claude code shell,codex shell,cursor shell,vs code,opencode,zed"
   theme="day"
   path="/en/ai/"
   lang="en"
@@ -198,6 +207,20 @@ const skillSummary = [
       </p>
     </section>
 
+    <!-- ============ Fast-updates notice: we ship quickly ============ -->
+    <aside class="fast-updates" role="note" aria-label="We ship fast">
+      <p class="fu-title">We ship fast</p>
+      <p class="fu-body">
+        Performance and compatibility <strong>improve every day</strong> — the numbers on this
+        page are a snapshot. For the latest versions and changes, see
+        <a href="/changelog/">/changelog/</a> and GitHub Releases (<a
+          href="https://github.com/unixwin/niubash/releases"
+          target="_blank"
+          rel="noopener noreferrer">github.com/unixwin/niubash/releases</a>);
+        the machine-readable entry point is <a href="/llms.txt">/llms.txt</a>.
+      </p>
+    </aside>
+
     <!-- ============ b) One-click install prompt (main CTA) ============ -->
     <Section id="install-prompt" title="One-Click Install Prompt" kicker="paste me into any agent">
       <p class="lead">
@@ -219,6 +242,23 @@ const skillSummary = [
         <code class="v-ok">SHELL=C:\Users\me\AppData\Local\Programs\Niubash\niu.exe</code>
         <code class="v-ok">MSYS_NT-10.0-26100 WORKSTATION 3.1.x x86_64 Msys</code>
         <span class="v-hint">Linux = fell back to WSL, MINGW64_NT- = Git Bash — either way, go back to the mechanisms.</span>
+      </div>
+    </Section>
+
+    <!-- ============ b2) Kit out the toolbox (wpm) ============ -->
+    <Section id="wpm" title="Kit Out Your Toolbox (wpm)" kicker="the built-in package manager">
+      <p class="lead">
+        niubash ships with the <code>wpm</code> package manager built in (it comes with
+        WinuxCmd) — when a Unix command is missing, install it without ever leaving the shell.
+        Type <code>wpm</code> and you get help; the two commands you will actually use are
+        <code>wpm list</code> to browse packages and <code>{'wpm install <pkg>'}</code> to install.
+      </p>
+      <div class="codebox">
+        <div class="code-head">
+          <span class="code-lang">bash</span>
+          <CopyButton copy={wpmCmds} label="Copy" />
+        </div>
+        <pre><code>{wpmCmds}</code></pre>
       </div>
     </Section>
 
@@ -248,6 +288,35 @@ const skillSummary = [
           </article>
         ))}
       </div>
+    </Section>
+
+    <!-- ============ c2) Write a SKILL of your own ============ -->
+    <Section id="own-skill" title="Write a SKILL of Your Own" kicker="distill your own workflow">
+      <p class="lead">
+        The official SKILL covers the general contract; your wiring, the commands you actually
+        run, and the pitfalls you hit are yours alone — the best documentation is the one you
+        distill yourself. Four steps:
+      </p>
+      <ol class="steps">
+        <li>
+          Read <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.html</a>
+          and this page first, until the four mechanisms and the verification signatures are clear.
+        </li>
+        <li>
+          Get real hands-on: complete the install and verification, add a tool or two with
+          <code>wpm</code>, then run a stretch of your own everyday script under niubash.
+        </li>
+        <li>
+          Using the official SKILL (the one <code>niu skill install</code> drops in) as a
+          structural reference, <strong>write a SKILL for your own workflow</strong> — adapted
+          to your situation: record your own wiring mechanism, the commands you actually run,
+          the pitfalls you hit, and how you verify.
+        </li>
+        <li>
+          Save it to your own skills directory — and if you are willing, send the result back
+          as a PR to <a href="https://github.com/unixwin/unixwin.dev" target="_blank" rel="noopener noreferrer">github.com/unixwin/unixwin.dev</a>.
+        </li>
+      </ol>
     </Section>
 
     <!-- ============ d) Let the agent write its own config ============ -->
@@ -310,6 +379,13 @@ const skillSummary = [
           </a>
         ))}
       </div>
+      <p class="hl-line">
+        <strong>Highlights at a glance:</strong> zero fork (<code>( )</code> and <code>$( )</code>
+        spawn no processes) · four path dialects (<code>C:\</code>, <code>/d/</code>,
+        <code>/mnt/d</code>, <code>/cygdrive/d</code> — all fold correctly) · 83/83 GNU bash
+        suites passing · git startup ~14 ms · a 3.79 MB single binary — the numbers live in
+        <a href="/en/benchmarks/">/benchmarks/</a> and <a href="/en/docs/">/docs/</a>.
+      </p>
     </Section>
 
     <!-- ============ f) Sources & disclaimer ============ -->
@@ -522,6 +598,69 @@ const skillSummary = [
   .entry-name { font-family: var(--font-mono); font-weight: 700; font-size: 1rem; color: var(--accent-2); }
   .entry-desc { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.6; flex: 1; }
   .entry-go { margin-left: auto; color: var(--link); font-size: 0.85rem; }
+
+  /* Highlights-at-a-glance line (fact strip beyond the machine entries) */
+  .hl-line {
+    margin: 1.1rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px dashed var(--border);
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.8;
+  }
+  .hl-line strong { color: var(--text); }
+  .hl-line code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.05rem 0.35rem;
+    font-size: 0.88em;
+  }
+  .hl-line a { color: var(--link); }
+
+  /* ---------- Fast-updates notice ---------- */
+  .fast-updates {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 1.4rem 0 0.4rem;
+    padding: 0.9rem 1.2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--radius);
+  }
+  .fu-title {
+    margin: 0;
+    color: var(--warn);
+    font-weight: 700;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+  .fu-body { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.75; flex: 1; min-width: 16rem; }
+  .fu-body strong { color: var(--text); }
+  .fu-body a { color: var(--link); }
+
+  /* ---------- Own-SKILL four steps ---------- */
+  .steps {
+    margin: 0;
+    padding-left: 1.4rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.8;
+  }
+  .steps li { margin: 0.45rem 0; }
+  .steps strong { color: var(--text); }
+  .steps a { color: var(--link); }
+  .steps code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.05rem 0.35rem;
+    font-size: 0.88em;
+  }
 
   /* ---------- f) Sources & disclaimer ---------- */
   .footnote {

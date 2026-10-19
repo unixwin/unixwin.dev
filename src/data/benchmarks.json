@@ -49,7 +49,7 @@
       "method": "交错轮换（每轮 rubash→Git Bash→WSL），弃 1 轮热身，min-of-3，timeout 120s，三方同一计时法（inner window date +%s%N）",
       "source": "data/bench/results.tsv + data/bench/run_bench.sh"
     },
-    "note": "WSL 列仅作参考：后台作业占优（Linux 内核 fork），但前台外部命令 857 ms（跨 OS 文件操作）、冷启动 202–278 ms，且带走整套虚拟机。",
+    "note": "WSL 为跨系统参考、与 Windows 原生对比无意义，已移出主表；rubash 在原生 Linux（含 Android 构建）上，fork/子壳类负载同样显著快于 GNU bash——专项基准产物入库后单列。",
     "rows": [
       { "workload": "后台等待 sleep & wait ×750", "rubash": 1696, "gitbash": 1967, "wsl": 154 },
       { "workload": "后台等待 ×1500", "rubash": 3366, "gitbash": 3980, "wsl": 324 },

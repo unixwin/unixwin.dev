@@ -11,10 +11,12 @@ const body = `# UNIXWIN
 
 > AI-native bash family — real bash syntax, real Unix commands, native Windows/Linux/macOS.
 
+Updates: fast-moving project — performance & compatibility improve daily; for the latest, see the Changelog (https://unixwin.dev/changelog/) and GitHub Releases (https://github.com/unixwin/niubash/releases).
+
 ## Quick Start
 
 \`\`\`
-irm https://dl.caomengxuan666.com/install.ps1 | iex
+irm https://unixwin.dev/install.ps1 | iex
 \`\`\`
 
 ## Products
@@ -36,6 +38,7 @@ ${ordered.map((p) => `- [${p.name}](https://unixwin.dev/#${p.id}): ${p.tagline_e
 ## Optional
 
 - [Benchmarks](https://unixwin.dev/benchmarks/): measured numbers vs Git Bash / WSL / GNU bash.
+- [wpm](https://github.com/unixwin/wpm-source): the package manager built into WinuxCmd — \`wpm\` prints help, \`wpm list\` browses packages, \`wpm install ripgrep fd jq gawk\` (or \`wpm install niugit\`) installs them.
 - [Changelog](https://unixwin.dev/changelog/): aggregated release timeline across the family.
 - [Theme candidate B · clean](https://unixwin.dev/theme/clean/): light theme preview.
 - [Theme candidate C · neon](https://unixwin.dev/theme/neon/): neon theme preview.

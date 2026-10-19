@@ -38,7 +38,7 @@ const stats = [
 
 // ---- Install: PowerShell primary / wpm / other platforms (Releases) ----
 const installTabs = [
-  { label: 'PowerShell', code: 'irm https://dl.caomengxuan666.com/install.ps1 | iex' },
+  { label: 'PowerShell', code: 'irm https://unixwin.dev/install.ps1 | iex' },
   { label: 'wpm', code: 'wpm install winuxcmd' },
   { label: 'Linux / macOS', code: 'https://github.com/unixwin/niubash/releases' },
 ];
@@ -50,7 +50,7 @@ interface InstallBar {
   tone: 'accent' | 'warn';
 }
 const installBars: Record<string, InstallBar> = {
-  niubash: { cmd: 'irm https://dl.caomengxuan666.com/install.ps1 | iex', badge: 'stable', tone: 'accent' },
+  niubash: { cmd: 'irm https://unixwin.dev/install.ps1 | iex', badge: 'stable', tone: 'accent' },
   winuxcmd: { cmd: 'wpm install winuxcmd', badge: 'stable', tone: 'accent' },
   rubash: { cmd: 'cargo add rubash', badge: 'beta · embed API 1.5.0', tone: 'warn' },
   'niu-git': { cmd: 'wpm install niugit', badge: 'stable', tone: 'accent' },
@@ -105,11 +105,25 @@ newsItems.sort((a, b) => {
   return a.productName.localeCompare(b.productName);
 });
 const latestNews = newsItems.slice(0, 4);
+
+// ---- SEO/GEO: SoftwareApplication JSON-LD; version comes from repo-meta.json (niubash latest) ----
+const niubashLatest = repoMeta.repos?.niubash?.latest ?? undefined;
+const softwareAppJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Niubash',
+  operatingSystem: 'Windows, Linux, macOS',
+  applicationCategory: 'DeveloperTool',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  ...(niubashLatest ? { softwareVersion: niubashLatest } : {}),
+};
 ---
 
 <BaseLayout
-  title="UNIXWIN — The AI-native Family of Real Bash"
-  description="UNIXWIN: an AI-native family of real Bash — real bash syntax, real Unix commands, native on Windows / Linux / macOS. No WSL, no MSYS. 83/83 GNU suites passing, 82 byte-identical, ~14 ms git startup, a 3.79 MB single binary."
+  title="UNIXWIN — Niubash, WinuxCmd, Rubash: the AI-native bash family"
+  description="UNIXWIN: the AI-native bash family — niubash, WinuxCmd, rubash, niu-git and wpm. Real bash syntax, real Unix commands, native on Windows / Linux / macOS. No WSL, no MSYS. 83/83 GNU suites passing, 82 byte-identical, ~14 ms git startup, a 3.79 MB single binary."
+  keywords="niubash,winuxcmd,rubash,niu-git,wpm,bash for windows,git bash alternative,ai-native bash"
+  jsonLdExtra={softwareAppJsonLd}
   theme="day"
   path="/en/"
   lang="en"
@@ -132,7 +146,7 @@ const latestNews = newsItems.slice(0, 4);
             <div class="term-sessions">
               <div class="session">
                 <p class="sl sl-cmt"># install · session 1/3</p>
-                <p class="sl"><span class="p-user">PS C:\&gt;</span> irm https://dl.caomengxuan666.com/install.ps1 | iex</p>
+                <p class="sl"><span class="p-user">PS C:\&gt;</span> irm https://unixwin.dev/install.ps1 | iex</p>
                 <p class="sl"><span class="spin" aria-hidden="true">⠿</span> fetching install.ps1 → parsing the dependency manifest …</p>
                 <p class="sl"><span class="ok">✓</span> niubash 1.4.0 → ~/.unixwin/bin/niu.exe</p>
                 <p class="sl"><span class="ok">✓</span> winuxcmd · niu-git · wpm · oh-my-niu ready in sync</p>

@@ -12,6 +12,11 @@
  *   enPath      string  另一语言页路径：zh 页传对应 en 路径、en 页传回 zh 路径，
  *                       用于 hreflang 互链。缺省时按 src/i18n/lang.ts 的配对
  *                       清单自动推断（zh 页在清单内且未传 enPath 的行为一致）。
+ *   keywords    string  逗号分隔的 SEO/GEO 关键字 → 输出 <meta name="keywords">。
+ *                       （可选；缺省不输出该 meta，保持既有页面行为不变。）
+ *   jsonLdExtra object  页面对象（如 SoftwareApplication）→ 作为第二个
+ *                       <script type="application/ld+json"> 与现有 Organization
+ *                       JSON-LD 并列输出。（可选；缺省只输出 Organization。）
  *
  * 亮/暗（day/night）：仅这两种主题的页面在 <head> 顶部跑一段 is:inline 防 FOUC
  * 脚本（改编自 astrowind ApplyColorMode，MIT，见 THIRD_PARTY_NOTICES.md）——
@@ -40,9 +45,12 @@ interface Props {
   path?: string;
   lang?: 'zh' | 'en';
   enPath?: string;
+  keywords?: string;
+  jsonLdExtra?: object;
 }
 
-const { title, description, theme = 'day', path = '/', lang = 'zh', enPath } = Astro.props;
+const { title, description, theme = 'day', path = '/', lang = 'zh', enPath, keywords, jsonLdExtra } =
+  Astro.props;
 
 const SITE = 'https://unixwin.dev';
 const fullTitle = title.includes('UNIXWIN') ? title : `${title} · UNIXWIN`;
@@ -100,6 +108,7 @@ const jsonLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    {keywords && <meta name="keywords" content={keywords} />}
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonical} />
@@ -126,6 +135,9 @@ const jsonLd = {
     <meta name="twitter:image" content={ogImage} />
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {jsonLdExtra && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLdExtra)} />
+    )}
   </head>
   <body>
     <slot />

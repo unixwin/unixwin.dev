@@ -155,8 +155,10 @@ const installTabs = [
           <details class="faq-item">
             <summary>AI agent 怎么用？</summary>
             <p class="faq-a">
-              安装完成后，Claude Code、Codex、Cursor
-              等工具会自动将其探测为默认 shell，无需额外配置。
+              在 niu 会话里启动 Claude Code、Codex 等 agent，它们按
+              <code>$SHELL</code> 约定直接用上 niubash；从开始菜单等外部启动的
+              agent 则需按各家探测机制手动配置，细节见
+              <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">官方文档</a>。
             </p>
           </details>
           <details class="faq-item">

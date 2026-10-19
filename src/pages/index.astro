@@ -195,7 +195,8 @@ const latestNews = newsItems.slice(0, 4);
           <p class="why-num">02</p>
           <h3 class="why-title">AI-native</h3>
           <p class="why-body">
-            Claude Code、Codex、Cursor 都可以把 niubash 直接设为默认 shell；<code>niu -c</code>
+            从 niu 会话启动 Claude Code、Codex、Cursor，agent 按 $SHELL 约定直接用上
+            niubash；<code>niu -c</code>
             单条命令、确定性输出，专为 agent 的反复调用与解析而生。
           </p>
           <code class="why-chip">niu -c 'ls | grep src'</code>
@@ -257,7 +258,7 @@ const latestNews = newsItems.slice(0, 4);
     <Section id="agent" title="Agent 一瞥" kicker="niu × claude code">
       <div class="codeblock agent-block" role="img" aria-label="niubash 与 Claude Code 的会话演示">
         <p class="al">
-          <span class="p-user">$</span> claude <span class="c-mute"># Claude Code 启动后检测到 niubash</span>
+          <span class="p-user">$</span> claude <span class="c-mute"># 在 niu 会话里启动，$SHELL 已指向 niubash</span>
         </p>
         <p class="al">
           <span class="c-ok">✓</span> shell: niubash (rubash engine) — 14ms git, 176+ unix commands
@@ -275,8 +276,10 @@ const latestNews = newsItems.slice(0, 4);
         </p>
       </div>
       <p class="agent-note">
-        把 niubash 设为默认 shell 后，agent 的每一条命令都跑在真 bash
-        语法上——输出确定、启动够快，长会话也不掉链子。
+        agent 用上 niubash 后，每一条命令都跑在真 bash
+        语法上——输出确定、启动够快，长会话也不掉链子。各家 agent
+        的启动方式与配置细节见
+        <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">探测机制文档</a>。
       </p>
     </Section>
 

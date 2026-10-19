@@ -4,9 +4,10 @@
   "docs": "https://unixwin.github.io/niubash/",
   "items": [
     { "label": "产品", "href": "/#products" },
+    { "label": "Agents", "href": "/agents/" },
+    { "label": "基准", "href": "/benchmarks/" },
     { "label": "数据", "href": "/#facts" },
     { "label": "安装", "href": "/#install" },
-    { "label": "更新日志", "href": "/changelog/" },
-    { "label": "主题候选", "href": "/#themes" }
+    { "label": "更新日志", "href": "/changelog/" }
   ]
 }

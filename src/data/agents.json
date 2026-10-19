@@ -1,0 +1,201 @@
+{
+  "_meta": {
+    "note": "AI agent 接入目录。事实唯一来源：niubash 仓库 docs/src/agents.md（线上 unixwin.github.io/niubash/agents.html）。改这里之前先核对那篇文档；状态必须诚实：ready=当前版本可配置生效；partial=有变通/部分场景；blocked=上游机制暂不支持。",
+    "updatedAt": "2026-10-19",
+    "verifiedAgainst": "niu 1.4.0 / niu-git 2.55.0.5 / Git for Windows 2.50.1 / WSL2 已装环境，2026-10-16（见 agents.md 首节）"
+  },
+  "universal": {
+    "worksAlways": "在 niu 会话里启动 agent：niu 导出 $SHELL，遵循 POSIX 约定的 agent 直接采用。$SHELL 不持久化——从开始菜单启动的 agent 拿不到它，需按各 agent 详情配置。",
+    "verifyCmd": "echo \"SHELL=$SHELL\"; uname -s; uname -a",
+    "verifyTable": [
+      { "sign": "uname -s = MSYS_NT-…（结尾 x86_64 Msys）", "means": "niu（winuxcmd shim）✓" },
+      { "sign": "uname -s = MINGW64_NT-…（MSYSTEM=MINGW64）", "means": "Git Bash" },
+      { "sign": "uname -s = Linux", "means": "WSL——agent 回落到了 System32\\bash.exe，按详情页修" },
+      { "sign": "uname 不存在、$SHELL 为空", "means": "PowerShell 或 cmd" }
+    ]
+  },
+  "agents": [
+    {
+      "slug": "opencode",
+      "name": "opencode",
+      "status": "ready",
+      "mechanism": "$SHELL 环境变量",
+      "platforms": ["Windows", "macOS", "Linux"],
+      "difficulty": "初",
+      "oneLiner": "零配置支持：从 niu 会话启动即用；持久化 SHELL 可覆盖所有启动方式。",
+      "script": {
+        "label": "PowerShell · 持久化 SHELL 到用户环境（之后从任何入口启动都生效）",
+        "lang": "powershell",
+        "code": "[Environment]::SetEnvironmentVariable('SHELL', \"$env:LOCALAPPDATA\\Programs\\Niubash\\niu.exe\", 'User')"
+      },
+      "steps": [
+        "最稳方式：终端里输入 niu 进入会话，再启动 opencode（$SHELL 自动可见）",
+        "要覆盖开始菜单/桌面启动：运行上面的持久化命令，重开终端生效"
+      ],
+      "verify": "让 agent 跑 universal.verifyCmd，期望 MSYS_NT-…",
+      "rollback": "[Environment]::SetEnvironmentVariable('SHELL', $null, 'User')",
+      "notes": [
+        "opencode 二进制里没有任何 niu 专属代码，$SHELL 就是全部机制",
+        "自更新器探测 git --exec-path 上三级的 bin\\bash.exe，缺失会拒绝更新（niubash#376）——niubash 安装器已布放该文件"
+      ],
+      "sources": ["agents.md#opencode", "niubash#376"]
+    },
+    {
+      "slug": "claude-code",
+      "name": "Claude Code",
+      "status": "ready",
+      "mechanism": "Git 探针 / CLAUDE_CODE_GIT_BASH_PATH",
+      "platforms": ["Windows"],
+      "difficulty": "初",
+      "oneLiner": "默认免配置：安装器已在探针路径放置 bash 启动器；也可用环境变量显式指定。",
+      "script": {
+        "label": "settings.json · 显式指定（默认情况无需设置，仅探针不生效时用）",
+        "lang": "json",
+        "code": "{\n  \"env\": {\n    \"CLAUDE_CODE_GIT_BASH_PATH\": \"C:\\\\Program Files\\\\Git\\\\bin\\\\bash.exe\"\n  }\n}"
+      },
+      "steps": [
+        "装好 niubash 即完成：安装器在 C:\\Program Files\\Git\\bin 放置 bash.exe 启动器，正好命中 Claude Code 的第一探针",
+        "探针不生效时，把上面的 env 写进 Claude Code 的 settings.json"
+      ],
+      "verify": "universal.verifyCmd，期望 MSYS_NT-…",
+      "rollback": "删除 settings.json 中的 env.CLAUDE_CODE_GIT_BASH_PATH",
+      "notes": [
+        "该变量只接受文件名为 bash.exe / sh.exe / bash / sh 的路径——指向 niu.exe 会被静默忽略（这是它指向启动器而非 niu 本体的原因）",
+        "v2.1.120 起，找不到 Git Bash 时回落到 PowerShell（而不是 Linux）",
+        "历史坑：经启动器 hop 曾每条命令闪一个控制台窗口（niubash#379），已在 rubash#668 修复，升级到含该修复的版本即消失"
+      ],
+      "sources": ["agents.md#claude-code", "niubash#377", "niubash#379", "rubash#668"]
+    },
+    {
+      "slug": "codex",
+      "name": "Codex",
+      "status": "ready",
+      "mechanism": "原生 Niu 探测（unixwin fork）",
+      "platforms": ["Windows"],
+      "difficulty": "零配置",
+      "oneLiner": "unixwin 维护的 Codex fork 内置 ShellType::Niu，装好即被选中。",
+      "script": null,
+      "steps": [
+        "安装 fork 版 Codex 与 niubash，无需任何配置：探测按序检查 C:\\Program Files\\Niubash\\niu.exe、x86 路径、%LOCALAPPDATA%\\Programs\\Niubash\\niu.exe 及 PATH 上的 niu",
+        "exec 白名单已放行 niu.exe 的 -C / -c / -lc / --repl-command"
+      ],
+      "verify": "universal.verifyCmd，期望 MSYS_NT-…",
+      "rollback": "换回官方 Codex 即恢复默认 shell 表",
+      "notes": ["这是其它 agent 接入方式的目标形态：探测表 + 参数白名单都在上游代码里"],
+      "sources": ["agents.md#codex（codex-rs/shell-command/src/shell_detect.rs）"]
+    },
+    {
+      "slug": "vs-code",
+      "name": "VS Code 家族",
+      "status": "ready",
+      "mechanism": "Git 探针 / automationProfile",
+      "platforms": ["Windows"],
+      "difficulty": "初",
+      "oneLiner": "一套探针管全家：VS Code(Copilot)、Windsurf、Trae、ZCode、Cline、Roo Code、Kilo Code、Continue。",
+      "script": {
+        "label": "settings.json · 显式 automationProfile（探针默认已命中，此为精确控制）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.automationProfile.windows\": {\n    \"path\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\",\n    \"args\": []\n  }\n}"
+      },
+      "steps": [
+        "默认：安装器占位的 C:\\Program Files\\Git\\bin\\bash.exe 命中该家族的共享探针，无需配置",
+        "要精确控制：设置 automationProfile 指向 niu.exe，经自动化终端跑命令的 agent 全部继承"
+      ],
+      "verify": "universal.verifyCmd，期望 MSYS_NT-…",
+      "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
+      "notes": ["该家族共享同一份硬编码探针序列（Program Files 两级 Git 路径 → PATH 上 git 的相对 bin/bash.exe），修一处全家生效"],
+      "sources": ["agents.md#vs-code（ZCode app.asar 本地核实，同源家族同理）"]
+    },
+    {
+      "slug": "zed",
+      "name": "Zed",
+      "status": "ready",
+      "mechanism": "显式配置 terminal.shell.program",
+      "platforms": ["Windows", "macOS", "Linux"],
+      "difficulty": "初",
+      "oneLiner": "一个配置项：把终端 shell 指到 niu.exe，agent 用同一个终端。",
+      "script": {
+        "label": "settings.json",
+        "lang": "json",
+        "code": "{\n  \"terminal\": {\n    \"shell\": {\n      \"program\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\"\n    }\n  }\n}"
+      },
+      "steps": ["打开 Zed settings.json，写入上面的 terminal.shell.program"],
+      "verify": "universal.verifyCmd，期望 MSYS_NT-…",
+      "rollback": "删除 terminal.shell.program 配置项",
+      "notes": [],
+      "sources": ["agents.md#zed"]
+    },
+    {
+      "slug": "dsh",
+      "name": "DSH（DeepSeek Harness）",
+      "status": "ready",
+      "mechanism": "插件 profile",
+      "platforms": ["Windows"],
+      "difficulty": "初",
+      "oneLiner": "一条命令装插件包：启用 niu-sandbox 与 tool-bash，并禁用 PowerShell 行。",
+      "script": {
+        "label": "命令行",
+        "lang": "bash",
+        "code": "dsh plugin --profile web add @cmx666/dsh-niu-bundle@<version>"
+      },
+      "steps": ["执行上面的插件安装命令，DSH 的设置卡里会出现 niubash 选项"],
+      "verify": "DSH 设置卡显示 niu-sandbox / tool-bash 已启用",
+      "rollback": "dsh plugin remove 对应插件",
+      "notes": ["社区另有同精神的 dsh-niubash-only profile 可选"],
+      "sources": ["agents.md#dsh（插件 README）"]
+    },
+    {
+      "slug": "cursor",
+      "name": "Cursor",
+      "status": "partial",
+      "mechanism": "探测链当前对 bash 不友好",
+      "platforms": ["Windows"],
+      "difficulty": "中",
+      "oneLiner": "IDE 侧有变通（Legacy Terminal Tool），Agent CLI 目前写死 PowerShell、无法配置。",
+      "script": {
+        "label": "settings.json · IDE 变通（启用旧版终端工具）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.useWslProfiles\": false\n}"
+      },
+      "steps": [
+        "IDE agent：开启 Legacy Terminal Tool 设置；配合上面的 useWslProfiles:false 避免落到 WSL",
+        "Agent CLI：暂无法配置（detectShellType() 在 Windows 上无条件优先 PowerShell）——已上报上游，等它暴露 shell 路径"
+      ],
+      "verify": "universal.verifyCmd 观察当前回落到的 shell",
+      "rollback": "关闭 Legacy Terminal Tool / 删除 useWslProfiles 配置",
+      "notes": ["上游修复前，CLI 侧命令会以 PowerShell 语法执行，不是 bash 语法错误"],
+      "sources": ["agents.md#cursor（上游 issue 线程引用发行代码）"]
+    },
+    {
+      "slug": "gemini-cli",
+      "name": "Gemini CLI",
+      "status": "blocked",
+      "mechanism": "无条件 PowerShell",
+      "platforms": ["Windows"],
+      "difficulty": "—",
+      "oneLiner": "发行代码在 Windows 上直接返回 PowerShell，无 bash 分支；上游已有两个相关提案。",
+      "script": null,
+      "steps": ["暂无配置办法。关注上游 issue #26567（MSYSTEM 嗅探）与 PR #18367（按 PATH 找 git bash）"],
+      "verify": "—",
+      "rollback": "—",
+      "notes": ["锁定执行策略的机器上还会因 PowerShell 执行策略直接停摆"],
+      "sources": ["agents.md#gemini-cli"]
+    },
+    {
+      "slug": "aider",
+      "name": "Aider",
+      "status": "blocked",
+      "mechanism": "无 shell 选项",
+      "platforms": ["Windows"],
+      "difficulty": "—",
+      "oneLiner": "/run 固定用 PowerShell 或 cmd，从 niu 里启动也不改变它的选择。",
+      "script": null,
+      "steps": ["暂不支持，等待上游提供 shell 选择项"],
+      "verify": "—",
+      "rollback": "—",
+      "notes": ["模型可见环境里报告的是 Shell: COMSPEC=…"],
+      "sources": ["agents.md#aider"]
+    }
+  ],
+  "unverified": ["Amazon Q Developer CLI", "Goose", "Amp", "OpenHands", "Devin"]
+}

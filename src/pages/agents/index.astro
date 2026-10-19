@@ -1,0 +1,154 @@
+---
+/**
+ * /agents/ — AI Agent 接入目录（卡片式）。
+ * 数据源：src/data/agents.json（事实来源 = niubash docs/src/agents.md）。
+ * 分组：ready（可直接换壳）/ partial（有变通）/ blocked（上游暂不支持）。
+ */
+import BaseLayout from '../../components/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import ThemeSwitcher from '../../components/ThemeSwitcher.astro';
+import Badge from '../../components/Badge.astro';
+import CopyButton from '../../components/CopyButton.astro';
+import agentsData from '../../data/agents.json';
+
+const groups = [
+  { key: 'ready', title: '开箱可换', tone: 'accent', desc: '当前版本按下面方法即可让 agent 用上 niubash' },
+  { key: 'partial', title: '有变通', tone: 'warn', desc: '部分场景可行，等待上游完善' },
+  { key: 'blocked', title: '暂不支持', tone: 'muted', desc: '上游机制未开放，已跟进 issue' },
+] as const;
+
+const statusLabel: Record<string, string> = { ready: '可用', partial: '部分', blocked: '暂不可' };
+---
+
+<BaseLayout
+  title="AI Agent 接入目录"
+  description="把 Claude Code、Codex、VS Code 家族、opencode、Zed 等 AI agent 的默认 shell 换成 niubash——为 Windows 而生，一步脚本，附验证与回滚。"
+  theme="terminal"
+  path="/agents/"
+>
+  <SiteHeader />
+
+  <main class="container">
+    <section class="hero">
+      <h1>把你的 AI Agent<br /><span class="hl">换到 niubash 上</span></h1>
+      <p class="sub">
+        前期主战场是 Windows：agent 每条命令都跑在真 bash 语法上，输出确定、git 快 3–7 倍。
+        每张卡片点进去都有<strong>可复制的换壳脚本</strong>、验证命令与回滚方法。
+      </p>
+    </section>
+
+    <section class="callout" aria-label="一句话通则">
+      <p class="callout-title">一句话通则</p>
+      <p>{agentsData.universal.worksAlways}</p>
+      <div class="verify">
+        <span class="v-label">验证任何 agent 现在用的是哪个 shell：</span>
+        <code>{agentsData.universal.verifyCmd}</code>
+        <CopyButton copy={agentsData.universal.verifyCmd} label="复制" />
+      </div>
+      <table class="v-table">
+        <tbody>
+          {agentsData.universal.verifyTable.map((r) => (
+            <tr><td><code>{r.sign}</code></td><td>{r.means}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    {groups.map((g) => {
+      const list = (agentsData.agents as any[]).filter((a) => a.status === g.key);
+      if (!list.length) return null;
+      return (
+        <section class="group" id={g.key}>
+          <div class="group-head">
+            <h2>{g.title}</h2>
+            <Badge tone={g.tone}>{list.length}</Badge>
+            <span class="group-desc">{g.desc}</span>
+          </div>
+          <div class="card-grid">
+            {list.map((a) => (
+              <a class="agent-card" href={`/agents/${a.slug}/`}>
+                <div class="card-top">
+                  <span class="card-name">{a.name}</span>
+                  <Badge tone={a.status === 'ready' ? 'accent' : a.status === 'partial' ? 'warn' : 'muted'}>
+                    {statusLabel[a.status]}
+                  </Badge>
+                </div>
+                <p class="card-line">{a.oneLiner}</p>
+                <div class="card-foot">
+                  <Badge tone="info">{a.mechanism}</Badge>
+                  {a.script ? <span class="has-script">一键脚本 ✓</span> : <span class="no-script">说明</span>}
+                  <span class="go">查看 →</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      );
+    })}
+
+    <section class="unverified">
+      <p>尚未核验（无条目，欢迎补充实测）：<em>{(agentsData.unverified as string[]).join(' · ')}</em></p>
+      <p class="src">
+        本页事实来源：<a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">Coding agents on Windows, and the shell they run</a>（niubash 仓库 docs/src/agents.md）
+      </p>
+    </section>
+  </main>
+
+  <SiteFooter />
+  <ThemeSwitcher current="terminal" />
+</BaseLayout>
+
+<style>
+  .hero { padding: 3rem 0 1.4rem; }
+  .hero h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); margin: 0; line-height: 1.25; }
+  .hl { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); max-width: 46rem; margin: 0.8rem 0 0; line-height: 1.75; }
+  .sub strong { color: var(--text); }
+
+  .callout {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.3rem;
+    margin: 1.6rem 0 2.2rem;
+  }
+  .callout-title { color: var(--accent); font-weight: 700; margin: 0 0 0.4rem; }
+  .callout p { margin: 0; line-height: 1.7; }
+  .verify { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
+  .v-label { color: var(--muted); font-size: 0.88rem; }
+  .verify code {
+    background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 0.3rem 0.7rem; font-size: 0.88rem;
+  }
+  .v-table { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-size: 0.85rem; }
+  .v-table td { border-top: 1px solid var(--border); padding: 0.35rem 0.5rem; color: var(--muted); }
+  .v-table td:first-child { color: var(--text); white-space: nowrap; }
+
+  .group { margin: 2.2rem 0; }
+  .group-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .group-head h2 { margin: 0; font-size: 1.25rem; }
+  .group-desc { color: var(--muted); font-size: 0.88rem; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  .agent-card {
+    display: flex; flex-direction: column; gap: 0.55rem;
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.05rem 1.15rem; color: var(--text); text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+  .card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .card-name { font-weight: 700; font-size: 1.02rem; }
+  .card-line { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.6; flex: 1; }
+  .card-foot { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; font-size: 0.8rem; }
+  .has-script { color: var(--accent); font-weight: 600; }
+  .no-script { color: var(--muted); }
+  .go { margin-left: auto; color: var(--link); }
+
+  .unverified { margin: 2.4rem 0 1rem; color: var(--muted); font-size: 0.88rem; }
+  .unverified p { margin: 0.3rem 0; line-height: 1.7; }
+  .src a { color: var(--link); }
+</style>

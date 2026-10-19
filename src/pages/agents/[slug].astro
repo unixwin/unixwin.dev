@@ -1,0 +1,144 @@
+---
+/**
+ * /agents/[slug] — agent 接入详情：可复制换壳脚本置顶 + 步骤 + 验证 + 回滚 + 坑 + 来源。
+ * 数据源：src/data/agents.json。
+ */
+import BaseLayout from '../../components/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import ThemeSwitcher from '../../components/ThemeSwitcher.astro';
+import Badge from '../../components/Badge.astro';
+import CopyButton from '../../components/CopyButton.astro';
+import agentsData from '../../data/agents.json';
+
+export function getStaticPaths() {
+  return (agentsData.agents as any[]).map((a) => ({ params: { slug: a.slug } }));
+}
+
+const agent = agentsData.agents.find((a: any) => a.slug === Astro.params.slug) as any;
+const statusTone = agent.status === 'ready' ? 'accent' : agent.status === 'partial' ? 'warn' : 'muted';
+const statusLabel = { ready: '可用', partial: '部分', blocked: '暂不支持' }[agent.status] ?? agent.status;
+---
+
+<BaseLayout
+  title={`${agent.name} × niubash`}
+  description={agent.oneLiner}
+  theme="terminal"
+  path={`/agents/${agent.slug}/`}
+>
+  <SiteHeader />
+
+  <main class="container narrow">
+    <p class="crumb"><a href="/agents/">← Agent 目录</a></p>
+
+    <header class="head">
+      <h1>{agent.name}</h1>
+      <div class="badges">
+        <Badge tone={statusTone}>{statusLabel}</Badge>
+        <Badge tone="info">{agent.mechanism}</Badge>
+        {(agent.platforms as string[]).map((p) => <Badge tone="muted">{p}</Badge>)}
+        <Badge tone="muted">难度 {agent.difficulty}</Badge>
+      </div>
+      <p class="one">{agent.oneLiner}</p>
+    </header>
+
+    {agent.script ? (
+      <section class="script-block" aria-label="换壳脚本">
+        <div class="script-head">
+          <span class="script-label">{agent.script.label}</span>
+          <CopyButton copy={agent.script.code} label="复制脚本" />
+        </div>
+        <pre class="script-code"><code>{agent.script.code}</code></pre>
+      </section>
+    ) : (
+      <section class="script-block is-none">
+        <p>该 agent {agent.status === 'ready' ? '无需脚本' : '暂无可用的配置脚本'}。</p>
+      </section>
+    )}
+
+    {agent.steps?.length ? (
+      <section class="sec">
+        <h2>步骤</h2>
+        <ol class="steps">
+          {agent.steps.map((s: string) => <li>{s}</li>)}
+        </ol>
+      </section>
+    ) : null}
+
+    {agent.verify && agent.verify !== '—' ? (
+      <section class="sec">
+        <h2>验证</h2>
+        <p class="verify-line">{agent.verify}</p>
+      </section>
+    ) : null}
+
+    {agent.rollback && agent.rollback !== '—' ? (
+      <section class="sec">
+        <h2>回滚</h2>
+        <pre class="rollback"><code>{agent.rollback}</code></pre>
+      </section>
+    ) : null}
+
+    {agent.notes?.length ? (
+      <section class="sec">
+        <h2>注意事项</h2>
+        <ul class="notes">
+          {agent.notes.map((n: string) => <li>{n}</li>)}
+        </ul>
+      </section>
+    ) : null}
+
+    <section class="sec">
+      <h2>来源</h2>
+      <ul class="sources">
+        {(agent.sources as string[]).map((s) => <li><code>{s}</code></li>)}
+        <li>
+          <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">
+            agents.md（探测机制完整文档）↗
+          </a>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <SiteFooter />
+  <ThemeSwitcher current="terminal" />
+</BaseLayout>
+
+<style>
+  .narrow { max-width: 52rem; }
+  .crumb { margin: 1.6rem 0 0.6rem; font-size: 0.88rem; }
+  .crumb a { color: var(--link); }
+
+  .head h1 { margin: 0 0 0.6rem; font-size: clamp(1.6rem, 4vw, 2.2rem); }
+  .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .one { color: var(--muted); margin: 0.8rem 0 0; line-height: 1.7; }
+
+  .script-block {
+    background: var(--bg-code); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: var(--radius);
+    margin: 1.6rem 0; overflow: hidden;
+  }
+  .script-block.is-none { border-left-color: var(--border); padding: 0.9rem 1.2rem; color: var(--muted); }
+  .script-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+    padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-elev);
+  }
+  .script-label { color: var(--muted); font-size: 0.85rem; }
+  .script-code {
+    margin: 0; padding: 1rem 1.2rem; overflow-x: auto;
+    white-space: pre; font-size: 0.9rem; line-height: 1.65; color: var(--accent);
+  }
+
+  .sec { margin: 1.8rem 0; }
+  .sec h2 { font-size: 1.05rem; margin: 0 0 0.6rem; color: var(--accent); letter-spacing: 0.04em; }
+  .steps { margin: 0; padding-left: 1.2rem; line-height: 1.9; color: var(--text); }
+  .verify-line { color: var(--muted); line-height: 1.7; margin: 0; }
+  .rollback {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 0.7rem 1rem; margin: 0; overflow-x: auto; white-space: pre; font-size: 0.86rem;
+  }
+  .notes { margin: 0; padding-left: 1.2rem; line-height: 1.85; color: var(--muted); }
+  .sources { margin: 0; padding-left: 1.2rem; line-height: 1.85; color: var(--muted); font-size: 0.9rem; }
+  .sources a { color: var(--link); }
+</style>

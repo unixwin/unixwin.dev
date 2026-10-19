@@ -12,7 +12,7 @@ import Badge from '../../components/Badge.astro';
 import bench from '../../data/benchmarks.json';
 
 const h = bench.headToHead as any;
-const fs = (bench as any).forkSuite;
+const fs = (bench._meta as any).forkSuite;
 const forkRows = (fs?.rows ?? []) as any[];
 const forkOnly = forkRows.filter((r) => r.tag === 'fork');
 const inlineOnly = forkRows.filter((r) => r.tag === 'inline');

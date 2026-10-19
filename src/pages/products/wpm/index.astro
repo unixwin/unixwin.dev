@@ -19,7 +19,7 @@ const winuxLatest =
   typeof repoMeta.repos.winuxcmd?.latest === 'string' ? repoMeta.repos.winuxcmd.latest : '';
 
 // —— 安装与首跑命令 ——
-const installWinux = 'winget install caomengxuan666.WinuxCmd';
+const installWinuxNote = 'wpm 随 winuxcmd.exe 内建——装好 WinuxCmd（或 niubash）即有，无需单独安装';
 const quickStart = [
   'wpm index update                 # 刷新官方索引',
   'wpm install ripgrep fd jq        # 一次装多个包（rg / fd / jq 上 PATH）',
@@ -206,8 +206,7 @@ const wcVersions = (wcRepo?.versions ?? []).slice(0, 3);
       wpm 没有单独的安装器——它随 WinuxCmd 一起落地。装好 WinuxCmd 后第一件事是刷新索引：
     </p>
     <div class="codeblock">
-      <pre class="cmd"><code>{installWinux}</code></pre>
-      <CopyButton copy={installWinux} />
+      <p class="cmd-label">{installWinuxNote}</p>
     </div>
     <p class="cmd-label">装包四连（每行注释即作用）：</p>
     <div class="codeblock">

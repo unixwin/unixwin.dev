@@ -42,7 +42,6 @@ const wpmCmds = [
   'wpm                                # 内置包管理器，输入 wpm 即见 help',
   'wpm list                           # 看有哪些包',
   'wpm install ripgrep fd jq gawk     # 装趁手的工具',
-  'wpm install niugit                 # 装最快的 git',
 ].join('\n');
 
 const body = `# 给 AI 的门户

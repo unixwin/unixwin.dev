@@ -38,23 +38,30 @@ const stats = [
 // ---- Install: PowerShell primary / wpm / other platforms (Releases) ----
 const installTabs = [
   { label: 'PowerShell', code: 'irm https://unixwin.dev/install.ps1 | iex' },
-  { label: 'wpm', code: 'wpm install winuxcmd' },
-  { label: 'Linux / macOS', code: 'https://github.com/unixwin/niubash/releases' },
+  {
+    label: 'Linux',
+    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.0/niubash-v1.4.0-linux-x86_64.tar.gz && tar xzf niubash.tar.gz',
+  },
+  {
+    label: 'macOS',
+    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.0/niubash-v1.4.0-macos-x86_64.tar.gz && tar xzf niubash.tar.gz',
+  },
 ];
 
 // ---- Per-card install command bar + maturity badge (same as zh home) ----
 interface InstallBar {
-  cmd: string;
+  cmd?: string;
+  note?: string;
   badge: string;
   tone: 'accent' | 'warn';
 }
 const installBars: Record<string, InstallBar> = {
   niubash: { cmd: 'irm https://unixwin.dev/install.ps1 | iex', badge: 'stable', tone: 'accent' },
-  winuxcmd: { cmd: 'wpm install winuxcmd', badge: 'stable', tone: 'accent' },
+  winuxcmd: { note: 'Bundled with niubash on Windows · standalone: Releases', badge: 'stable', tone: 'accent' },
   rubash: { cmd: 'cargo add rubash', badge: 'beta · embed API 1.5.0', tone: 'warn' },
-  'niu-git': { cmd: 'wpm install niugit', badge: 'stable', tone: 'accent' },
-  wpm: { cmd: 'wpm update', badge: 'stable', tone: 'accent' },
-  'oh-my-niu': { cmd: 'niu plugin add oh-my-niu', badge: 'v2 beta', tone: 'warn' },
+  'niu-git': { cmd: 'git --version', badge: 'preinstalled', tone: 'accent' },
+  wpm: { cmd: 'wpm install ripgrep', badge: 'built-in', tone: 'accent' },
+  'oh-my-niu': { cmd: 'niu plugin list', badge: 'bundled', tone: 'accent' },
 };
 
 // ---- Latest news: newest released version per repo, first line of first
@@ -249,8 +256,9 @@ const softwareAppJsonLd = {
               {bar && (
                 <div class="cell-install">
                   <Badge tone={bar.tone}>{bar.badge}</Badge>
-                  <code class="cell-cmd" title={bar.cmd}>{bar.cmd}</code>
-                  <CopyButton copy={bar.cmd} label="copy" />
+                  {bar.cmd && <code class="cell-cmd" title={bar.cmd}>{bar.cmd}</code>}
+                  {bar.cmd && <CopyButton copy={bar.cmd} label="copy" />}
+                  {bar.note && <span class="cell-note">{bar.note}</span>}
                 </div>
               )}
             </div>
@@ -1048,6 +1056,14 @@ const softwareAppJsonLd = {
   .card-repo {
     margin-left: auto;
     color: var(--link);
+  }
+
+  .cell-note {
+    color: var(--muted);
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .cell-docs {

@@ -34,7 +34,7 @@ interface News {
   summary: string;
 }
 
-const installWpm = 'wpm install niugit';
+const verifyGit = 'git --version';
 const migrate1 = 'wpm update winuxcmd';
 const migrate2 = 'wpm install niugit --force';
 const migrateBoth = `${migrate1}\n${migrate2}`;
@@ -208,10 +208,10 @@ const news: News[] = [
 
   <section>
     <h2 id="install">安装与快速上手</h2>
-    <p>Windows 上经 wpm（WinuxCmd 内建包管理器）安装：</p>
+    <p>Windows：niubash 发行包已预装 niu-git（niu-git / ripgrep / fd / gawk 捆绑清单见其 preinstall.json），验证：</p>
     <div class="cmd">
-      <pre><code>{installWpm}</code></pre>
-      <CopyButton copy={installWpm} />
+      <pre><code>{verifyGit}</code></pre>
+      <CopyButton copy={verifyGit} />
     </div>
     <p>已装过 MinGit shim 的用户迁移（flat 布局需要 WinuxCmd/wpm 1.1.9+）：</p>
     <div class="cmd">

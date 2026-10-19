@@ -16,7 +16,7 @@ const stars = typeof meta?.stars === 'number' ? meta.stars : null;
 const latest = typeof meta?.latest === 'string' ? meta.latest : '';
 
 // —— 安装命令（CopyButton 复制源） ——
-const installWinget = 'winget install caomengxuan666.WinuxCmd';
+const installNote = 'Windows：niubash 安装器已内含 WinuxCmd 命令层；独立安装请从 Releases 下载 setup.exe';
 const updateSelf = 'wpm update winuxcmd';
 const firstRun = [
   '# 新开一个终端（让 PATH 生效），然后：',
@@ -205,14 +205,11 @@ const wcVersions = (wcRepo?.versions ?? []).slice(0, 3);
   <section>
     <h2>安装与快速上手</h2>
     <p>
-      推荐走 winget 或 GitHub Releases 安装器（<code>WinuxCmd-&lt;version&gt;-x64-setup.exe</code>，
-      另有 ARM64 版与免安装 zip）；已装旧版时用内建的 wpm 自更新。三种方式落到同一枚
-      <code>winuxcmd.exe</code>。
+      独立安装走 GitHub Releases 安装器（<code>WinuxCmd-&lt;version&gt;-x64-setup.exe</code>，
+      另有 ARM64 版与免安装 zip）；已装旧版时用内建的 wpm 自更新——两种方式落到同一枚
+      <code>winuxcmd.exe</code>。Windows 用户装 niubash 即已内含本命令层，无需单独安装。
     </p>
-    <div class="codeblock">
-      <pre class="cmd"><code>{installWinget}</code></pre>
-      <CopyButton copy={installWinget} />
-    </div>
+    <p class="cmd-label">{installNote}</p>
     <p class="cmd-label">已装 WinuxCmd，更新自身（wpm 随本体内建）：</p>
     <div class="codeblock">
       <pre class="cmd"><code>{updateSelf}</code></pre>

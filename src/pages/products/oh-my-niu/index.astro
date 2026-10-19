@@ -4,7 +4,8 @@
  * 事实来源：unixwin-repos/oh-my-niu/README.md（框架模型、插件表、环境包、rc 三行）、
  * bundle.toml / index.toml（bundle 契约与 pack 条目）、docs/design.md（框架优先）、
  * CHANGELOG.md、仓内实测计数（plugins/themes/completions/aliases/envs，2026-10-19）、
- * HIGHLIGHTS.md #13（28 主题口径、catalog 指官方上游）、
+ * HIGHLIGHTS.md #13（catalog 指官方上游；主题数按仓内实测 27 修正——theme-* 目录与
+ * themes/*.toml 均为 27 且集合一致，2026-10-19）、
  * niubash crates/.../descriptors.rs（catalog 三源 origin）、src/data/repo-meta.json。
  */
 import DocsLayout from '../../../components/DocsLayout.astro';
@@ -64,7 +65,7 @@ interface Feature {
 const features: Feature[] = [
   {
     title: '主题画廊',
-    body: '28 款主题（台账口径；仓内为 27 个 theme-* 插件目录 + 主题 TOML 资产层）：Oh My Zsh 经典款、Powerlevel 风 p10 四款、Oh My Posh 风配色款与官方基础款。',
+    body: '27 款主题（plugins/theme-* 目录与 themes/*.toml 资产层一一对应、集合一致）：Oh My Zsh 经典款、Powerlevel 风 p10 四款、Oh My Posh 风配色款与官方基础款。',
   },
   {
     title: '主题即插件',
@@ -125,7 +126,7 @@ interface FactRow {
   src: string;
 }
 const factRows: FactRow[] = [
-  { metric: '主题', value: '28 款（27 个 theme-* 插件目录 + 主题资产层）', src: 'HIGHLIGHTS #13 台账 · 仓内实测计数 2026-10-19' },
+  { metric: '主题', value: '27 款（theme-* 插件目录 27、themes/*.toml 27，两集合逐名一致）', src: '仓内 plugins/ 与 themes/ 实测计数 2026-10-19' },
   { metric: '插件目录', value: '50 个（27 主题 + 23 功能插件）', src: '仓内 plugins/ 实测计数 2026-10-19' },
   { metric: '补全定义', value: '174 个 TOML', src: '仓内 completions/ 实测计数 2026-10-19' },
   { metric: '索引 pack 条目', value: '22 个（bundle 2.0.0，min_niubash 1.0.0）', src: 'oh-my-niu/index.toml' },
@@ -149,14 +150,14 @@ const omDate = (v?: ChangelogVersion) => (v?.date ? v.date : '日期未标');
 
 <DocsLayout
   title="Oh My Niu — Niubash 官方主题与插件框架"
-  description="Oh My Niu 产品文档：niubash 的官方 Oh My 式插件框架与捆绑发行——28 款主题、50 个插件目录、174 个补全定义、环境包与 prompt-core；插件即目录、主题即插件，随 niubash 发行、独立更新，catalog 指向官方上游。"
+  description="Oh My Niu 产品文档：niubash 的官方 Oh My 式插件框架与捆绑发行——27 款主题、50 个插件目录、174 个补全定义、环境包与 prompt-core；插件即目录、主题即插件，随 niubash 发行、独立更新，catalog 指向官方上游。"
   path="/products/oh-my-niu/"
 >
   <header class="doc-head">
     <h1>Oh My Niu：Niubash 的主题与插件框架</h1>
     <p class="lead">
       niubash 的<strong>官方 Oh My 式插件框架与捆绑发行</strong>：插件即目录、主题即插件，
-      shell 核心只提供加载原语。装好即得 <strong>28 款主题</strong>与一族功能插件
+      shell 核心只提供加载原语。装好即得 <strong>27 款主题</strong>与一族功能插件
       （git / docker / kubectl / zoxide / fzf…），随
       <a href="/products/niubash/">niubash</a> 发行做离线基线，之后独立更新与回滚。
       它不是 zsh 兼容层——是 Oh My Zsh 的有用形状、bash 的身体。
@@ -263,7 +264,8 @@ const omDate = (v?: ChangelogVersion) => (v?.date ? v.date : '日期未标');
     </table>
     <p class="src-line">
       来源：oh-my-niu README「First-Party Plugins」插件表与 <code>plugins/</code>、
-      <code>themes/</code> 目录（实测计数 2026-10-19；28 主题为 HIGHLIGHTS #13 台账口径）。
+      <code>themes/</code> 目录（实测计数 2026-10-19：theme-* 目录与 themes/*.toml 均为
+      27、集合一致；上表四组合计 27）。
     </p>
     <h3>目录优先模型</h3>
     <p>

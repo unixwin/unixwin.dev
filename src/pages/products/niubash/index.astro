@@ -79,15 +79,15 @@ const features: Feature[] = [
     body: '多行粘贴自动误执行 186 次 → 0，257 行载荷 300s 超时 → 4.6s；ConPTY 粘贴丢字符、typeahead 吃键、控制台 read 三面（-t 门饿死 / conhost 预煮劈半行 / ICRNL）逐项与 GNU 行为对齐，每项带双向差分证据。',
   },
   {
-    title: '跨平台到 CI 腿：三个发布平台，五个目标',
-    body: 'Windows x64/ARM64、Linux、macOS 已发布且每次发布冒烟四查（--version、-c 执行、经原生 coreutils 的管道、离线插件栈）才允许上传；Android 双目标 CI 构建不发布，OpenHarmony CI 编译检查。各平台的诚实状态矩阵见平台支持文档。',
+    title: '跨平台到 CI 腿：三个发布平台，六个发布目标',
+    body: 'Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六个目标已发布且每次发布冒烟四查（--version、-c 执行、经原生 coreutils 的管道、离线插件栈）才允许上传；Android 双目标是 incubating 的 NDK 构建腿（zip 只随 CI workflow 产出、不入发布档、无运行时冒烟），OpenHarmony 仅 CI 编译检查。各平台的诚实状态矩阵见平台支持文档。',
   },
 ];
 
 const bench: Row[] = [
   {
     a: '一次性执行 niu -c true',
-    b: '26.3 ms（优化前 105.6 → 19.8 ms）',
+    b: '26.3 ms（优化前 105.6 ms，一次性快路径六连 PR）',
     c: 'Git Bash 71 ms',
     src: 'GITBASH-KILLER 面 6 · niubash PR #267–#272',
   },
@@ -213,6 +213,12 @@ const news: News[] = [
       <pre><code>{installWin}</code></pre>
       <CopyButton copy={installWin} />
     </div>
+    <p class="first-run">
+      Windows 装完即有完整命令层：安装器自带完整 WinuxCmd root（176 个 Unix 命令与内建包管理器
+      wpm，落在 <code>&#123;app&#125;\winuxcmd\</code>，PATH 指向 <code>winuxcmd\bin</code>），发行包并按
+      <code>preinstall.json</code> 预装 gawk（含 awk shim）、niu-git、ripgrep、fd——PATH 上的
+      git 即原生 git（~14 ms）；其中 gawk/niu-git 为 x64 资产，ARM64 腿预装 ripgrep 与 fd。
+    </p>
     <p>Linux / macOS 取可移植 tar.gz 解压即用：</p>
     <div class="cmd">
       <pre><code>{installLinux}</code></pre>
@@ -234,7 +240,8 @@ const news: News[] = [
     <h3>AI 集成</h3>
     <p>
       agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：跳过 REPL
-      专属初始化，<code>niu -c true</code> 从 105.6 ms 优化到 19.8 ms（29 例行为电池零差异）。
+      专属初始化，<code>niu -c true</code> 的冷启动地板从 105.6 ms 一路压到 26.3 ms
+      （一次性快路径六连 PR；29 例行为电池零差异）。
       其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，
       与 <code>-c</code> 同路径、同 <code>BASH_EXECUTION_STRING</code> 契约。其三，目录记忆
       <code>--cwd-state</code>：agent 按工作区各配一个状态文件，链式调用即共享 cwd。

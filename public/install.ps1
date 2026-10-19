@@ -2,7 +2,7 @@
     niubash - one-line installer for Windows
 
     Usage:
-        irm https://dl.caomengxuan666.com/install.ps1 | iex
+        irm https://unixwin.dev/install.ps1 | iex
 
     Design notes:
     * Downloads GitHub's *stable* asset names via /releases/latest/download/,

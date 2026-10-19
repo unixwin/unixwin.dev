@@ -103,3 +103,10 @@ npm run build              # 出 dist/
 - 新默认：**day 亮色专业 / night 暗色**（tokens 改编自 astrowind MIT，见 THIRD_PARTY_NOTICES.md），防 FOUC 内联脚本 + SiteHeader 日/月切换钮（localStorage.unixwin-theme + prefers-color-scheme）；旧候选仅存 /theme/clean/ 与 /theme/neon/ 供回看
 - i18n：zh 根路径 + /en/ 五页（index/agents/benchmarks/ai/docs 首页），LangSwitch + 每会话一次 navigator.language 自动跳转（sessionStorage.niu-lang-override 优先），BaseLayout hreflang 三条已按配对页互链
 - 待办：en 深页（agent 详情/docs 四篇/agents.md 英文化）；PORTAL-CONVENTIONS.md 主题章节过时待修订；品牌字体自托管（JetBrains Mono+思源黑体子集）未做
+
+## 8. 2026-10-19 全站源码对照审计（三路子代理）
+
+- WinuxCmd=预装于 niubash（niubash.iss {app}\winuxcmd\）——首页卡与产品页全部改为预装优先；预装包 gawk/niugit/ripgrep/fd（preinstall.json），x64 精度标注
+- 撤：winget 推荐（PR 未合）、`niu --version` 错用 print_usage 文案、neon 页 gzip 假命令（改 sha256sum）、dsh 回滚编造命令、rubash CI 腿错抄 niubash 面、Android"挂入发布档"错述、wpm 索引 288→281、oh-my-niu 主题 28→27、WinuxCmd"最新 v1.1.16"→v1.1.15、Windows 10+ 下限（无据，改"免管理员"）
+- **待 owner 裁决**：preinstall.json 的 niugit 条目带 arm64 pin（与 wpm 索引 sha 一致）但 notes 写 x64-only——页面暂按 notes 写 x64；若 arm64 实装，需同步改 preinstall notes/niu-git README/门户三处
+- 仅存 portal-dump 无一手产物的数字（440MB/16MB、13-62x 等）保留但来源标 GITBASH-KILLER/FACTS，待产物入库复核

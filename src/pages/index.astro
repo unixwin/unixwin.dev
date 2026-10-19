@@ -56,7 +56,7 @@ interface InstallBar {
 }
 const installBars: Record<string, InstallBar> = {
   niubash: { cmd: 'irm https://unixwin.dev/install.ps1 | iex', badge: 'stable', tone: 'accent' },
-  winuxcmd: { note: 'Windows 版 niubash 已内含 · 独立安装见 Releases', badge: 'stable', tone: 'accent' },
+  winuxcmd: { note: '预装于 Windows 版 niubash · 非 niubash 用户见 Releases', badge: 'stable', tone: 'accent' },
   rubash: { cmd: 'cargo add rubash', badge: 'beta · 嵌入', tone: 'warn' },
   'niu-git': { cmd: 'git --version', badge: '预装', tone: 'accent' },
   wpm: { cmd: 'wpm install ripgrep', badge: '内置', tone: 'accent' },
@@ -171,7 +171,7 @@ const softwareAppJsonLd = {
                     <p class="sl"><span class="spin" aria-hidden="true">⠿</span> downloading niubash-win-x64-setup.exe …</p>
                     <p class="sl"><span class="ok">✓</span> Niubash 1.4.0 installed</p>
                     <p class="sl"><span class="p-user">PS C:\&gt;</span> niu --version</p>
-                    <p class="sl sl-out">Niubash 1.4.0 — a bash-compatible shell that feels at home on Windows.</p>
+                    <p class="sl sl-out">Niubash 1.4.0 — bash-compatible shell for Windows</p>
                   </div>
                   <div class="session">
                     <p class="sl sl-cmt"># agent 接管 · session 2/3</p>
@@ -371,14 +371,14 @@ const softwareAppJsonLd = {
       <InstallTabs id="install" tabs={installTabs} />
       <ul class="install-notes">
         <li>
-          <strong>Linux / macOS</strong>：便携包解压即用（命令中的版本号以 Releases 最新为准，ARM 设备选 aarch64/arm64 资产）；Windows 安装器已捆绑 niu-git / ripgrep / fd / gawk——
+          <strong>Linux / macOS</strong>：便携包解压即用（命令中的版本号以 Releases 最新为准，ARM 设备选 aarch64/arm64 资产）；Windows 安装器已捆绑 WinuxCmd（含 wpm）与 niu-git / ripgrep / fd / gawk（niugit/gawk 为 x64 资产，ARM64 腿随附 ripgrep / fd）——
           <a href="https://github.com/unixwin/niubash/releases" target="_blank" rel="noopener noreferrer">
             github.com/unixwin/niubash/releases
           </a>。
         </li>
         <li>wpm 即 WinuxCmd 内置（输入 <code>wpm</code> 看 help）；装包如 <code>wpm install ripgrep</code>，自升级 <code>wpm update winuxcmd</code>。</li>
         <li>
-          需要 <Badge tone="info">Windows 10+</Badge> · 文档见
+          安装 <Badge tone="info">免管理员权限</Badge>，PATH 与 Windows Terminal 配置自动就绪 · 文档见
           <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
             unixwin.github.io/niubash/
           </a>。

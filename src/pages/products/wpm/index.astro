@@ -64,7 +64,7 @@ interface Feature {
 }
 const features: Feature[] = [
   {
-    title: '官方索引 288 包',
+    title: '官方索引 281 包',
     body: 'wpm-source 仓维护的官方索引（schema:1）覆盖 ripgrep、fd、jq、fzf、bat、neovim、curl、wget、make、openssh、goawk、bsdtar 等便携 CLI。',
   },
   {
@@ -117,7 +117,7 @@ interface FactRow {
   src: string;
 }
 const factRows: FactRow[] = [
-  { metric: '官方索引规模', value: '288 包（站内台账口径）', src: 'products.json · wpm-source 索引' },
+  { metric: '官方索引规模', value: '281 包（wpm-source index.json，version official-2026.10.17）', src: 'wpm-source/index.json packages[] 实测计数 2026-10-19' },
   { metric: 'shim 分发跳数', value: '12.1 ms（winuxcmd-shim.exe 转发器，此前硬链接 winuxcmd.exe 需 24.5 ms）', src: 'WinuxCmd CHANGELOG 1.1.14 实测' },
   { metric: '占用文件升级', value: '28 个 fsmonitor--daemon 进程持有载荷时强制升级成功、包完整', src: 'WinuxCmd CHANGELOG 1.1.13 实机验证' },
   { metric: '回滚副本治理', value: '自动保留最新两份并修剪（单机曾积累 61.8 MB）', src: 'WinuxCmd CHANGELOG 1.1.14' },
@@ -140,7 +140,7 @@ const wcVersions = (wcRepo?.versions ?? []).slice(0, 3);
 
 <DocsLayout
   title="wpm — WinuxCmd 内建包管理器"
-  description="wpm 产品文档：编译进 winuxcmd.exe 的 C++ 包管理器，零运行时依赖；官方索引 288 包、sha256/size/urls 三元组、flat/shim 双布局、schema:1 的 --json 契约、四源镜像（gh.caomengxuan666.com 中国区）与自更新回滚。"
+  description="wpm 产品文档：编译进 winuxcmd.exe 的 C++ 包管理器，零运行时依赖；官方索引 281 包、sha256/size/urls 三元组、flat/shim 双布局、schema:1 的 --json 契约、四源镜像（gh.caomengxuan666.com 中国区）与自更新回滚。"
   path="/products/wpm/"
 >
   <header class="doc-head">

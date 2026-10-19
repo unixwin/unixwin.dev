@@ -48,7 +48,7 @@ const features = [
 ];
 
 const installTabs = [
-  { label: 'PowerShell', code: 'irm https://dl.caomengxuan666.com/install.ps1 | iex' },
+  { label: 'PowerShell', code: 'irm https://unixwin.dev/install.ps1 | iex' },
   { label: 'wpm', code: 'wpm install ripgrep' },
 ];
 
@@ -111,7 +111,7 @@ const orgUrl = 'https://github.com/unixwin';
       <div class="install-shell glass-card">
         <InstallTabs id="install" tabs={installTabs} />
         <p class="install-note">
-          需要 <Badge tone="info">Windows 10+</Badge> · 偏好手动？<a
+          安装 <Badge tone="info">免管理员权限</Badge> · 偏好手动？<a
             href={releasesUrl}
             target="_blank"
             rel="noopener noreferrer">Releases →</a>
@@ -130,8 +130,8 @@ const orgUrl = 'https://github.com/unixwin';
         </div>
         <pre class="term-body"><code><span class="t-p">$</span> claude
 <span class="t-ok">✓</span> <span class="t-m">shell → niubash · native · no WSL · no MSYS</span>
-<span class="t-a">agent&gt;</span> niu -c 'for f in *.log; do gzip -k "$f"; done'
-<span class="t-ok">✓</span> 12 files compressed <span class="t-m">· exit 0 · 96 ms</span>
+<span class="t-a">agent&gt;</span> niu -c 'for f in *.log; do sha256sum "$f"; done'
+<span class="t-ok">✓</span> 12 files hashed <span class="t-m">· exit 0</span>
 <span class="t-a">agent&gt;</span> git status --short | wc -l
 <span class="t-o">3</span> <span class="t-cursor">▊</span></code></pre>
       </div>

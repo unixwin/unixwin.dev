@@ -46,7 +46,7 @@ const whyCards: Feature[] = [
   },
   {
     title: '语义模型平台中立',
-    body: '进程内子壳、fd 表语义、进程边界三层模型刻意与平台无关：同一份台账从 Windows 带到 Linux / macOS。Linux 上原生构建并运行（WSL 内实测 19/24 套逐字节一致且在收敛），macOS CI 编译绿；Android 双目标与 OpenHarmony 检查腿进 CI。',
+    body: '进程内子壳、fd 表语义、进程边界三层模型刻意与平台无关：同一份台账从 Windows 带到 Linux / macOS。Linux 上原生构建并运行（WSL 内实测 19/24 套逐字节一致且在收敛），macOS CI 编译绿；Android 双目标进 CI 交叉检查。',
   },
 ];
 
@@ -72,8 +72,8 @@ const features: Feature[] = [
     body: '脚本级函数级 profiler（确定性插桩，非采样）已合并；DAP-first 调试器设计定稿（--debugger，11 个停点 seam 全部锚定既有 DEBUG-trap 分发点，gdb 式 CLI REPL 双前端）；引擎跑得动 bashdb 核心调试循环。',
   },
   {
-    title: '五平台 CI 硬门',
-    body: 'Windows x64/ARM64、linux-gnu、linux-musl、macOS、aarch64-linux-android、armv7-linux-androideabi、aarch64-unknown-linux-gnu（OpenHarmony check）全进 CI；单测 698 通过 / 0 失败。跨平台缺口有公开台账（cross-platform-gap-ledger），不假装没有。',
+    title: '跨平台 CI 硬门',
+    body: 'ubuntu / macOS / Windows x64 三个真 runner 跑测试，linux-gnu、aarch64-apple-darwin、aarch64-linux-android、armv7-linux-androideabi 四目标交叉检查进同一 CI；单测 698 通过 / 0 失败。跨平台缺口有公开台账（docs/cross-platform-gap-ledger.md），不假装没有。',
   },
 ];
 

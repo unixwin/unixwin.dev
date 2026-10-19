@@ -38,7 +38,7 @@ ${ordered.map((p) => `- [${p.name}](https://unixwin.dev/#${p.id}): ${p.tagline_e
 ## Optional
 
 - [Benchmarks](https://unixwin.dev/benchmarks/): measured numbers vs Git Bash / WSL / GNU bash.
-- [wpm](https://github.com/unixwin/wpm-source): the package manager built into WinuxCmd — \`wpm\` prints help, \`wpm list\` browses packages, \`wpm install ripgrep fd jq gawk\` installs them (niugit is preinstalled on Windows).
+- [wpm](https://github.com/unixwin/wpm-source): the package manager built into WinuxCmd — \`wpm\` prints help, \`wpm list\` browses packages, \`wpm install ripgrep fd jq gawk\` installs them (niugit is preinstalled on Windows x64).
 - [Changelog](https://unixwin.dev/changelog/): aggregated release timeline across the family.
 - [Theme candidate B · clean](https://unixwin.dev/theme/clean/): light theme preview.
 - [Theme candidate C · neon](https://unixwin.dev/theme/neon/): neon theme preview.

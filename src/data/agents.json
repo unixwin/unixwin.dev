@@ -140,7 +140,7 @@
       },
       "steps": ["执行上面的插件安装命令，DSH 的设置卡里会出现 niubash 选项"],
       "verify": "DSH 设置卡显示 niu-sandbox / tool-bash 已启用",
-      "rollback": "dsh plugin remove 对应插件",
+      "rollback": "卸载该 profile 插件包（卸载命令见其 README），设置卡随之移除",
       "notes": ["社区另有同精神的 dsh-niubash-only profile 可选"],
       "sources": ["agents.md#dsh（插件 README）"]
     },

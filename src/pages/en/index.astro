@@ -57,8 +57,8 @@ interface InstallBar {
 }
 const installBars: Record<string, InstallBar> = {
   niubash: { cmd: 'irm https://unixwin.dev/install.ps1 | iex', badge: 'stable', tone: 'accent' },
-  winuxcmd: { note: 'Bundled with niubash on Windows · standalone: Releases', badge: 'stable', tone: 'accent' },
-  rubash: { cmd: 'cargo add rubash', badge: 'beta · embed API 1.5.0', tone: 'warn' },
+  winuxcmd: { note: 'Preinstalled with niubash on Windows · non-niubash users: Releases', badge: 'stable', tone: 'accent' },
+  rubash: { cmd: 'cargo add rubash', badge: 'beta · embeddable', tone: 'warn' },
   'niu-git': { cmd: 'git --version', badge: 'preinstalled', tone: 'accent' },
   wpm: { cmd: 'wpm install ripgrep', badge: 'built-in', tone: 'accent' },
   'oh-my-niu': { cmd: 'niu plugin list', badge: 'bundled', tone: 'accent' },
@@ -177,7 +177,7 @@ const softwareAppJsonLd = {
                     <p class="sl"><span class="spin" aria-hidden="true">⠿</span> downloading niubash-win-x64-setup.exe …</p>
                     <p class="sl"><span class="ok">✓</span> Niubash 1.4.0 installed</p>
                     <p class="sl"><span class="p-user">PS C:\&gt;</span> niu --version</p>
-                    <p class="sl sl-out">Niubash 1.4.0 — a bash-compatible shell that feels at home on Windows.</p>
+                    <p class="sl sl-out">Niubash 1.4.0 — bash-compatible shell for Windows</p>
                   </div>
                   <div class="session">
                     <p class="sl sl-cmt"># agent takeover · session 2/3</p>
@@ -400,15 +400,16 @@ const softwareAppJsonLd = {
       <InstallTabs id="install" tabs={installTabs} />
       <ul class="install-notes">
         <li>
-          <strong>Linux / macOS</strong>: grab the portable bundle from GitHub Releases and
-          unpack it —
-          <a href="https://github.com/unixwin/niubash/releases" target="_blank" rel="noopener noreferrer">
+          <strong>Linux / macOS</strong>: grab the portable bundle from GitHub Releases and unpack
+          it (pick the aarch64 asset on ARM machines); the Windows installer bundles WinuxCmd
+          (wpm included) plus niu-git / ripgrep / fd / gawk —
+           (niugit/gawk are x64-only; the ARM64 leg ships ripgrep/fd).<a href="https://github.com/unixwin/niubash/releases" target="_blank" rel="noopener noreferrer">
             github.com/unixwin/niubash/releases
           </a>.
         </li>
-        <li>wpm ships inside WinuxCmd; after installing, run <code>wpm update</code> to upgrade the whole family.</li>
+        <li>wpm ships inside WinuxCmd (type <code>wpm</code> for help); install packages like <code>wpm install ripgrep</code>, self-upgrade with <code>wpm update winuxcmd</code>.</li>
         <li>
-          Requires <Badge tone="info">Windows 10+</Badge> · docs at
+          Installs with <Badge tone="info">no admin rights</Badge>; PATH and a Windows Terminal profile are set up for you · docs at
           <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
             unixwin.github.io/niubash/
           </a>.

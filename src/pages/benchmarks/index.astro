@@ -12,6 +12,7 @@ import bench from '../../data/benchmarks.json';
 
 const h = bench.headToHead as any;
 const fs = (bench._meta as any).forkSuite;
+const android = (bench as any).android as any;
 const forkRows = (fs?.rows ?? []) as any[];
 const forkOnly = forkRows.filter((r) => r.tag === 'fork');
 const inlineOnly = forkRows.filter((r) => r.tag === 'inline');
@@ -88,6 +89,47 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
       </div>
       <p class="foot-note">{h.note}</p>
     </section>
+
+    {android && (
+      <section class="sec">
+        <h2>
+          {android.title} <span class="vs">niu vs GNU bash 5.3.20（aarch64）</span>
+          <Badge tone="warn">修后待复测</Badge>
+        </h2>
+        <p class="sec-desc">
+          {android.provenance.date} · {android.provenance.device} · {android.provenance.versions}。
+          方法：{android.provenance.method}。
+          来源：<code>{android.provenance.source}</code>
+        </p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>负载（v1.4.0 快照）</th><th>GNU bash</th><th>niu</th><th>口径</th></tr></thead>
+            <tbody>
+              {android.slower.map((r: any) => (
+                <tr>
+                  <td>{r.workload}</td>
+                  <td class="num">{r.bash}</td>
+                  <td class="num">{r.niu}</td>
+                  <td class="loss">{r.ratio}</td>
+                </tr>
+              ))}
+              {android.faster.map((r: any) => (
+                <tr>
+                  <td>{r.workload}</td>
+                  <td class="num">{r.bash}</td>
+                  <td class="num us">{r.niu}</td>
+                  <td class="win">{r.ratio}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <ul class="foot-note" style="list-style:disc;padding-left:1.2rem;">
+          <li>{android.statusNote}</li>
+          {android.postFix.map((p: any) => <li><strong>{p.item}：</strong>{p.detail}（<code>{p.source}</code>）</li>)}
+        </ul>
+      </section>
+    )}
 
     {forkRows.length > 0 && (
       <section class="sec">
@@ -186,6 +228,8 @@ const rowBar = (ms: number, base: number) => `${Math.max(2, Math.round((ms / bas
   td.us { color: var(--accent); font-weight: 600; }
   td.wsl { color: var(--muted); }
   td.src { color: var(--muted); font-size: 0.8rem; max-width: 18rem; }
+  td.win { color: var(--accent); font-weight: 600; white-space: nowrap; }
+  td.loss { color: var(--muted); white-space: nowrap; }
 
   .bar { display: block; height: 0.5rem; border-radius: 2px; margin: 2px 0; }
   .bar-us { background: var(--accent); }

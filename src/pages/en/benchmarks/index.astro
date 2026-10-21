@@ -14,6 +14,7 @@ import bench from '../../../data/benchmarks.json';
 
 const h = bench.headToHead as any;
 const fs = (bench._meta as any).forkSuite;
+const android = (bench as any).android as any;
 const forkRows = (fs?.rows ?? []) as any[];
 const forkOnly = forkRows.filter((r) => r.tag === 'fork');
 const inlineOnly = forkRows.filter((r) => r.tag === 'inline');
@@ -51,6 +52,10 @@ const T: Record<string, string> = {
     'niu (the product shell) and rubash (the engine) track each other closely in ratio',
   // latency table
   'git 启动（git --version）': 'git startup (git --version)',
+  '13.7 ms 均值 / 11.5 ms 最低 · git status 22.6 ms': '13.7 ms avg / 11.5 ms min · git status 22.6 ms',
+  'Git Bash 45–103 ms（niu-git#12 同场：mingw64\\bin 51.3 ms · cmd\\git.exe 45.3 ms）':
+    'Git Bash 45–103 ms (same rig in niu-git#12: mingw64\\bin 51.3 ms · cmd\\git.exe 45.3 ms)',
+  'niu-git#12（2026-10-16 合入）· niubash#374': 'niu-git#12 (merged 2026-10-16) · niubash#374',
   '一次性执行 niu -c true': 'One-shot niu -c true',
   '提示符 git 段': 'Prompt git segment',
   '读 .git/HEAD ≤29 ms': 'reads .git/HEAD ≤29 ms',
@@ -90,14 +95,73 @@ const T: Record<string, string> = {
   'nvm.sh 重词法 checkpoint': 'nvm.sh re-lex checkpoint',
   '与 GNU 差距 720x → 8x，重词法字节 −40%':
     'gap vs GNU 720x → 8x, re-lexed bytes −40%',
-  '数组元素写 O(n²)→O(1)': 'Array element writes O(n²)→O(1)',
-  'K=5000 单次写：关联数组快 45 倍、索引数组快 177 倍（对旧版）':
-    'K=5000 single write: associative arrays 45x faster, indexed arrays 177x faster (vs the old build)',
+  '数组元素写 O(n²)→O(1) 均摊': 'Array element writes O(n²)→O(1) amortized',
+  'K=5000 单次写 vs GNU：关联 445x → 9.9x、索引 736x → 3.8x（旧版对自身为 45 倍 / 177 倍）；附带修好 O(n²) tokenizer（10001 段真解析 563→17.8 ms）':
+    'K=5000 single write vs GNU: associative 445x → 9.9x, indexed 736x → 3.8x (the old build was 45x / 177x vs itself); also fixes the O(n²) tokenizer (10,001-segment parse 563→17.8 ms)',
+  'rubash#618/#616（账本 docs/performance.md）· 早先 #650/#652':
+    'rubash#618/#616 (ledger: docs/performance.md) · earlier #650/#652',
   '单次 spawn 成本': 'Single spawn cost',
   'rubash 1.183 ms vs GNU 1.121 ms——持平（真实 exec 地板）':
     'rubash 1.183 ms vs GNU 1.121 ms — on par (the real exec floor)',
   'data/bench/unix-spawn-cost-20261012.md（min-of-3）':
     'data/bench/unix-spawn-cost-20261012.md (min-of-3)',
+  'Windows 隐藏 console 分配': 'Windows hidden-console allocation',
+  '无 console 会话每个子进程 ~22 ms → 整棵命令树一次分配（Win11 24H2+ 预分配无窗 console，老系统认领首个 CREATE_NO_WINDOW 子进程）；14 条回归测试钉死':
+    'console-less sessions used to pay ~22 ms per child process → now one allocation per command tree (a windowless console pre-allocated on Win11 24H2+, or adopted from the first CREATE_NO_WINDOW child on older builds); pinned by 14 regression tests',
+  'rubash#913（merged 2026-10-20）· 设计 niubash#462': 'rubash#913 (merged 2026-10-20) · design in niubash#462',
+  '$(tput …) 终端查询进程内作答': '$(tput …) terminal queries answered in-process',
+  '64 次 tput 票面探针 1165 ms → 47 ms（~25x，零 spawn，与 GNU ncurses 字节相等）；winuxcmd 侧 i18n ~17 ms/次 → ~0.4 ms（3208 行回放逐字节一致）':
+    'the 64-call tput ticket probe fell 1165 ms → 47 ms (~25x, zero spawns, byte-equal to GNU ncurses); the winuxcmd-side twin removed ~17 ms/call of i18n overhead → ~0.4 ms (3,208-row replay byte-identical)',
+  '[[ ]] 数值叶 + 十进制 fast path': '[[ ]] direct numeric leaf + decimal fast path',
+  '50k [[ 1 -eq 2 ]] 对 GNU 1.41x → 1.10x': '50k [[ 1 -eq 2 ]] 1.41x → 1.10x vs GNU',
+  '多词字面量命令 fast path': 'Multi-word literal command fast path',
+  '[ 1 -eq 2 ] ×20k ≈177 → 155 ms': '[ 1 -eq 2 ] ×20k ≈177 → 155 ms',
+  'procsub 元数据扫描白名单跳过': 'Whitelist-skip of the procsub metadata scan',
+  '1.56x → 1.39x（~11%）': '1.56x → 1.39x (~11%)',
+  '十进制下标数组写 fast lane': 'Decimal-subscript array write fast lane',
+  '交错 8k 3.65x → 3.16x；顺手修掉 a[$((i++))]=v 的真实双副作用':
+    'interleaved 8k 3.65x → 3.16x; also fixes a real double side-effect in a[$((i++))]=v',
+  'case：$BASH_COMMAND 只渲染头臂': 'case: render $BASH_COMMAND head-only',
+  '20 臂 ×10k −10%，附真实分歧修复': '20-arm ×10k −10%, plus a real divergence fix',
+  'export/unset 快车道家族': 'export/unset fast-lane family',
+  '单探针 mirror + 批量 unmark；残留 ~100x 面保持开放（诚实展示）':
+    'single-probe mirror + bulk unmark; the residual ~100x face stays open (shown as-is)',
+  // android section
+  'Android 基线（Termux aarch64）：实测、诚实、修后待复测':
+    'Android baseline (Termux aarch64): measured, honest, post-fix re-run pending',
+  'Android 平板 · aarch64 · 6 核 · Termux': 'Android tablet · aarch64 · 6 cores · Termux',
+  'niu 1.4.0 Android 构建（内嵌 rubash e785c3c8f610）vs GNU bash 5.3.20-1 aarch64（Termux 包）':
+    'niu 1.4.0 Android build (embeds rubash e785c3c8f610) vs GNU bash 5.3.20-1 aarch64 (Termux package)',
+  '同脚本交错轮换（bash→niu→bash→niu）best-of-3；启动为热身后 20–30 次中位数（wait4 rusage）':
+    'same script, interleaved (bash→niu→bash→niu), best-of-3; startup is a median of 20–30 warm runs (wait4 rusage)',
+  'niubash#352（全矩阵与方法）· niubash#349（最早 ~2.1x 算术/函数数据点）':
+    'niubash#352 (full matrix & method) · niubash#349 (the original ~2.1x arithmetic/function datapoint)',
+  '引擎侧根因已修完并关闭（rubash#607-609 → #665/#671/#679、#666、#672/#678）；wrapper 一次性启动缺口已关闭（niubash#351）。Android 真机上的修后复测尚不存在——#352 保持开放等复测，Android 腿目前仍只有构建验证。下表是 v1.4.0 时的快照，不代表当前版本。':
+    'The engine-side root causes are fixed and closed (rubash#607-609 → #665/#671/#679, #666, #672/#678); the wrapper\u2019s one-shot startup gap is closed too (niubash#351). No post-fix re-measure on Android hardware exists yet — #352 stays open for that re-run and the Android leg still ships build-verified only. The table is a v1.4.0 snapshot, not the current version.',
+  '启动 niu -c true（30 次中位数）': 'startup niu -c true (median of 30)',
+  '2.5x slower（+14 ms 为 wrapper 缺口）': '2.5x slower (+14 ms is the wrapper gap)',
+  '算术 for 循环 ×200k': 'arithmetic for loop ×200k',
+  '字符串扩展 ×30k（//、^^、#、%）': 'string expansion ×30k (//, ^^, #, %)',
+  '3.69x slower（${x^^} 单操作至 7.3x）': '3.69x slower (${x^^} alone up to 7.3x)',
+  '纯赋值 t=$S ×30k': 'pure assignment t=$S ×30k',
+  '峰值 RSS（VmHWM）': 'peak RSS (VmHWM)',
+  'fib 递归经 $( ) ×3000': 'fib recursion via $( ) ×3000',
+  '子壳/管道 ×3000': 'subshell/pipeline ×3000',
+  '真实脚本 mkdir/写/回读 ×500': 'real script mkdir/write/read-back ×500',
+  'wrapper 启动缺口（Android 口径）': 'wrapper startup gap (Android rig)',
+  '修后 niu -c true 15 ms 对 bash 13 ms，零 tput spawn':
+    'after the fix niu -c true 15 ms vs bash 13 ms, zero tput spawns',
+  'niubash#351（closed）': 'niubash#351 (closed)',
+  '标量赋值': 'scalar assignment',
+  '对 GNU 净差距收敛到 ~1.06x（v1.4.0 时 2.72x）': 'net gap vs GNU down to ~1.06x (2.72x on v1.4.0)',
+  'rubash#609 → #672/#678（均 merged）': 'rubash#609 → #672/#678 (all merged)',
+  '算术 for / 循环': 'arithmetic for / loops',
+  '`:` 循环 2.03x → 1.77x（三刀全合）': '`:` loop 2.03x → 1.77x (three fixes merged)',
+  'rubash#607 → #665/#671/#679（均 merged）': 'rubash#607 → #665/#671/#679 (all merged)',
+  '参数扩展': 'parameter expansion',
+  '${s^} ~6x 修复落地，差分电池 33/33': '${s^} ~6x fix landed, differential battery 33/33',
+  'rubash#608 → #666（merged）· rubash docs/performance.md 账本':
+    'rubash#608 → #666 (merged) · rubash docs/performance.md ledger',
 };
 const t = (s: string): string => T[s] ?? s;
 ---
@@ -171,6 +235,47 @@ const t = (s: string): string => T[s] ?? s;
       </div>
       <p class="foot-note">{t(h.note)}</p>
     </section>
+
+    {android && (
+      <section class="sec">
+        <h2>
+          {t(android.title)} <span class="vs">niu vs GNU bash 5.3.20 (aarch64)</span>
+          <Badge tone="warn">post-fix re-run pending</Badge>
+        </h2>
+        <p class="sec-desc">
+          {android.provenance.date} · {t(android.provenance.device)} · {t(android.provenance.versions)}.
+          Method: {t(android.provenance.method)}.
+          Source: <code>{t(android.provenance.source)}</code>
+        </p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Workload (v1.4.0 snapshot)</th><th>GNU bash</th><th>niu</th><th>Verdict</th></tr></thead>
+            <tbody>
+              {android.slower.map((r: any) => (
+                <tr>
+                  <td>{t(r.workload)}</td>
+                  <td class="num">{r.bash}</td>
+                  <td class="num">{r.niu}</td>
+                  <td class="loss">{t(r.ratio)}</td>
+                </tr>
+              ))}
+              {android.faster.map((r: any) => (
+                <tr>
+                  <td>{t(r.workload)}</td>
+                  <td class="num">{r.bash}</td>
+                  <td class="num us">{r.niu}</td>
+                  <td class="win">{t(r.ratio)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <ul class="foot-note" style="list-style:disc;padding-left:1.2rem;">
+          <li>{t(android.statusNote)}</li>
+          {android.postFix.map((p: any) => <li><strong>{t(p.item)}:</strong> {t(p.detail)} (<code>{t(p.source)}</code>)</li>)}
+        </ul>
+      </section>
+    )}
 
     {forkRows.length > 0 && (
       <section class="sec">
@@ -270,6 +375,8 @@ const t = (s: string): string => T[s] ?? s;
   td.us { color: var(--accent); font-weight: 600; }
   td.wsl { color: var(--muted); }
   td.src { color: var(--muted); font-size: 0.8rem; max-width: 18rem; }
+  td.win { color: var(--accent); font-weight: 600; white-space: nowrap; }
+  td.loss { color: var(--muted); white-space: nowrap; }
 
   .bar { display: block; height: 0.5rem; border-radius: 2px; margin: 2px 0; }
   .bar-us { background: var(--accent); }

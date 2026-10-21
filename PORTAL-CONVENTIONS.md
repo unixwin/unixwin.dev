@@ -3,17 +3,17 @@
 > 面向所有后续贡献者（人或 agent）。v1 描述的三主题候选时代已结束；本文反映**当前事实**。
 > 违反硬约束会破坏 i18n、双主题或事实审计链。
 
-## 1. 页面清单（36 页，构建期实际产物）
+## 1. 页面清单（51 页，构建期实际产物）
 
 | 路由 | 文件 | 语言 | 布局 |
 |---|---|---|---|
 | `/`、`/en/` | src/pages/{index,en/index}.astro | zh+en | 营销首页（两栏 hero 轮播 + 产品卡） |
-| `/agents/`、`/en/agents/` | agents 目录页 | zh+en | 目录卡片 |
-| `/agents/<slug>/` ×9 | agents/[slug].astro | zh | 详情（数据驱动 agents.json） |
+| `/agents/`、`/en/agents/` | agents 目录页 | zh+en | 目录卡片（五分组：终端系 / VSCode 家族 / 有变通 / 暂不支持 / 尚未核验） |
+| `/agents/<slug>/` ×24 | agents/[slug].astro | zh | 详情（数据驱动 agents.json，含 group/icon 字段） |
 | `/agents/universal/` | 通用接入指南 | zh | 文档 |
 | `/ai/`、`/en/ai/` | AI 门户 | zh+en | 门户 |
 | `/agents.md`、`/llms.txt` | 构建期文本端点 | — | 机器可读 |
-| `/benchmarks/`、`/en/benchmarks/` | 基准 | zh+en | 表格+条形 |
+| `/benchmarks/`、`/en/benchmarks/` | 基准 | zh+en | 表格+条形（含 Android 基线节） |
 | `/changelog/`、`/en/changelog/` | 更新日志聚合 | zh+en | 时间线 |
 | `/docs/` + 4 篇差异 + `/docs/cli/` | 文档区 | zh | DocsLayout 三栏 |
 | `/products/<id>/` ×6 | 产品文档页 | zh | DocsLayout |
@@ -39,9 +39,10 @@
 
 | 文件 | 维护 | 说明 |
 |---|---|---|
-| products.json / facts.json / nav.json / docs-nav.json / agents.json / benchmarks.json | 手工 | 见各文件 _meta；**数字必须带证据口径** |
+| products.json / facts.json / nav.json / docs-nav.json / agents.json / benchmarks.json | 手工 | 见各文件 _meta；**数字必须带证据口径**。agents.json 条目带 `group`（显示分组：ready/vscode/partial/blocked/unverified）与 `icon`（/assets/agents/ 本地图标，来源见 THIRD_PARTY_NOTICES.md「Agent 图标」）；读码核实（非实测）条目必须在 notes 写明来源 |
 | changelogs.json / repo-meta.json | 生成 | `npm run fetch:github`（raw→main→gh 镜像→本地克隆四重回退），勿手改 |
 | data/bench/ | 原样产物 | 15 份基准产物 + BENCH-README；fork 套件占位数据待 recheck TSV 入库转正 |
+| public/assets/agents/ | 原样产物 | 第三方品牌图标，不热链、不修改图形；增删条目须同步 THIRD_PARTY_NOTICES.md |
 
 ## 5. 事实审计铁律（2026-10-19 全站审计后立规）
 

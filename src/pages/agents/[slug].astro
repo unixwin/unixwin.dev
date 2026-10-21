@@ -16,7 +16,7 @@ export function getStaticPaths() {
 
 const agent = agentsData.agents.find((a: any) => a.slug === Astro.params.slug) as any;
 const statusTone = agent.status === 'ready' ? 'accent' : agent.status === 'partial' ? 'warn' : 'muted';
-const statusLabel = { ready: '可用', partial: '部分', blocked: '暂不支持' }[agent.status] ?? agent.status;
+const statusLabel = { ready: '可用', partial: '部分', blocked: '暂不支持', unverified: '待核验' }[agent.status] ?? agent.status;
 ---
 
 <BaseLayout
@@ -31,7 +31,10 @@ const statusLabel = { ready: '可用', partial: '部分', blocked: '暂不支持
     <p class="crumb"><a href="/agents/">← Agent 目录</a></p>
 
     <header class="head">
-      <h1>{agent.name}</h1>
+      <h1 class="head-title">
+        <img class="head-icon" src={agent.icon} alt="" width="40" height="40" loading="eager" />
+        <span>{agent.name}</span>
+      </h1>
       <div class="badges">
         <Badge tone={statusTone}>{statusLabel}</Badge>
         <Badge tone="info">{agent.mechanism}</Badge>
@@ -109,6 +112,15 @@ const statusLabel = { ready: '可用', partial: '部分', blocked: '暂不支持
   .crumb a { color: var(--link); }
 
   .head h1 { margin: 0 0 0.6rem; font-size: clamp(1.6rem, 4vw, 2.2rem); }
+  .head-title { display: flex; align-items: center; gap: 0.7rem; }
+  .head-icon {
+    flex: none;
+    width: 40px; height: 40px; object-fit: contain;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 4px;
+  }
   .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
   .one { color: var(--muted); margin: 0.8rem 0 0; line-height: 1.7; }
 

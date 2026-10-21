@@ -3,9 +3,10 @@
  * /en/agents/ — English edition of the AI agent directory (card grid).
  * Data source: the same src/data/agents.json as the zh page
  * (source of truth = niubash docs/src/agents.md).
- * Grouping: ready / partial / blocked. oneLiners (9), mechanism labels and the
- * universal block are hand-translated here; statuses and counts come from data.
- * Detail pages remain Chinese for now (noted on the page).
+ * Grouping: ready (terminal) / vscode family / partial / blocked / unverified.
+ * oneLiners, mechanism labels and the universal block are hand-translated here;
+ * statuses and counts come from data. Detail pages remain Chinese (noted below).
+ * Icons are localized under /assets/agents/ (see THIRD_PARTY_NOTICES.md).
  */
 import BaseLayout from '../../../components/BaseLayout.astro';
 import SiteHeader from '../../../components/SiteHeader.astro';
@@ -15,12 +16,16 @@ import CopyButton from '../../../components/CopyButton.astro';
 import agentsData from '../../../data/agents.json';
 
 const groups = [
-  { key: 'ready', title: 'Works out of the box', tone: 'accent', desc: 'Wire the agent to niubash today using the methods below' },
+  { key: 'ready', title: 'Works out of the box (terminal)', tone: 'accent', desc: 'Wire the agent to niubash today using the methods below' },
+  { key: 'vscode', title: 'VSCode family', tone: 'info', desc: 'One shared probe for VS Code and its forks / extensions — fix it once, the whole family follows' },
   { key: 'partial', title: 'Workarounds', tone: 'warn', desc: 'Doable in some scenarios; waiting on upstream' },
   { key: 'blocked', title: 'Not supported yet', tone: 'muted', desc: 'Upstream exposes no mechanism; issues are being tracked' },
+  { key: 'unverified', title: 'Not yet verified', tone: 'muted', desc: 'No per-machine test or code read yet — wire via the universal guide and report back' },
 ] as const;
 
-const statusLabel: Record<string, string> = { ready: 'Ready', partial: 'Partial', blocked: 'Blocked' };
+const statusLabel: Record<string, string> = { ready: 'Ready', partial: 'Partial', blocked: 'Blocked', unverified: 'Unverified' };
+const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 'warn' : 'muted');
+const total = (agentsData.agents as any[]).length;
 
 // Hand-translated one-liners, keyed by slug (data itself stays zh).
 const oneLinerEn: Record<string, string> = {
@@ -30,18 +35,48 @@ const oneLinerEn: Record<string, string> = {
     'Works with no config: the installer drops a bash launcher right on the probe path; an env var can pin it explicitly.',
   codex:
     'The unixwin-maintained Codex fork ships ShellType::Niu built in — selected automatically once installed.',
-  'vs-code':
-    'One probe rules the whole family: VS Code (Copilot), Windsurf, Trae, ZCode, Cline, Roo Code, Kilo Code, Continue.',
   zed:
     'A single setting: point terminal.shell.program at niu.exe, and the agent shares that terminal.',
+  goose:
+    'One env var: on Windows the shell tool spawns GOOSE_SHELL and passes -c to anything that is not cmd/PowerShell — point it at niu.exe.',
   dsh:
     'One command installs the plugin bundle: enables niu-sandbox and tool-bash, disables the PowerShell row.',
+  'vs-code':
+    'The family anchor: one shared probe rules the VS Code lineage — the Copilot agent runs through the editor automation terminal and hits it by default.',
+  windsurf:
+    'VS Code lineage (Code OSS fork): the automation terminal inherits the family probe — hits the launcher once niubash is installed.',
+  trae:
+    'VS Code lineage fork: the automation terminal inherits the family probe — hits the launcher once niubash is installed.',
+  kiro:
+    "AWS's agentic IDE (Code OSS lineage): the automation terminal picks its shell via the shared family probe — hits the launcher once niubash is installed. Lineage-inferred, not machine-tested.",
+  zcode:
+    'The probe was verified on this very editor: the shared sequence in agents.md comes from reading a ZCode app.asar — hits it by default.',
+  cline:
+    'VS Code extension: commands run through the editor terminal or automation profile — the extension itself never picks a shell.',
+  'roo-code':
+    'VS Code extension: commands run through the editor terminal or automation profile and inherit the family probe.',
+  'kilo-code':
+    'VS Code extension: commands run through the editor terminal or automation profile and inherit the family probe.',
+  continue:
+    'VS Code extension: commands run through the editor terminal or automation profile and inherit the family probe.',
   cursor:
     'The IDE has a workaround (Legacy Terminal Tool); the Agent CLI currently hard-codes PowerShell with no way to configure it.',
+  devin:
+    'Investigation: Devin CLI has no native niubash integration; it launches from a niu session, but devin setup and other Win32 console TUIs white-screen today — niubash#455 is open.',
+  'qwen-code':
+    'After forking gemini-cli it grew its own MSYSTEM/TERM sniffing and Git Bash lookup — set MSYSTEM=MINGW64 (experimental) to hit the installer-placed launcher. Source-read, not machine-tested.',
   'gemini-cli':
     "The shipped code returns PowerShell on Windows unconditionally — no bash branch; two upstream proposals track this.",
   aider:
     '/run always uses PowerShell or cmd; launching from inside niu does not change its choice.',
+  'amazon-q':
+    'Not verified yet: no local test or code read. Wire it via the universal four-mechanism guide and report back.',
+  amp:
+    'Not verified yet: no local test or code read (Sourcegraph product, mostly closed source). Wire via the universal guide.',
+  openhands:
+    'Not verified yet: command execution usually happens inside a container/sandbox — where the host shell plugs in is still unverified.',
+  junie:
+    'Not verified yet: runs inside JetBrains IDEs; whether the host terminal shell setting reaches its command execution is unverified.',
 };
 
 // Hand-translated mechanism badges, keyed by the zh string in agents.json.
@@ -49,12 +84,18 @@ const mechanismEn: Record<string, string> = {
   '$SHELL 环境变量': '$SHELL env var',
   'Git 探针 / CLAUDE_CODE_GIT_BASH_PATH': 'Git probe / CLAUDE_CODE_GIT_BASH_PATH',
   '原生 Niu 探测（unixwin fork）': 'Native Niu detection (unixwin fork)',
-  'Git 探针 / automationProfile': 'Git probe / automationProfile',
   '显式配置 terminal.shell.program': 'Explicit terminal.shell.program',
+  'GOOSE_SHELL 环境变量': 'GOOSE_SHELL env var',
   '插件 profile': 'Plugin profile',
+  'Git 探针 / automationProfile': 'Git probe / automationProfile',
+  'Git 探针 / automationProfile（VS Code 家族）': 'Git probe / automationProfile (VS Code family)',
+  '编辑器终端 / automationProfile（扩展）': 'Editor terminal / automationProfile (extension)',
   '探测链当前对 bash 不友好': 'Detection chain unfriendly to bash',
+  '无原生集成 · niu 会话内可启动': 'No native integration · launches from a niu session',
+  'MSYSTEM/TERM 嗅探 + Git Bash 路径查找（自研）': 'MSYSTEM/TERM sniffing + Git Bash lookup (Qwen-specific)',
   '无条件 PowerShell': 'Unconditional PowerShell',
   '无 shell 选项': 'No shell option',
+  '未核验': 'Unverified',
 };
 
 // Universal rule block (hand-translated from agents.json → universal).
@@ -70,8 +111,8 @@ const verifyTableEn = [
 ---
 
 <BaseLayout
-  title="AI Agent Directory: niubash for Claude Code, Codex, Cursor, VS Code, opencode, Zed"
-  description="Switch the default shell of Claude Code, Codex, Cursor, the VS Code family, opencode, Zed and other AI agents to niubash — a bash implementation native to Windows, one script away, with verification and rollback included."
+  title="AI Agent Directory: niubash for Claude Code, Codex, Cursor, the VSCode family, opencode, Zed"
+  description="Switch the default shell of Claude Code, Codex, Cursor, the VSCode family (Copilot, Windsurf, Trae, Cline, Roo Code, Kilo Code, Continue), opencode, Zed, Goose and other AI agents to niubash — a bash implementation native to Windows, one script away, with verification and rollback included."
   keywords="niubash,claude code shell,codex shell,cursor shell,vs code shell,opencode shell,zed shell,ai agent shell windows,bash for windows,git bash alternative"
   theme="day"
   path="/en/agents/"
@@ -85,8 +126,9 @@ const verifyTableEn = [
       <h1>Move your AI agent<br /><span class="hl">onto niubash</span></h1>
       <p class="sub">
         Windows is the first battleground: every command the agent runs lands on real bash syntax,
-        with deterministic output and git 3–7× faster. Every card opens to a
-        <strong>copy-paste shell-switch script</strong>, verification commands and a rollback path.
+        with deterministic output and git 3–7× faster. <strong>{total} agents</strong> are catalogued,
+        grouped into terminal / VSCode family / workarounds / not supported / not yet verified;
+        cards with a switch script open to a <strong>copy-paste script</strong>, verification and a rollback path.
       </p>
     </section>
 
@@ -113,7 +155,7 @@ const verifyTableEn = [
     </a>
 
     {groups.map((g) => {
-      const list = (agentsData.agents as any[]).filter((a) => a.status === g.key);
+      const list = (agentsData.agents as any[]).filter((a) => a.group === g.key);
       if (!list.length) return null;
       return (
         <section class="group" id={g.key}>
@@ -126,9 +168,12 @@ const verifyTableEn = [
             {list.map((a) => (
               <a class="agent-card" href={`/agents/${a.slug}/`}>
                 <div class="card-top">
-                  <span class="card-name">{a.name}</span>
-                  <Badge tone={a.status === 'ready' ? 'accent' : a.status === 'partial' ? 'warn' : 'muted'}>
-                    {statusLabel[a.status]}
+                  <span class="card-id">
+                    <img class="card-icon" src={a.icon} alt="" width="28" height="28" loading="lazy" />
+                    <span class="card-name">{a.name}</span>
+                  </span>
+                  <Badge tone={statusTone(a.status)}>
+                    {statusLabel[a.status] ?? a.status}
                   </Badge>
                 </div>
                 <p class="card-line">{oneLinerEn[a.slug] ?? a.oneLiner}</p>
@@ -145,11 +190,18 @@ const verifyTableEn = [
     })}
 
     <section class="unverified">
-      <p>Not verified yet (no entries; field reports welcome): <em>{(agentsData.unverified as string[]).join(' · ')}</em></p>
+      <p>
+        Status legend: <strong>Ready</strong> = configurable in the current version ·
+        <strong>Partial</strong> = workaround for some scenarios ·
+        <strong>Blocked</strong> = upstream exposes no mechanism ·
+        <strong>Unverified</strong> = no test or code read yet; source-read (not machine-tested) entries
+        name their evidence in the detail page notes.
+      </p>
       <p>Agent detail pages behind these cards are in Chinese for now.</p>
       <p class="src">
         Source of truth for this page:
-        <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">Coding agents on Windows, and the shell they run</a> (niubash repo docs/src/agents.md)
+        <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">Coding agents on Windows, and the shell they run</a> (niubash repo docs/src/agents.md);
+        icon provenance and licensing live in the repo's <a href="https://github.com/unixwin/unixwin.dev#readme" target="_blank" rel="noopener noreferrer">THIRD_PARTY_NOTICES.md</a>
       </p>
     </section>
   </main>
@@ -205,6 +257,16 @@ const verifyTableEn = [
   }
   .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
   .card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .card-id { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
+  /* White chip behind every icon so dark brand logos stay legible on the night theme */
+  .card-icon {
+    flex: none;
+    width: 28px; height: 28px; object-fit: contain;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 3px;
+  }
   .card-name { font-weight: 700; font-size: 1.02rem; }
   .card-line { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.6; flex: 1; }
   .card-foot { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; font-size: 0.8rem; }
@@ -214,5 +276,6 @@ const verifyTableEn = [
 
   .unverified { margin: 2.4rem 0 1rem; color: var(--muted); font-size: 0.88rem; }
   .unverified p { margin: 0.3rem 0; line-height: 1.7; }
+  .unverified strong { color: var(--text); }
   .src a { color: var(--link); }
 </style>

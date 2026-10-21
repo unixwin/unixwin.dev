@@ -2,7 +2,9 @@
 /**
  * /agents/ — AI Agent 接入目录（卡片式）。
  * 数据源：src/data/agents.json（事实来源 = niubash docs/src/agents.md）。
- * 分组：ready（可直接换壳）/ partial（有变通）/ blocked（上游暂不支持）。
+ * 分组：ready（终端系开箱可换）/ vscode（VSCode 家族，独立分组）/
+ *       partial（有变通）/ blocked（上游暂不支持）/ unverified（尚未核验）。
+ * 图标全部本地化在 /assets/agents/（来源与许可见 THIRD_PARTY_NOTICES.md）。
  */
 import BaseLayout from '../../components/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
@@ -12,17 +14,21 @@ import CopyButton from '../../components/CopyButton.astro';
 import agentsData from '../../data/agents.json';
 
 const groups = [
-  { key: 'ready', title: '开箱可换', tone: 'accent', desc: '当前版本按下面方法即可让 agent 用上 niubash' },
+  { key: 'ready', title: '开箱可换（终端系）', tone: 'accent', desc: '当前版本按下面方法即可让 agent 用上 niubash' },
+  { key: 'vscode', title: 'VSCode 家族', tone: 'info', desc: '同一份共享探针：VS Code 及其血统 fork / 扩展——修一处全家生效，与终端系分开看' },
   { key: 'partial', title: '有变通', tone: 'warn', desc: '部分场景可行，等待上游完善' },
   { key: 'blocked', title: '暂不支持', tone: 'muted', desc: '上游机制未开放，已跟进 issue' },
+  { key: 'unverified', title: '尚未核验', tone: 'muted', desc: '无逐台实测或读码条目——按通用指南接线，欢迎回填实测' },
 ] as const;
 
-const statusLabel: Record<string, string> = { ready: '可用', partial: '部分', blocked: '暂不可' };
+const statusLabel: Record<string, string> = { ready: '可用', partial: '部分', blocked: '暂不可', unverified: '待核验' };
+const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 'warn' : 'muted');
+const total = (agentsData.agents as any[]).length;
 ---
 
 <BaseLayout
-  title="AI Agent 接入目录：Claude Code、Codex、Cursor、VS Code、opencode、Zed × niubash"
-  description="把 Claude Code、Codex、Cursor、VS Code 家族、opencode、Zed 等 AI agent 的默认 shell 换成 niubash——Windows 原生的 bash 实现，一步脚本，附验证与回滚。"
+  title="AI Agent 接入目录：Claude Code、Codex、Cursor、VSCode 家族、opencode、Zed × niubash"
+  description="把 Claude Code、Codex、Cursor、VSCode 家族（Copilot、Windsurf、Trae、Cline、Roo Code、Kilo Code、Continue）、opencode、Zed、Goose 等 AI agent 的默认 shell 换成 niubash——Windows 原生的 bash 实现，一步脚本，附验证与回滚。"
   keywords="niubash,claude code shell,codex shell,cursor shell,vs code shell,opencode shell,zed shell,ai agent shell windows,bash for windows,git bash alternative"
   theme="day"
   path="/agents/"
@@ -34,7 +40,8 @@ const statusLabel: Record<string, string> = { ready: '可用', partial: '部分'
       <h1>把你的 AI Agent<br /><span class="hl">换到 niubash 上</span></h1>
       <p class="sub">
         前期主战场是 Windows：agent 每条命令都跑在真 bash 语法上，输出确定、git 快 3–7 倍。
-        每张卡片点进去都有<strong>可复制的换壳脚本</strong>、验证命令与回滚方法。
+        目录共 <strong>{total} 家</strong>，按终端系 / VSCode 家族 / 有变通 / 暂不支持 / 尚未核验分组；
+        有换壳脚本的卡片点进去都有<strong>可复制的脚本</strong>、验证命令与回滚方法。
       </p>
     </section>
 
@@ -60,7 +67,7 @@ const statusLabel: Record<string, string> = { ready: '可用', partial: '部分'
     </a>
 
     {groups.map((g) => {
-      const list = (agentsData.agents as any[]).filter((a) => a.status === g.key);
+      const list = (agentsData.agents as any[]).filter((a) => a.group === g.key);
       if (!list.length) return null;
       return (
         <section class="group" id={g.key}>
@@ -73,9 +80,12 @@ const statusLabel: Record<string, string> = { ready: '可用', partial: '部分'
             {list.map((a) => (
               <a class="agent-card" href={`/agents/${a.slug}/`}>
                 <div class="card-top">
-                  <span class="card-name">{a.name}</span>
-                  <Badge tone={a.status === 'ready' ? 'accent' : a.status === 'partial' ? 'warn' : 'muted'}>
-                    {statusLabel[a.status]}
+                  <span class="card-id">
+                    <img class="card-icon" src={a.icon} alt="" width="28" height="28" loading="lazy" />
+                    <span class="card-name">{a.name}</span>
+                  </span>
+                  <Badge tone={statusTone(a.status)}>
+                    {statusLabel[a.status] ?? a.status}
                   </Badge>
                 </div>
                 <p class="card-line">{a.oneLiner}</p>
@@ -92,9 +102,14 @@ const statusLabel: Record<string, string> = { ready: '可用', partial: '部分'
     })}
 
     <section class="unverified">
-      <p>尚未核验（无条目，欢迎补充实测）：<em>{(agentsData.unverified as string[]).join(' · ')}</em></p>
+      <p>
+        状态口径：<strong>可用</strong>=当前版本可配置生效 · <strong>部分</strong>=有变通/部分场景 ·
+        <strong>暂不可</strong>=上游机制未开放 · <strong>待核验</strong>=无实测/读码条目；
+        读码核实（非实测）的条目在详情页 notes 里写明来源。
+      </p>
       <p class="src">
-        本页事实来源：<a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">Coding agents on Windows, and the shell they run</a>（niubash 仓库 docs/src/agents.md）
+        本页事实来源：<a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">Coding agents on Windows, and the shell they run</a>（niubash 仓库 docs/src/agents.md）；
+        图标来源与许可见仓库 <a href="https://github.com/unixwin/unixwin.dev#readme" target="_blank" rel="noopener noreferrer">THIRD_PARTY_NOTICES.md</a>
       </p>
     </section>
   </main>
@@ -144,6 +159,16 @@ const statusLabel: Record<string, string> = { ready: '可用', partial: '部分'
   }
   .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
   .card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .card-id { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
+  /* 图标垫白底小圆角——品牌深色 logo 在暗色主题下也保持可读 */
+  .card-icon {
+    flex: none;
+    width: 28px; height: 28px; object-fit: contain;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 3px;
+  }
   .card-name { font-weight: 700; font-size: 1.02rem; }
   .card-line { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.6; flex: 1; }
   .card-foot { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; font-size: 0.8rem; }
@@ -153,5 +178,6 @@ const statusLabel: Record<string, string> = { ready: '可用', partial: '部分'
 
   .unverified { margin: 2.4rem 0 1rem; color: var(--muted); font-size: 0.88rem; }
   .unverified p { margin: 0.3rem 0; line-height: 1.7; }
+  .unverified strong { color: var(--text); }
   .src a { color: var(--link); }
 </style>

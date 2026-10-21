@@ -1,10 +1,10 @@
 {
   "_meta": {
     "principle": "每个上页的数字必须有可指认的产物或 PR/issue 锚；未实测不写；输赢都展示。",
-    "asOf": "2026-10-19",
-    "authority": "FACTS.json / HIGHLIGHTS.md / CARDS.md（unixwin.dev 仓库 portal-dump 分支，2026-10-19 总控审计）",
+    "asOf": "2026-10-21",
+    "authority": "FACTS.json / HIGHLIGHTS.md / CARDS.md（unixwin.dev 仓库 portal-dump 分支，2026-10-19 总控审计）；2026-10-21 刷新：Android 基线（niubash#352/#349）与引擎热路径修复族（rubash#607-609 → 落地 PR、#884、#913、#958-#974），逐条核对过 merged/closed 状态",
     "benchArtifacts": "data/bench/（原样拷贝：results.tsv / startup.tsv / run_bench.sh / PERF-TABLE.md 等 15 份 + BENCH-README.md 环境与方法）",
-    "env": "Intel Xeon w5-3435 · Windows 10 19045 · 同机 WSL2 Ubuntu（GNU Bash 5.3.0 对照）· Git Bash 5.3.0 (msys)",
+    "env": "Intel Xeon w5-3435 · Windows 10 19045 · 同机 WSL2 Ubuntu（GNU Bash 5.3.0 对照）· Git Bash 5.3.0 (msys)；Android 节另有 Termux aarch64 口径",
     "forkSuite": {
       "status": "placeholder",
       "statusNote": "占位：数字转录自 2026-10-18 复测运行输出；recheck_fork_20261018-*.tsv 产物入库 data/bench/ 后即转正（核对一致后移除此标注）。",
@@ -34,7 +34,7 @@
     }
   },
   "latency": [
-    { "metric": "git 启动（git --version）", "us": "~14 ms", "them": "Git Bash 45–103 ms", "badge": "3–7x faster", "source": "niubash README:32 · niu-git（MSVC+schannel，无 MSYS）" },
+    { "metric": "git 启动（git --version）", "us": "13.7 ms 均值 / 11.5 ms 最低 · git status 22.6 ms", "them": "Git Bash 45–103 ms（niu-git#12 同场：mingw64\\bin 51.3 ms · cmd\\git.exe 45.3 ms）", "badge": "3–7x faster", "source": "niu-git#12（2026-10-16 合入）· niubash#374" },
     { "metric": "一次性执行 niu -c true", "us": "26.3 ms", "them": "Git Bash 71 ms", "badge": "2.7x faster", "source": "GITBASH-KILLER 面 6" },
     { "metric": "提示符 git 段", "us": "读 .git/HEAD ≤29 ms", "them": "每条提示符 spawn git 113–362 ms", "badge": "4–12x faster", "source": "GITBASH-KILLER 面 3（真仓 min-of-20）" },
     { "metric": "shell 启动（5 次实测）", "us": "rubash 27–48 ms", "them": "Git Bash 60–93 ms · WSL 202–278 ms", "badge": "2–3x faster", "source": "data/bench/startup.tsv" },
@@ -61,11 +61,48 @@
       { "workload": "内建循环 ×750", "rubash": 32, "gitbash": 40, "wsl": 3 }
     ]
   },
+  "android": {
+    "title": "Android 基线（Termux aarch64）：实测、诚实、修后待复测",
+    "provenance": {
+      "date": "2026-10-14",
+      "device": "Android 平板 · aarch64 · 6 核 · Termux",
+      "versions": "niu 1.4.0 Android 构建（内嵌 rubash e785c3c8f610）vs GNU bash 5.3.20-1 aarch64（Termux 包）",
+      "method": "同脚本交错轮换（bash→niu→bash→niu）best-of-3；启动为热身后 20–30 次中位数（wait4 rusage）",
+      "source": "niubash#352（全矩阵与方法）· niubash#349（最早 ~2.1x 算术/函数数据点）"
+    },
+    "statusNote": "引擎侧根因已修完并关闭（rubash#607-609 → #665/#671/#679、#666、#672/#678）；wrapper 一次性启动缺口已关闭（niubash#351）。Android 真机上的修后复测尚不存在——#352 保持开放等复测，Android 腿目前仍只有构建验证。下表是 v1.4.0 时的快照，不代表当前版本。",
+    "slower": [
+      { "workload": "启动 niu -c true（30 次中位数）", "bash": "8.3 ms", "niu": "21.1 ms", "ratio": "2.5x slower（+14 ms 为 wrapper 缺口）" },
+      { "workload": "算术 for 循环 ×200k", "bash": "0.572 s", "niu": "1.353 s", "ratio": "2.37x slower" },
+      { "workload": "字符串扩展 ×30k（//、^^、#、%）", "bash": "0.325 s", "niu": "1.198 s", "ratio": "3.69x slower（${x^^} 单操作至 7.3x）" },
+      { "workload": "纯赋值 t=$S ×30k", "bash": "0.086 s", "niu": "0.234 s", "ratio": "2.72x slower" },
+      { "workload": "峰值 RSS（VmHWM）", "bash": "4.6 MB", "niu": "10.2 MB", "ratio": "2.2x" }
+    ],
+    "faster": [
+      { "workload": "fib 递归经 $( ) ×3000", "bash": "855.9 s", "niu": "164.8 s", "ratio": "5.2x faster" },
+      { "workload": "子壳/管道 ×3000", "bash": "68.0 s", "niu": "37.9 s", "ratio": "1.8x faster" },
+      { "workload": "真实脚本 mkdir/写/回读 ×500", "bash": "9.77 s", "niu": "4.55 s", "ratio": "2.1x faster" }
+    ],
+    "postFix": [
+      { "item": "wrapper 启动缺口（Android 口径）", "detail": "修后 niu -c true 15 ms 对 bash 13 ms，零 tput spawn", "source": "niubash#351（closed）" },
+      { "item": "标量赋值", "detail": "对 GNU 净差距收敛到 ~1.06x（v1.4.0 时 2.72x）", "source": "rubash#609 → #672/#678（均 merged）" },
+      { "item": "算术 for / 循环", "detail": "`:` 循环 2.03x → 1.77x（三刀全合）", "source": "rubash#607 → #665/#671/#679（均 merged）" },
+      { "item": "参数扩展", "detail": "${s^} ~6x 修复落地，差分电池 33/33", "source": "rubash#608 → #666（merged）· rubash docs/performance.md 账本" }
+    ]
+  },
   "engineering": [
     { "item": "一次性执行优化（xgr 六连）", "detail": "niu -c true 105.6 ms → 19.8 ms", "source": "niubash PR #267–#272" },
     { "item": "多行粘贴", "detail": "自动误执行 186 次 → 0；257 行载荷 300s 超时 → 4.6s", "source": "PR #252/#288 · paste_multiline_bench.py" },
     { "item": "nvm.sh 重词法 checkpoint", "detail": "与 GNU 差距 720x → 8x，重词法字节 −40%", "source": "rubash PR #486" },
-    { "item": "数组元素写 O(n²)→O(1)", "detail": "K=5000 单次写：关联数组快 45 倍、索引数组快 177 倍（对旧版）", "source": "rubash PR #650/#652" },
-    { "item": "单次 spawn 成本", "detail": "rubash 1.183 ms vs GNU 1.121 ms——持平（真实 exec 地板）", "source": "data/bench/unix-spawn-cost-20261012.md（min-of-3）" }
+    { "item": "数组元素写 O(n²)→O(1) 均摊", "detail": "K=5000 单次写 vs GNU：关联 445x → 9.9x、索引 736x → 3.8x（旧版对自身为 45 倍 / 177 倍）；附带修好 O(n²) tokenizer（10001 段真解析 563→17.8 ms）", "source": "rubash#618/#616（账本 docs/performance.md）· 早先 #650/#652" },
+    { "item": "单次 spawn 成本", "detail": "rubash 1.183 ms vs GNU 1.121 ms——持平（真实 exec 地板）", "source": "data/bench/unix-spawn-cost-20261012.md（min-of-3）" },
+    { "item": "Windows 隐藏 console 分配", "detail": "无 console 会话每个子进程 ~22 ms → 整棵命令树一次分配（Win11 24H2+ 预分配无窗 console，老系统认领首个 CREATE_NO_WINDOW 子进程）；14 条回归测试钉死", "source": "rubash#913（merged 2026-10-20）· 设计 niubash#462" },
+    { "item": "$(tput …) 终端查询进程内作答", "detail": "64 次 tput 票面探针 1165 ms → 47 ms（~25x，零 spawn，与 GNU ncurses 字节相等）；winuxcmd 侧 i18n ~17 ms/次 → ~0.4 ms（3208 行回放逐字节一致）", "source": "rubash#884 · WinuxCmd#1269（均 merged）" },
+    { "item": "[[ ]] 数值叶 + 十进制 fast path", "detail": "50k [[ 1 -eq 2 ]] 对 GNU 1.41x → 1.10x", "source": "rubash#966（merged 2026-10-21）" },
+    { "item": "多词字面量命令 fast path", "detail": "[ 1 -eq 2 ] ×20k ≈177 → 155 ms", "source": "rubash#967（merged 2026-10-21）" },
+    { "item": "procsub 元数据扫描白名单跳过", "detail": "1.56x → 1.39x（~11%）", "source": "rubash#974（merged 2026-10-21）" },
+    { "item": "十进制下标数组写 fast lane", "detail": "交错 8k 3.65x → 3.16x；顺手修掉 a[$((i++))]=v 的真实双副作用", "source": "rubash#959（merged 2026-10-21）" },
+    { "item": "case：$BASH_COMMAND 只渲染头臂", "detail": "20 臂 ×10k −10%，附真实分歧修复", "source": "rubash#958（merged 2026-10-21）" },
+    { "item": "export/unset 快车道家族", "detail": "单探针 mirror + 批量 unmark；残留 ~100x 面保持开放（诚实展示）", "source": "rubash#917/#918/#920 + #943 正确性返工（均 merged）· #916 开放" }
   ]
 }

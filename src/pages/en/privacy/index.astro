@@ -1,0 +1,122 @@
+---
+/**
+ * Privacy Policy — /en/privacy/ (English twin of /privacy/).
+ * Privacy policy URL required by Microsoft Store submission.
+ * Statement of fact: zero collection, zero telemetry; local data stays in the
+ * user profile; network access only on explicit user action.
+ */
+import BaseLayout from '../../../components/BaseLayout.astro';
+import SiteHeader from '../../../components/SiteHeader.astro';
+import SiteFooter from '../../../components/SiteFooter.astro';
+---
+
+<BaseLayout
+  title="Privacy Policy"
+  description="Niubash does not collect, transmit, or sell any personal data. No telemetry, no analytics, no crash reporting, no advertising IDs. Local data never leaves your device; network access happens only when you explicitly invoke it."
+  theme="day"
+  path="/en/privacy/"
+  lang="en"
+  enPath="/privacy/"
+>
+  <SiteHeader />
+
+  <main class="container privacy">
+    <section class="pv-head">
+      <h1>Privacy Policy — Niubash (unixwin)</h1>
+      <p class="pv-sub">Last updated: 2026-10-19 · Applies to Niubash and related tools published by unixwin.</p>
+    </section>
+
+    <section class="pv-body">
+      <p class="pv-lede">
+        Niubash does not collect, transmit, or sell any personal data. No telemetry, no analytics,
+        no crash reporting, no advertising IDs.
+      </p>
+
+      <div class="pv-section codeblock">
+        <h2>Local data</h2>
+        <p>
+          Your configuration, history, and plugins are stored only on your device under your user
+          profile (<code>~/.niubashrc</code>, <code>~/.niubash/</code>) and never leave it except
+          when you explicitly back them up.
+        </p>
+      </div>
+
+      <div class="pv-section codeblock">
+        <h2>Network access</h2>
+        <p>
+          Only when you explicitly invoke it — self-update (<code>niu self-update</code>),
+          plugin/skill installation, and git operations over the network. These connect to GitHub
+          or the mirror you configure.
+        </p>
+      </div>
+
+      <div class="pv-section codeblock">
+        <h2>Microsoft Store diagnostics</h2>
+        <p>
+          If you install from the Microsoft Store, Microsoft may collect standard app diagnostics
+          per its own privacy statement; unixwin receives no identifiable data from Microsoft.
+        </p>
+      </div>
+
+      <div class="pv-section codeblock">
+        <h2>Contact</h2>
+        <p>
+          Questions about this policy or product privacy? Open an issue at
+          <a href="https://github.com/unixwin/niubash/issues" target="_blank" rel="noopener noreferrer">github.com/unixwin/niubash/issues</a>.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<style>
+  .pv-head {
+    padding: 3rem 0 1rem;
+  }
+
+  .pv-head h1 {
+    margin-bottom: 0.2rem;
+  }
+
+  .pv-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .pv-lede {
+    font-size: 1.05rem;
+    margin: 0 0 1.8rem;
+  }
+
+  .pv-section {
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius);
+  }
+
+  .pv-section h2 {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+
+  .pv-section p {
+    margin: 0;
+    color: var(--text);
+  }
+
+  .pv-section code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  .pv-section a {
+    color: var(--link);
+  }
+</style>

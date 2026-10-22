@@ -1,0 +1,117 @@
+---
+/**
+ * 隐私政策 — /privacy/（Niubash / unixwin，零收集声明）。
+ * Microsoft Store 提交要求的 Privacy policy URL（zh 主版，en 对页 /en/privacy/）。
+ * 内容为如实声明：不收集、不上报；本地数据仅在用户目录；网络仅用户主动触发。
+ */
+import BaseLayout from '../../components/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+---
+
+<BaseLayout
+  title="隐私政策"
+  description="Niubash 不收集、不传输、不出售任何个人数据：无遥测、无分析统计、无崩溃上报、无广告 ID。本地数据仅存于你的设备，网络访问仅在你主动操作时发生。"
+  theme="day"
+  path="/privacy/"
+>
+  <SiteHeader />
+
+  <main class="container privacy">
+    <section class="pv-head">
+      <h1>隐私政策 — Niubash（unixwin）</h1>
+      <p class="pv-sub">更新日期：2026-10-19 · 适用于 Niubash 及 unixwin 发布的相关工具。</p>
+    </section>
+
+    <section class="pv-body">
+      <p class="pv-lede">
+        Niubash 不收集、不传输、不出售任何个人数据。无遥测、无分析统计、无崩溃上报、无广告 ID。
+      </p>
+
+      <div class="pv-section codeblock">
+        <h2>本地数据</h2>
+        <p>
+          你的配置、历史记录与插件只保存在你设备上的用户目录中（<code>~/.niubashrc</code>、<code>~/.niubash/</code>），
+          除你主动备份外，绝不离开你的设备。
+        </p>
+      </div>
+
+      <div class="pv-section codeblock">
+        <h2>网络访问</h2>
+        <p>
+          仅在你主动操作时才会访问网络——自更新（<code>niu self-update</code>）、安装插件 / 技能，
+          以及经由网络的 git 操作。这些操作只连接 GitHub 或你自行配置的镜像。
+        </p>
+      </div>
+
+      <div class="pv-section codeblock">
+        <h2>Microsoft Store 诊断</h2>
+        <p>
+          如果你通过 Microsoft Store 安装，Microsoft 可能按其自身隐私声明收集标准应用诊断数据；
+          unixwin 不会从 Microsoft 收到任何可识别个人身份的数据。
+        </p>
+      </div>
+
+      <div class="pv-section codeblock">
+        <h2>联系方式</h2>
+        <p>
+          如对本政策或产品隐私有任何疑问，请在
+          <a href="https://github.com/unixwin/niubash/issues" target="_blank" rel="noopener noreferrer">github.com/unixwin/niubash/issues</a>
+          提交 issue。
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<style>
+  .pv-head {
+    padding: 3rem 0 1rem;
+  }
+
+  .pv-head h1 {
+    margin-bottom: 0.2rem;
+  }
+
+  .pv-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .pv-lede {
+    font-size: 1.05rem;
+    margin: 0 0 1.8rem;
+  }
+
+  .pv-section {
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius);
+  }
+
+  .pv-section h2 {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+
+  .pv-section p {
+    margin: 0;
+    color: var(--text);
+  }
+
+  .pv-section code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  .pv-section a {
+    color: var(--link);
+  }
+</style>

@@ -17,6 +17,7 @@ export const PAIRED_ZH_ROUTES: ReadonlySet<string> = new Set([
   '/ai/',
   '/docs/',
   '/changelog/',
+  '/privacy/',
 ]);
 
 export type PageLang = 'zh' | 'en';

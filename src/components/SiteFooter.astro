@@ -44,6 +44,7 @@ const productHref = (id: string) => (isEn ? `/en/#${id}` : `/#${id}`);
       <a href={nav.docs} target="_blank" rel="noopener noreferrer">文档</a>
       <a href="/changelog/">更新日志</a>
       <a href="/llms.txt">llms.txt</a>
+      <a href={isEn ? '/en/privacy/' : '/privacy/'}>{isEn ? 'Privacy Policy' : '隐私政策'}</a>
     </nav>
     <nav class="footer-col" aria-label="主题">
       <h3>主题</h3>

@@ -13,12 +13,13 @@
 interface Props {
   copy: string;
   label?: string;
+  title?: string;
 }
 
-const { copy, label = '复制' } = Astro.props;
+const { copy, label = '复制', title = '复制到剪贴板' } = Astro.props;
 ---
 
-<button class="copy-btn" type="button" data-copy={copy} title="复制到剪贴板">
+<button class="copy-btn" type="button" data-copy={copy} title={title}>
   <span class="copy-label">{label}</span>
 </button>
 

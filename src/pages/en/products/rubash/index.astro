@@ -1,0 +1,394 @@
+---
+/**
+ * /en/products/rubash/ — English edition of the rubash product page (embedders).
+ * Skeleton English; prose-heavy Chinese folded into <details>; bench/news tables
+ * fully translated. Facts mirror the zh page (rubash README/docs, crates.io 1.4.0).
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+import CopyButton from '../../../../components/CopyButton.astro';
+
+const cargoAdd = 'cargo add rubash';
+const buildFromSource = 'git clone https://github.com/unixwin/rubash.git && cd rubash && cargo build';
+const runScript = 'target/debug/rubash path/to/script.sh';
+
+const bench = [
+  {
+    a: 'GNU Bash upstream corpora',
+    b: '83/83 suites pass, 82 byte-identical',
+    c: 'The only residual = GNU\'s own coproc race',
+    src: 'rubash README:17 · full rerun 2026-10-12',
+  },
+  {
+    a: 'nvm.sh parsing (heavy lexer)',
+    b: 'gap to GNU 720x → 8x (heavy-lexer bytes −40%)',
+    c: 'Engineering-progress framing: gap closing, not "8x faster"',
+    src: 'rubash PR #486 (issue #281)',
+  },
+  {
+    a: 'Associative-array element write, K=5000',
+    b: 'O(n²)→O(1), single write 45× faster',
+    c: 'Gap to GNU 445x → 9.9x',
+    src: 'rubash PR #650 (issue #618)',
+  },
+  {
+    a: 'Indexed-array overwrite, K=5000',
+    b: '177× faster',
+    c: 'Gap to GNU 674x → 3.8x; also fixes the O(n²) tokenizer (10001 segments 563ms→17.8ms)',
+    src: 'rubash PR #652 (issue #616)',
+  },
+  {
+    a: 'Single-spawn cost',
+    b: 'rubash 1.183 ms',
+    c: 'GNU 1.121 ms — even (the Win32 CreateProcess floor, shown honestly)',
+    src: 'unix-spawn-cost-20261012.md (min-of-3)',
+  },
+];
+
+const news = [
+  {
+    version: 'Unreleased (in development)',
+    date: '—',
+    summary:
+      'Function-level profiler (#815), scalar-assignment fast-path slicing (#609), set -E ERR-trap nesting semantics and active-console read three-way alignment (#720/#806), multiple hot-path de-allocation optimizations.',
+  },
+  {
+    version: '1.4.0',
+    date: '2026-10-10',
+    summary:
+      'Login-shell startup chain, real readline REPL, GNU cp port, stty builtin; suite deltas 3427 → 2072 lines (−40%); crates.io packaging slimmed (15.6 MB → 8.9 MB).',
+  },
+  {
+    version: '0.3.0',
+    date: '2026-08-22',
+    summary:
+      'Compatibility attribution ledger published (true deltas / host fixtures / legacy runner expectations); compound-statement prefix-alias fix; process-substitution regression coverage expanded; tag-triggered automatic Release.',
+  },
+];
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Rubash',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "Embeddable GNU Bash 5.3-compatible shell engine in Rust",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
+---
+
+<DocsLayout
+  title="rubash — the embeddable GNU Bash 5.3-compatible engine"
+  description="rubash product page: an embeddable bash engine written from scratch in Rust. crates.io 1.4.0 (cargo add rubash), zero-fork three-tier execution, full builtin coverage, the 83/83 GNU ledger, vendored-source methodology and the 1.5.0 embedding-API blueprint."
+  path="/en/products/rubash/"
+  lang="en"
+  enPath="/products/rubash/"
+  jsonLdExtra={productJsonLd}
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>rubash</h1>
+    <p class="lead">
+      The embeddable GNU Bash 5.3-compatible engine: lexer, parser, expansion, execution and builtins
+      all in-process, targeting byte-level compatibility with GNU Bash 5.3.0, native on Windows.
+      <strong>rubash itself is not a shell product</strong> — it is the engine; the interactive product
+      (niubash) is built on top of it.
+    </p>
+    <div class="badges">
+      <span class="p-badge">Rust</span>
+      <span class="p-badge">Windows · Linux · macOS</span>
+      <span class="p-badge">beta · embedding API 1.5.0</span>
+      <span class="p-badge">crates.io 1.4.0</span>
+    </div>
+    <p class="meta-line">
+      <a href="https://github.com/unixwin/rubash" target="_blank" rel="noopener noreferrer">github.com/unixwin/rubash ↗</a>
+      <span class="dot">·</span> Star 11
+      <span class="dot">·</span> latest v1.4.0 (repo-meta, measured 2026-10-19)
+    </p>
+  </header>
+
+  <section>
+    <h2 id="why">Why rubash</h2>
+    <p>
+      Want to give an editor, test framework or agent host "a library that runs real bash scripts"?
+      Until now there were two roads: link a ported bash with a POSIX emulation layer (an MIT project
+      cannot swallow GPL plus msys-2.0.dll), or use a toy shell subset. rubash is the third road: an
+      MIT-licensed, zero-emulation-layer engine whose semantic alignment is measured byte-for-byte
+      against 83 GNU upstream corpora — installed as a dependency in your project, not as an
+      emulation layer in your users' systems.
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（4 张卡片全文）</summary>
+      <div lang="zh-CN">
+        <ul>
+          <li><strong>Rubash 本身不是 shell 产品</strong>——从零用 Rust 写的 GNU Bash 语义引擎：词法、解析、展开、执行、内建全部进程内、headless；交互式 shell 建在引擎之上：niubash 内嵌 rubash 承担全部 bash 语义。</li>
+          <li><strong>为什么不是移植 bash</strong>——Git Bash/MSYS2 装的是骑在 msys-2.0.dll 上的移植 bash；rubash 没有这一层：一个自包含二进制直接说 Win32；GPL 代码零拷贝是成文红线。</li>
+          <li><strong>兼容是台账，不是口号</strong>——83 套上游语料 true-baseline 双向测量：83/83 通过、82 套逐字节一致；modernish 166/166、bash-completion 452/452、oh-my-bash 252/252——全部钉成 CI 回归夹具。</li>
+          <li><strong>语义模型平台中立</strong>——三层模型刻意与平台无关；Linux 原生构建并运行（WSL 内实测 19/24 套逐字节一致且在收敛），macOS CI 编译绿；Android 双目标进 CI 交叉检查。</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="features">Core features</h2>
+    <p>
+      62 real builtins with full GNU Bash 5.3 coverage; the zero-fork three-tier execution; 12 inlined
+      file commands plus pipeline-inline arms; a selectable platform identity (MSYS-compatible persona
+      vs honest native); an engineering surface for agents and debugging (function-level profiler,
+      DAP-first debugger design); and a hard cross-platform CI gate. Full list (Chinese):
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（六条特性全文）</summary>
+      <div lang="zh-CN">
+        <ul>
+          <li><strong>62 个真内建，全覆盖 GNU Bash 5.3</strong>——61 个内建全覆盖、无缺失，唯一扩展是 env；三层分发由仓内文档同步测试守护——改白名单不更新文档，cargo test 直接失败。</li>
+          <li><strong>零 fork 的三层执行</strong>——（ list ）与 $( ) 从不产生进程；真句柄 fd 表以 DuplicateHandle 共享同一内核文件对象；真进程只在真进程边界。</li>
+          <li><strong>12 个内联文件命令 + 管道内联臂</strong>——pwd、printf、mkdir、touch、chmod、cp、rm、rmdir、cat、sed、mkfifo、tty 引擎内联执行，echo | cat 这类管道一整个零 fork。</li>
+          <li><strong>可选择的平台身份</strong>——Windows 默认 MSYS2 兼容 persona，RUBASH_IDENTITY=native 切到诚实原生身份；persona 在 --help、--identity 与 README 处处披露，永不静默。</li>
+          <li><strong>为 agent 与调试准备的工程面</strong>——脚本级函数级 profiler（确定性插桩）已合并；DAP-first 调试器设计定稿；引擎跑得动 bashdb 核心调试循环。</li>
+          <li><strong>跨平台 CI 硬门</strong>——ubuntu / macOS / Windows x64 三个真 runner，四目标交叉检查；单测 698 通过 / 0 失败；跨平台缺口有公开台账。</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="install">Install &amp; quick start</h2>
+    <p>Embed as a dependency (the engine is a library; the org's three crates on crates.io — rubash, niubash, niubash-runtime — are all at 1.4.0):</p>
+    <div class="cmd">
+      <pre><code>{cargoAdd}</code></pre>
+      <CopyButton copy={cargoAdd} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p>Build the reference CLI from source:</p>
+    <div class="cmd">
+      <pre><code>{buildFromSource}</code></pre>
+      <CopyButton copy={buildFromSource} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p>Run a script (the reference CLI's usage — the entry shape of the compatibility harness):</p>
+    <div class="cmd">
+      <pre><code>{runScript}</code></pre>
+      <CopyButton copy={runScript} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p class="first-run">
+      For a first encounter, run the compatibility suite directly:
+      <code>MSYS_NO_PATHCONV=1 wsl bash scripts/true-baseline.sh</code> — the engine's catchphrase is
+      "measured"; the benchmark scripts are part of the product.
+    </p>
+  </section>
+
+  <section>
+    <h2 id="deep">Deep dive: embedding, execution model and the compatibility ledger</h2>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（嵌入 / 执行模型 / 兼容台账 三节全文）</summary>
+      <div lang="zh-CN">
+        <p><strong>嵌入方式与 1.5.0 蓝图</strong>：今天的 1.4.0 已经把引擎当依赖用——niubash 是第一个完整消费者，driver 级 API 已在生产。1.5.0 蓝图（RFC 已合并，PR rubash#814）：四层 workspace 拆分（rubash-core / rubash-driver / rubash-interactive / rubash facade）、Session 级稳定嵌入 API、846 处 env-IPC 形态逐族替换为 typed bridges。验收标准：外部编辑器能嵌入引擎而不需要知道 Windows 的存在。</p>
+        <p><strong>三层执行模型</strong>：POSIX fork() 在 Win32 没有等价物；rubash 复刻 fork 的语义而非机制——进程内子壳复制变量与 fd 表、真句柄 fd 表实现 POSIX dup 语义、真进程只在真进程边界出现。细读见 <a href="/en/docs/execution-model/">执行模型：零 fork 三层</a>；性能见 <a href="/en/docs/performance-model/">性能特征</a>与 <a href="/en/benchmarks/">基准页</a>。</p>
+        <p><strong>兼容台账与 vendored 源码方法论</strong>：语义判定的一手依据是仓内 vendored 的 GNU bash-5.3 源码（third_party/bash）：每个行为主张必须给 file:line 坐标；GPL 代码零拷贝红线成文于 docs/PROVENANCE.md；发布包不携带 third_party。台账见 <a href="/en/docs/compatibility/">兼容总览</a>；超出 GNU 套件的部分同样钉成 CI 夹具。</p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="bench">Measured numbers</h2>
+    <p>Every row is a real-machine, reproducible measurement; "N× faster" figures for array writes are against the previous engine, with the gap to GNU listed separately — wins and losses both shown.</p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>Metric</th><th>rubash</th><th>Framing / contrast</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          {
+            bench.map((r) => (
+              <tr>
+                <td>{r.a}</td>
+                <td><strong>{r.b}</strong></td>
+                <td>{r.c}</td>
+                <td><span class="src">{r.src}</span></td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="news">Release feed</h2>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>Version</th><th>Date</th><th>Summary</th></tr></thead>
+        <tbody>
+          {
+            news.map((n) => (
+              <tr>
+                <td><code>{n.version}</code></td>
+                <td>{n.date}</td>
+                <td>{n.summary}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="src-line">
+      Latest entries from changelogs.json (the rubash repo's CHANGELOG.md); the full feed lives on the <a href="/en/changelog/">changelog</a>.
+    </p>
+  </section>
+
+  <section>
+    <h2 id="links">Related links</h2>
+    <h3>On this site</h3>
+    <ul>
+      <li><a href="/en/products/niubash/">niubash product page</a> — rubash's first complete host (the reference integration)</li>
+      <li><a href="/en/docs/execution-model/">Execution model: three tiers, zero forks</a> · <a href="/en/docs/compatibility/">Compatibility: 83/83</a> · <a href="/en/docs/performance-model/">Performance profile</a></li>
+      <li><a href="/en/benchmarks/">Benchmarks</a> (8/8 workloads all faster than Git Bash, same session) · <a href="/en/changelog/">Changelog</a></li>
+    </ul>
+    <h3>Off site</h3>
+    <ul>
+      <li><a href="https://github.com/unixwin/rubash" target="_blank" rel="noopener noreferrer">GitHub repo ↗</a> · <a href="https://github.com/unixwin/rubash/releases" target="_blank" rel="noopener noreferrer">Releases ↗</a></li>
+      <li><a href="https://crates.io/crates/rubash" target="_blank" rel="noopener noreferrer">crates.io/crates/rubash ↗</a></li>
+      <li><a href="https://github.com/unixwin/rubash/blob/main/docs/design/1.5.0-workspace-and-engine-api.md" target="_blank" rel="noopener noreferrer">1.5.0 workspace &amp; embedding API design ↗</a> · <a href="https://github.com/unixwin/rubash/blob/main/docs/builtins.md" target="_blank" rel="noopener noreferrer">Builtin roster (single source of truth) ↗</a> · <a href="https://github.com/unixwin/rubash/blob/main/docs/PROVENANCE.md" target="_blank" rel="noopener noreferrer">PROVENANCE ↗</a></li>
+      <li><a href="/products/rubash/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
+    </ul>
+  </section>
+</DocsLayout>
+
+<style>
+  .doc-head h1 {
+    border-bottom: 3px solid var(--accent);
+    border-image: linear-gradient(90deg, var(--accent), transparent 70%) 1;
+    padding-bottom: 0.5rem;
+  }
+
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .p-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--accent);
+    border-radius: calc(var(--radius) * 0.75);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    padding: 0.24rem 0.6rem;
+    white-space: nowrap;
+  }
+
+  .meta-line {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .meta-line .dot {
+    margin: 0 0.4rem;
+  }
+
+  section h2 {
+    margin-top: 2.6rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .zh-fold {
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.55rem 1rem;
+  }
+
+  .zh-fold summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+
+  .zh-fold[open] summary {
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .zh-fold p,
+  .zh-fold li {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .zh-fold ul {
+    padding-left: 1.3rem;
+  }
+
+  .zh-fold li {
+    margin-bottom: 0.45rem;
+    line-height: 1.7;
+  }
+
+  .cmd {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0 0 1.05rem;
+  }
+
+  .cmd pre {
+    flex: 1 1 auto;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .first-run {
+    border-left: 3px solid var(--accent);
+    padding-left: 0.9rem;
+    color: var(--muted);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .cli-table {
+    width: 100%;
+    min-width: 620px;
+  }
+
+  .cli-table td strong {
+    color: var(--accent);
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  .src-line {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 960px) {
+    .cmd {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>

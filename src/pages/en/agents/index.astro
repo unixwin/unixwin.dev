@@ -25,7 +25,6 @@ const groups = [
 
 const statusLabel: Record<string, string> = { ready: 'Ready', partial: 'Partial', blocked: 'Blocked', unverified: 'Unverified' };
 const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 'warn' : 'muted');
-const total = (agentsData.agents as any[]).length;
 
 // Hand-translated one-liners, keyed by slug (data itself stays zh).
 const oneLinerEn: Record<string, string> = {
@@ -34,7 +33,7 @@ const oneLinerEn: Record<string, string> = {
   'claude-code':
     'Works with no config: the installer drops a bash launcher right on the probe path; an env var can pin it explicitly.',
   codex:
-    'The unixwin-maintained Codex fork ships ShellType::Niu built in — selected automatically once installed.',
+    'The unixwin-maintained Codex fork ships ShellType::Niu built in — install it with npm i -g @unixwin/codex (wpm install codex works too) and it is selected automatically.',
   zed:
     'A single setting: point terminal.shell.program at niu.exe, and the agent shares that terminal.',
   goose:
@@ -62,7 +61,7 @@ const oneLinerEn: Record<string, string> = {
   cursor:
     'The IDE has a workaround (Legacy Terminal Tool); the Agent CLI currently hard-codes PowerShell with no way to configure it.',
   devin:
-    'Investigation: Devin CLI has no native niubash integration; it launches from a niu session, but devin setup and other Win32 console TUIs white-screen today — niubash#455 is open.',
+    'Launches from a niu session; finish the devin setup login in a regular terminal; TUI support is on the way.',
   'qwen-code':
     'After forking gemini-cli it grew its own MSYSTEM/TERM sniffing and Git Bash lookup — set MSYSTEM=MINGW64 (experimental) to hit the installer-placed launcher. Source-read, not machine-tested.',
   'gemini-cli':
@@ -89,10 +88,13 @@ const mechanismEn: Record<string, string> = {
   '插件 profile': 'Plugin profile',
   'Git 探针 / automationProfile': 'Git probe / automationProfile',
   'Git 探针 / automationProfile（VS Code 家族）': 'Git probe / automationProfile (VS Code family)',
+  'Git 探针 / automationProfile（家族共享）': 'Git probe / automationProfile (shared by the family)',
   '编辑器终端 / automationProfile（扩展）': 'Editor terminal / automationProfile (extension)',
   '探测链当前对 bash 不友好': 'Detection chain unfriendly to bash',
   '无原生集成 · niu 会话内可启动': 'No native integration · launches from a niu session',
+  '无原生集成（TUI 受 niubash#455 阻塞）': 'No native integration (TUI blocked by niubash#455)',
   'MSYSTEM/TERM 嗅探 + Git Bash 路径查找（自研）': 'MSYSTEM/TERM sniffing + Git Bash lookup (Qwen-specific)',
+  'MSYSTEM/TERM 嗅探 → Git Bash 查找': 'MSYSTEM/TERM sniffing → Git Bash lookup',
   '无条件 PowerShell': 'Unconditional PowerShell',
   '无 shell 选项': 'No shell option',
   '未核验': 'Unverified',
@@ -126,33 +128,33 @@ const verifyTableEn = [
       <h1>Move your AI agent<br /><span class="hl">onto niubash</span></h1>
       <p class="sub">
         Windows is the first battleground: every command the agent runs lands on real bash syntax,
-        with deterministic output and git 3–7× faster. <strong>{total} agents</strong> are catalogued,
-        grouped into terminal / VSCode family / workarounds / not supported / not yet verified;
-        cards with a switch script open to a <strong>copy-paste script</strong>, verification and a rollback path.
+        with deterministic output and git 3–7× faster. Agents are grouped into terminal /
+        VSCode family / workarounds / not supported / not yet verified; cards with a switch script
+        open to a <strong>copy-paste script</strong>, verification and a rollback path.
       </p>
-    </section>
-
-    <section class="callout" aria-label="The rule that always works">
-      <p class="callout-title">The one rule that always works</p>
-      <p>{worksAlwaysEn}</p>
-      <div class="verify">
-        <span class="v-label">Check which shell any agent is actually using:</span>
-        <code>{verifyCmd}</code>
-        <CopyButton copy={verifyCmd} label="Copy" />
+      <div class="hero-cta">
+        <a class="cta-main" href="/en/agents/universal/">Wire up your AI agent →</a>
+        <p class="cta-note"><strong>24</strong> AI agents covered — <strong>15</strong> work out of the box</p>
       </div>
-      <table class="v-table">
-        <tbody>
-          {verifyTableEn.map((r) => (
-            <tr><td><code>{r.sign}</code></td><td>{r.means}</td></tr>
-          ))}
-        </tbody>
-      </table>
     </section>
 
-    <a class="universal-link" href="/agents/universal/">
-      <strong>Don't see your agent?</strong> The universal onboarding guide — the four detection
-      mechanisms and a wiring decision flow; any agent can be wired to niubash →
-    </a>
+    <section class="quick-cards" aria-label="Quick paths">
+      <a class="quick-card" href="#ready">
+        <h2>① I use Claude Code / Codex / Cursor…</h2>
+        <p>Pick your agent in the directory — terminal-native and VSCode-family entries ship a switch script, verification and a rollback path.</p>
+        <span class="qc-go">Browse the directory →</span>
+      </a>
+      <a class="quick-card" href="/en/agents/universal/">
+        <h2>② My agent isn't listed</h2>
+        <p>The universal wiring guide: four detection mechanisms + a three-step decision flow; any agent can be wired to niubash.</p>
+        <span class="qc-go">Read the universal guide →</span>
+      </a>
+      <a class="quick-card" href="/en/ai/">
+        <h2>③ Let the agent install it itself</h2>
+        <p>The AI portal: paste the one-click install prompt and your agent installs and wires up niubash on its own.</p>
+        <span class="qc-go">Open the AI portal →</span>
+      </a>
+    </section>
 
     {groups.map((g) => {
       const list = (agentsData.agents as any[]).filter((a) => a.group === g.key);
@@ -166,7 +168,7 @@ const verifyTableEn = [
           </div>
           <div class="card-grid">
             {list.map((a) => (
-              <a class="agent-card" href={`/agents/${a.slug}/`}>
+              <a class="agent-card" href={`/en/agents/${a.slug}/`}>
                 <div class="card-top">
                   <span class="card-id">
                     <img class="card-icon" src={a.icon} alt="" width="28" height="28" loading="lazy" />
@@ -176,7 +178,7 @@ const verifyTableEn = [
                     {statusLabel[a.status] ?? a.status}
                   </Badge>
                 </div>
-                <p class="card-line">{oneLinerEn[a.slug] ?? a.oneLiner}</p>
+                <p class="card-line">{a.oneLiner_en ?? oneLinerEn[a.slug] ?? a.oneLiner}</p>
                 <div class="card-foot">
                   <Badge tone="info">{mechanismEn[a.mechanism] ?? a.mechanism}</Badge>
                   {a.script ? <span class="has-script">one-line script ✓</span> : <span class="no-script">notes</span>}
@@ -189,6 +191,41 @@ const verifyTableEn = [
       );
     })}
 
+    <details class="principle">
+      <summary>The principle: how it picks a shell ($SHELL rule + uname signature table)</summary>
+      <p class="principle-plain">{worksAlwaysEn}</p>
+      <div class="verify">
+        <span class="v-label">Check which shell any agent is actually using:</span>
+        <code>{verifyCmd}</code>
+        <CopyButton copy={verifyCmd} label="Copy" />
+      </div>
+      <p class="principle-plain">
+        In plain terms: have the agent run the verify command above and match its output against
+        this table — <code>MSYS_NT</code> means it is already on niu (success); <code>MINGW64</code>
+        means it fell into Git Bash; <code>Linux</code> means it fell into WSL; a missing command
+        with an empty <code>$SHELL</code> means it is still on PowerShell/cmd.
+      </p>
+      <table class="v-table">
+        <tbody>
+          {verifyTableEn.map((r) => (
+            <tr>
+              <td><code>{r.sign}</code></td>
+              <td>
+                {r.means}
+                {r.sign.includes('MSYS_NT') && (
+                  <span class="row-note">
+                    MSYS_NT is a deliberate compatibility persona (uname reports MSYS so old
+                    scripts assume they are inside MSYS), not a real MSYS runtime — there is no
+                    MSYS inside niu.
+                  </span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </details>
+
     <section class="unverified">
       <p>
         Status legend: <strong>Ready</strong> = configurable in the current version ·
@@ -197,7 +234,7 @@ const verifyTableEn = [
         <strong>Unverified</strong> = no test or code read yet; source-read (not machine-tested) entries
         name their evidence in the detail page notes.
       </p>
-      <p>Agent detail pages behind these cards are in Chinese for now.</p>
+      <p>Detail pages behind these cards are English translations of the Chinese source (agents.md); the Chinese editions stay one click away on every page.</p>
       <p class="src">
         Source of truth for this page:
         <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">Coding agents on Windows, and the shell they run</a> (niubash repo docs/src/agents.md);
@@ -216,32 +253,63 @@ const verifyTableEn = [
   .sub { color: var(--muted); max-width: 46rem; margin: 0.8rem 0 0; line-height: 1.75; }
   .sub strong { color: var(--text); }
 
-  .callout {
+  /* Hero-level CTA: big button + real numbers (24/15 hardcoded, matches the agents.md roster) */
+  .hero-cta { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; margin: 1.3rem 0 0; }
+  .cta-main {
+    display: inline-flex; align-items: center; min-height: 48px;
+    background: var(--btn-bg); color: var(--btn-fg); border: 1px solid var(--btn-bg);
+    border-radius: var(--radius); padding: 0.7rem 1.5rem;
+    font-family: var(--font-mono); font-size: 0.98rem; font-weight: 600; letter-spacing: 0.02em;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  .cta-main:hover {
+    background: var(--btn-hover); border-color: var(--btn-hover);
+    transform: translateY(-1px); text-decoration: none;
+  }
+  .cta-note { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  .cta-note strong { color: var(--text); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  /* First-screen quick cards: directory / universal guide / AI portal */
+  .quick-cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: 1rem; margin: 1.9rem 0 0.4rem;
+  }
+  .quick-card {
+    display: flex; flex-direction: column; gap: 0.45rem;
+    background: var(--bg-elev); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 1.05rem 1.15rem; color: var(--text); text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .quick-card:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+  .quick-card h2 { margin: 0; font-size: 1.02rem; }
+  .quick-card p { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.65; flex: 1; }
+  .qc-go { color: var(--link); font-size: 0.85rem; }
+
+  /* Rule + signature table: demoted to the bottom, collapsed by default */
+  .principle {
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     border: 1px solid var(--border);
     border-left: 3px solid var(--accent);
     border-radius: var(--radius);
-    padding: 1.1rem 1.3rem;
-    margin: 1.6rem 0 2.2rem;
+    padding: 0.95rem 1.25rem;
+    margin: 2.4rem 0 1rem;
   }
-  .callout-title { color: var(--accent); font-weight: 700; margin: 0 0 0.4rem; }
-  .callout p { margin: 0; line-height: 1.7; }
-  .verify { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
-  .v-label { color: var(--muted); font-size: 0.88rem; }
-  .verify code {
+  .principle summary { cursor: pointer; color: var(--accent); font-weight: 700; }
+  .principle[open] summary { margin-bottom: 0.7rem; }
+  .principle-plain { margin: 0.55rem 0; color: var(--muted); line-height: 1.75; font-size: 0.9rem; }
+  .principle-plain code, .verify code {
     background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 0.3rem 0.7rem; font-size: 0.88rem;
+    padding: 0.05rem 0.35rem; font-size: 0.85rem;
   }
+  .verify { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0.8rem 0 0; }
+  .verify code { padding: 0.3rem 0.7rem; font-size: 0.88rem; }
+  .v-label { color: var(--muted); font-size: 0.88rem; }
   .v-table { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-size: 0.85rem; }
   .v-table td { border-top: 1px solid var(--border); padding: 0.35rem 0.5rem; color: var(--muted); }
   .v-table td:first-child { color: var(--text); white-space: nowrap; }
-
-  .universal-link {
-    display: block;
-    margin: 0 0 0.6rem;
-    color: var(--link);
-  }
+  .row-note { display: block; margin-top: 0.3rem; font-size: 0.8rem; color: var(--text); line-height: 1.65; }
 
   .group { margin: 2.2rem 0; }
   .group-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }

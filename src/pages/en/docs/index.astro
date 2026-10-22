@@ -9,22 +9,22 @@ import DocsLayout from '../../../components/DocsLayout.astro';
 
 const articles = [
   {
-    href: '/docs/compatibility/',
+    href: '/en/docs/compatibility/',
     title: 'Compatibility overview: what 83/83 means',
     line: 'A 100% pass across GNU Bash\'s 83 upstream test corpora, with 82 suites byte-identical in output — the one remaining delta proven byte-for-byte to be GNU\'s own coproc race.',
   },
   {
-    href: '/docs/paths-and-msys/',
+    href: '/en/docs/paths-and-msys/',
     title: 'Paths & MSYS: the biggest behavioral difference',
     line: 'One engine accepts all four path dialects — Windows, MSYS, WSL, Cygwin; with no MSYS runtime, argv arrives byte-for-byte as typed. MSYS_NO_PATHCONV is a word that does not exist here.',
   },
   {
-    href: '/docs/execution-model/',
+    href: '/en/docs/execution-model/',
     title: 'Execution model: three tiers, zero forks',
     line: '( list ) and $( ) never create a process; the fd table replicates POSIX dup semantics; real processes appear only at real process boundaries — and everything a script can observe matches GNU Bash.',
   },
   {
-    href: '/docs/performance-model/',
+    href: '/en/docs/performance-model/',
     title: 'Performance profile: where it is fast, where it is even',
     line: 'The zero-fork payoff lands on command substitution, subshells and background jobs; parity with GNU on external processes is the honest floor — every number measured on the same machine, methods public, benchmarks shipped along.',
   },
@@ -63,7 +63,7 @@ const articles = [
         <a class="card" href={a.href}>
           <h2>{a.title}</h2>
           <p>{a.line}</p>
-          <span class="go">Read the full article (in Chinese for now) →</span>
+          <span class="go">Read the article (English skeleton; Chinese prose folded) →</span>
         </a>
       ))
     }

@@ -77,6 +77,30 @@ Test-Path 'C:\Program Files\Git\bin\bash.exe'
       </p>
     </header>
 
+    <!-- ============ 首屏 CTA + 三张直入卡 ============ -->
+    <div class="hero-cta">
+      <a class="cta-main" href="/ai/">让 AI 接入 niubash →</a>
+      <p class="cta-note">已适配 <strong>24</strong> 个 AI agent——<strong>15</strong> 个开箱即用</p>
+    </div>
+
+    <section class="quick-cards" aria-label="快速直达">
+      <a class="quick-card" href="/agents/">
+        <h2>① 我用 Claude Code / Codex / Cursor…</h2>
+        <p>去目录挑你的 agent——开箱可换与 VSCode 家族都有换壳脚本、验证命令与回滚方法。</p>
+        <span class="qc-go">去目录挑 →</span>
+      </a>
+      <a class="quick-card" href="#mechanisms">
+        <h2>② 我的 agent 不在列表</h2>
+        <p>本页就是通用接线指南：四种探测机制 + 三步决策流，往下看即可。</p>
+        <span class="qc-go">开始接线 ↓</span>
+      </a>
+      <a class="quick-card" href="/ai/">
+        <h2>③ 让 agent 自己装</h2>
+        <p>AI 门户：把一键安装提示词粘给你的 agent，它自己完成安装与接线。</p>
+        <span class="qc-go">打开 AI 门户 →</span>
+      </a>
+    </section>
+
     <!-- ============ 2. 四机制 ============ -->
     <section class="sec" id="mechanisms">
       <h2>四种探测机制</h2>
@@ -179,36 +203,50 @@ Test-Path 'C:\Program Files\Git\bin\bash.exe'
         <div class="step-no" aria-hidden="true">2</div>
         <div class="step-body">
           <h3>第二步 · 看结果对号入座</h3>
-          <p class="note">把 agent 跑出的三行输出对照签名表：</p>
-          <div class="table-wrap">
-            <table class="tbl">
-              <thead>
-                <tr><th>你看到</th><th>实际 shell</th><th>下一步</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>uname -s</code> = <code>MSYS_NT-…</code>，且 <code>uname -a</code> 结尾 <code>x86_64 Msys</code></td>
-                  <td><strong>niu</strong>（winuxcmd shim）</td>
-                  <td><span class="m-chip good">成功</span> <code>$SHELL</code> 已指向 <code>niu.exe</code>；要跨启动方式钉住就补块 a。</td>
-                </tr>
-                <tr>
-                  <td><code>uname -s</code> = <code>MINGW64_NT-…</code>，<code>MSYSTEM=MINGW64</code></td>
-                  <td><strong>Git Bash</strong>（Git for Windows 自家运行时）</td>
-                  <td>被探针型机制抢了：走<span class="m-chip">机制③</span>（占位路径生效后，探针改打 niubash 的 <code>bash.exe</code>）或<span class="m-chip">机制②</span>（显式指定），也可持久化 <code>$SHELL</code> 兜底。</td>
-                </tr>
-                <tr>
-                  <td><code>uname -s</code> = <code>Linux</code></td>
-                  <td><strong>WSL</strong>——agent 回落 <code>which("bash")</code> 命中 <code>System32\bash.exe</code></td>
-                  <td>中招最深的静默错壳：走<span class="m-chip">机制②</span>或<span class="m-chip">机制③</span>，并用<span class="m-chip">机制①</span>（块 a）防回落。</td>
-                </tr>
-                <tr>
-                  <td><code>uname</code> 不存在，<code>$SHELL</code> 为空</td>
-                  <td><strong>PowerShell 或 cmd</strong>（用 <code>$PSVersionTable.PSVersion</code> vs <code>%COMSPEC%</code> 区分）</td>
-                  <td>安全但不兼容 bash 语法：走<span class="m-chip">机制②</span>（VS Code 家族即块 b）。</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <p class="note">把 agent 跑出的三行输出对照下面的签名表（默认收起，点开「原理」即看）：</p>
+          <details class="principle">
+            <summary>原理：它怎么选 shell——uname 签名表</summary>
+            <p class="principle-plain">
+              签名表用人话读：看到 <code>MSYS_NT</code> 就是已经在 niu 里（成功）；
+              <code>MINGW64</code> 是掉进了 Git Bash；<code>Linux</code> 是掉进了 WSL；
+              命令不存在、<code>$SHELL</code> 为空是还停在 PowerShell/cmd。
+            </p>
+            <div class="table-wrap">
+              <table class="tbl">
+                <thead>
+                  <tr><th>你看到</th><th>实际 shell</th><th>下一步</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>uname -s</code> = <code>MSYS_NT-…</code>，且 <code>uname -a</code> 结尾 <code>x86_64 Msys</code></td>
+                    <td><strong>niu</strong>（winuxcmd shim）</td>
+                    <td>
+                      <span class="m-chip good">成功</span> <code>$SHELL</code> 已指向 <code>niu.exe</code>；要跨启动方式钉住就补块 a。
+                      <span class="row-note">
+                        MSYS_NT 是我们有意伪装的兼容人格（uname 报 MSYS 让老脚本以为在 MSYS 里），
+                        并非真的 MSYS 运行时——niu 内部没有 MSYS。
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><code>uname -s</code> = <code>MINGW64_NT-…</code>，<code>MSYSTEM=MINGW64</code></td>
+                    <td><strong>Git Bash</strong>（Git for Windows 自家运行时）</td>
+                    <td>被探针型机制抢了：走<span class="m-chip">机制③</span>（占位路径生效后，探针改打 niubash 的 <code>bash.exe</code>）或<span class="m-chip">机制②</span>（显式指定），也可持久化 <code>$SHELL</code> 兜底。</td>
+                  </tr>
+                  <tr>
+                    <td><code>uname -s</code> = <code>Linux</code></td>
+                    <td><strong>WSL</strong>——agent 回落 <code>which("bash")</code> 命中 <code>System32\bash.exe</code></td>
+                    <td>中招最深的静默错壳：走<span class="m-chip">机制②</span>或<span class="m-chip">机制③</span>，并用<span class="m-chip">机制①</span>（块 a）防回落。</td>
+                  </tr>
+                  <tr>
+                    <td><code>uname</code> 不存在，<code>$SHELL</code> 为空</td>
+                    <td><strong>PowerShell 或 cmd</strong>（用 <code>$PSVersionTable.PSVersion</code> vs <code>%COMSPEC%</code> 区分）</td>
+                    <td>安全但不兼容 bash 语法：走<span class="m-chip">机制②</span>（VS Code 家族即块 b）。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
           <p class="note">
             这套签名检查同样出现在 Cursor 官方支持帖里：修复的判定就是
             <code>uname -a</code> 结尾从 <code>microsoft-standard-WSL2</code> 变成
@@ -352,6 +390,8 @@ Test-Path 'C:\Program Files\Git\bin\bash.exe'
             winuxcmd shim 的 <code>uname</code> 会报 <code>MSYS_NT-…</code>——这是为了兼容
             <strong>故意设计</strong>的：凡按 <code>uname</code> 分支的工具都会把宿主判成 MSYS，
             autotools 一类工具能明确观察到这一点。别当 bug 修。
+            换言之：MSYS_NT 是我们有意伪装的兼容人格（uname 报 MSYS 让老脚本以为在 MSYS 里），
+            并非真的 MSYS 运行时——niu 内部没有 MSYS。
             <span class="src">来源：<a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.md · Known traps 第 2 条</a></span>
           </p>
         </li>
@@ -413,6 +453,59 @@ Test-Path 'C:\Program Files\Git\bin\bash.exe'
   .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
   .one { color: var(--muted); margin: 0.9rem 0 0; line-height: 1.75; }
   .one strong { color: var(--text); }
+
+  /* 首屏 CTA + 三张直入卡（与 /agents/ 目录页同款） */
+  .hero-cta { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; margin: 1.5rem 0 0; }
+  .cta-main {
+    display: inline-flex; align-items: center; min-height: 48px;
+    background: var(--btn-bg); color: var(--btn-fg); border: 1px solid var(--btn-bg);
+    border-radius: var(--radius); padding: 0.7rem 1.5rem;
+    font-family: var(--font-mono); font-size: 0.98rem; font-weight: 600; letter-spacing: 0.02em;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  .cta-main:hover {
+    background: var(--btn-hover); border-color: var(--btn-hover);
+    transform: translateY(-1px); text-decoration: none;
+  }
+  .cta-note { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  .cta-note strong { color: var(--text); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  .quick-cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: 1rem; margin: 1.6rem 0 0;
+  }
+  .quick-card {
+    display: flex; flex-direction: column; gap: 0.45rem;
+    background: var(--bg-elev); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 1.05rem 1.15rem; color: var(--text); text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .quick-card:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+  .quick-card h2 { margin: 0; font-size: 1.02rem; }
+  .quick-card p { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.65; flex: 1; }
+  .qc-go { color: var(--link); font-size: 0.85rem; }
+
+  /* 签名表折叠区：默认收起，人话解释开头 */
+  .principle {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 0.95rem 1.25rem;
+    margin: 0.9rem 0;
+  }
+  .principle summary { cursor: pointer; color: var(--accent); font-weight: 700; }
+  .principle[open] summary { margin-bottom: 0.7rem; }
+  .principle-plain { margin: 0.55rem 0; color: var(--muted); line-height: 1.75; font-size: 0.9rem; }
+  .principle-plain code {
+    background: var(--bg-code); border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.5); padding: 0.05rem 0.35rem; font-size: 0.82em;
+  }
+  .row-note {
+    display: block; margin-top: 0.3rem; font-size: 0.8rem; color: var(--text); line-height: 1.65;
+  }
 
   .sec { margin: 2.2rem 0; }
   .sec > h2 { font-size: 1.15rem; margin: 0 0 0.4rem; color: var(--accent); letter-spacing: 0.04em; }

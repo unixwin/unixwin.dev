@@ -12,37 +12,52 @@
  * - 宽 260px（与 DocsLayout 三栏 grid 第一轨一致），sticky 避开吸顶 SiteHeader。
  */
 import nav from '../data/docs-nav.json';
+import { inferLang } from '../i18n/lang';
 
 interface NavItem {
   label: string;
+  label_en?: string;
   href: string;
   external?: boolean;
 }
 
 interface NavSection {
   label: string;
+  label_en?: string;
   items: NavItem[];
 }
 
 const sections = (nav as { sections: NavSection[] }).sections;
 
-const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
+// en 页（/en/ 前缀）：分组/条目取 label_en，站内深链改写到 /en/ 镜像；zh 页渲染与从前一致
+const isEn = inferLang(Astro.url.pathname) === 'en';
+
+const L = (item: { label: string; label_en?: string }) => (isEn ? item.label_en ?? item.label : item.label);
+
+function localizeHref(href: string): string {
+  if (!isEn || /^https?:\/\//.test(href) || href.startsWith('/en')) return href;
+  if (/^\/docs\/.+/.test(href)) return `/en${href}`;
+  if (/^\/products\/.+/.test(href)) return `/en${href}`;
+  return href;
+}
+
+const currentPath = (Astro.url.pathname.replace(/\/+$/, '') || '/').replace(/^\/en(?=\/|$)/, '');
 
 function isActive(href: string): boolean {
   if (/^https?:\/\//.test(href)) return false;
-  const normalized = href.replace(/\/+$/, '') || '/';
-  return normalized === currentPath;
+  const normalized = localizeHref(href).replace(/\/+$/, '') || '/';
+  return normalized === Astro.url.pathname.replace(/\/+$/, '') || normalized === currentPath;
 }
 ---
 
-<aside class="sidebar" aria-label="文档导航">
+<aside class="sidebar" aria-label={isEn ? 'Docs navigation' : '文档导航'}>
   <div class="side-search">
     <input
       type="search"
       disabled
-      placeholder="Search docs… / 搜索文档"
-      title="搜索即将上线"
-      aria-label="搜索文档（即将上线）"
+      placeholder={isEn ? 'Search docs…' : 'Search docs… / 搜索文档'}
+      title={isEn ? 'Search coming soon' : '搜索即将上线'}
+      aria-label={isEn ? 'Search docs (coming soon)' : '搜索文档（即将上线）'}
     />
     <span class="search-kbd" aria-hidden="true">⌘K</span>
   </div>
@@ -50,18 +65,18 @@ function isActive(href: string): boolean {
   {
     sections.map((section) => (
       <details class="side-group" open>
-        <summary class="side-title">{section.label}</summary>
+        <summary class="side-title">{L(section)}</summary>
         <ul class="side-list">
           {section.items.map((item) => (
             <li>
               <a
-                href={item.href}
+                href={localizeHref(item.href)}
                 class:list={{ 'side-link': true, 'is-active': isActive(item.href), 'is-external': item.external }}
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noopener noreferrer' : undefined}
               >
-                <span class="link-label">{item.label}</span>
+                <span class="link-label">{L(item)}</span>
                 {item.external && (
                   <span class="ext-mark" aria-hidden="true">↗</span>
                 )}
@@ -86,7 +101,7 @@ function isActive(href: string): boolean {
           fill="currentColor"
         />
       </svg>
-      在 GitHub 上编辑此站
+      {isEn ? 'Edit this site on GitHub' : '在 GitHub 上编辑此站'}
       <span class="ext-mark" aria-hidden="true">↗</span>
     </a>
   </div>

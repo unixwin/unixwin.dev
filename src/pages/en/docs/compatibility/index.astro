@@ -1,0 +1,279 @@
+---
+/**
+ * /en/docs/compatibility/ — English edition of the compatibility overview.
+ * Skeleton (h1/lead/section headings/table headers) is English; prose paragraphs
+ * carry the Chinese source folded into <details>. Full translation tracked separately.
+ * Facts: rubash README "Compatibility at a Glance" ledger (2026-10-12 full rerun),
+ * nameref residual attribution doc, niubash docs/src/rubash-bash-compat-matrix.md.
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Compatibility overview: what 83/83 means"
+  description="The niubash engine passes 83/83 of GNU Bash 5.3's upstream test corpora, byte-identical output on 82 suites; true-baseline differential method, byte-identical semantics, extra corpora, and the 'compatible ≠ same implementation' stance."
+  path="/en/docs/compatibility/"
+  lang="en"
+  enPath="/docs/compatibility/"
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>Compatibility overview: what 83/83 means</h1>
+    <p class="lead">
+      "Bash compatible" is a sentence anyone can say. niubash's version is
+      <strong>measured, not claimed</strong>: take GNU Bash's own 83 upstream test corpora, run a
+      true-baseline bidirectional differential on real Windows hardware, and the result is 83/83
+      passing with 82 suites byte-identical in output — the single residual proven byte-for-byte to
+      be a race inside GNU Bash itself. This page explains exactly what those numbers mean and how
+      they were measured.
+    </p>
+  </header>
+
+  <section>
+    <h2>What a true-baseline differential is</h2>
+    <p>
+      The easiest place to water down a compatibility measurement is the baseline. Run upstream tests
+      without pinning the environment, or let script stubs stand in for real tools, and the pass rate
+      means nothing. rubash's ledger (full rerun 2026-10-12 on master <code>764b9dde</code>) records
+      the baseline discipline: no upstream test stubs, real <code>/bin/sh</code> mounted by niu, a
+      per-suite <code>TMPDIR</code>, foreground timeout control; a pure-baseline failure set is run
+      first on the same machine and environment, and <strong>the bidirectional comm must be empty
+      before anything counts</strong> — directional differences in either direction (GNU fails / engine
+      passes, or engine fails / GNU passes) must be driven to zero. Environment-bound differences
+      (NTFS attribute bits, locale, host tool output, <code>/dev/tty</code>…) are audited item by item
+      before counting as zero.
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original</summary>
+      <div lang="zh-CN">
+        <p>
+          兼容性测量最容易掺水的环节是「基线」。跑上游测试却不固定环境、或让脚本桩替代
+          真实工具，测出的通过率毫无意义。rubash 的台账（2026-10-12 在 master
+          <code>764b9dde</code> 全量复跑）记录了基线纪律：不使用上游脚本桩、由 niu
+          挂载真实的 <code>/bin/sh</code>、每套件独立 <code>TMPDIR</code>、前台超时控制；
+          同机同环境先跑纯基线失败集，<strong>双向 comm 为空才放行</strong>——即 GNU
+          失败而引擎通过、或引擎失败而 GNU 通过的方向性差异都要归零。环境绑定差异
+          （NTFS 属性位、locale、宿主工具输出、<code>/dev/tty</code> 等）逐项审计后才计为零。
+        </p>
+        <p>
+          语义判定的一手依据是仓内 vendored 的 GNU bash-5.3 源码：每个行为主张给出
+          <code>file:line</code> 坐标；WSL 里的 GNU 5.3.0 只做行为验证。GPL 代码零拷贝，
+          判定纪律成文于 PROVENANCE 文档。
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>What 83/83 and 82 byte-identical suites mean</h2>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Metric</th><th>Value</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>PASS</td>
+          <td><strong>83/83 (100%)</strong></td>
+          <td>All 83 suites of GNU Bash 5.3's upstream test corpora pass, nameref included.</td>
+        </tr>
+        <tr>
+          <td>Byte-identical</td>
+          <td><strong>82 suites (0 diff)</strong></td>
+          <td>Output byte-for-byte identical to GNU — not "semantically equivalent": an empty byte-level diff.</td>
+        </tr>
+        <tr>
+          <td>nameref residual</td>
+          <td>1 line</td>
+          <td>A visibility difference for <code>declare -r RO_PID</code> after coproc, proven to be GNU 5.3.0's own coproc reaping race (below).</td>
+        </tr>
+        <tr>
+          <td>Environmental deltas</td>
+          <td>9 suites zeroed</td>
+          <td>Difference items in the glob/extglob/read/coproc suites are all environment-bound (NTFS, locale, signal tables…); audited to zero after A/B double-commit agreement per suite.</td>
+        </tr>
+      </tbody>
+    </table>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original</summary>
+      <div lang="zh-CN">
+        <p>
+          那一行 nameref 残差值得单独讲：在同一套 harness 文件系统上，<strong>GNU Bash
+          对自己</strong>就能在 59/60 与 1/60 之间翻转这一行的输出；而在 ext4 上 GNU
+          60/60 稳定，其输出与 rubash 逐字节一致（stdout 与 stderr 皆是）。结论：
+          残差属于 GNU 自身的 reap 时序竞态，不是引擎缺陷——归因论证以逐字节证据成文。
+          作为参照，2026-09-09 原始差分尚有 3427 处，此后削减 99% 以上：83/83
+          是长跑的终点，不是起点的宣言。
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Corpora beyond the GNU suites</h2>
+    <p>
+      The same true-baseline method (script files, byte-level diff against GNU 5.3.0) is also applied
+      to evaluation corpora outside the GNU suites and to real-world ecosystem assets; every judgment
+      and count is archived in rubash issue #477:
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Corpus</th><th>Result</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>modernish capability suite (cross-shell quirk probes)</td><td><strong>166/166 identical rc vectors</strong></td></tr>
+        <tr><td>mvdan/sh parser corpus</td><td>559 snippets; parse acceptance and exit codes aligned</td></tr>
+        <tr><td>bash-completion matrix</td><td>452/452; <code>bash -n</code> canary byte-identical</td></tr>
+        <tr><td>git-completion</td><td>140/140</td></tr>
+        <tr><td>oh-my-bash</td><td>22 library loads, 252/252 function environments identical, 5 theme PS1s byte-identical</td></tr>
+        <tr><td>ble.sh (29,601-line line-editing framework)</td><td><code>bash -n</code> rc=0 aligned; source mode terminates cleanly</td></tr>
+        <tr><td>nvm.sh v0.40.x loader</td><td>Loads byte-clean (including empty <code>NVM_DIR</code> auto-use on native Windows)</td></tr>
+        <tr><td>FFmpeg / OpenSSH / PHP / ltmain / cmake configure</td><td><code>--help</code> and error-path output byte-identical</td></tr>
+        <tr><td>git's own test framework t/test-lib.sh</td><td>Runs end-to-end under the engine</td></tr>
+      </tbody>
+    </table>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original</summary>
+      <div lang="zh-CN">
+        <p>
+          上述资产全部钉为回归夹具在 CI 每次推送时运行；真实生态收割语料（数千仓、近万
+          资产，夜间巡检）持续把发现的真实缺陷回流为修复。
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Compatible ≠ same implementation</h2>
+    <p>
+      These numbers prove consistency of the <strong>script-observable surface</strong>: exit codes,
+      stdout/stderr bytes, fd behavior, signal disposition. They do not say the internals match bash —
+      quite the opposite: subshells and command substitution create zero processes (see the
+      <a href="/en/docs/execution-model/">execution model</a>), path translation is table-driven with
+      no MSYS layer (see <a href="/en/docs/paths-and-msys/">paths &amp; MSYS</a>). Differences are
+      framed by contract documents and the ledger is public (environment-zeroed items are named per
+      suite) — the other half of "compatibility is measured": prove where things agree, and write
+      down where they do not.
+    </p>
+  </section>
+
+  <footer class="further">
+    <h2>Read further</h2>
+    <ul>
+      <li><a href="https://unixwin.github.io/niubash/rubash-bash-compat-matrix/" target="_blank" rel="noopener noreferrer">Bash compatibility matrix (official niubash docs) ↗</a></li>
+      <li><a href="https://github.com/unixwin/rubash#compatibility-at-a-glance" target="_blank" rel="noopener noreferrer">rubash compatibility ledger (README · Compatibility at a Glance) ↗</a></li>
+      <li><a href="https://github.com/unixwin/rubash/blob/master/docs/nameref-suite-residual-gnu-race-20261012.md" target="_blank" rel="noopener noreferrer">Byte-level attribution: nameref residual = GNU's own race ↗</a></li>
+      <li><a href="/docs/compatibility/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
+    </ul>
+  </footer>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  /* 中文原文折叠块 */
+  .zh-fold {
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.55rem 1rem;
+  }
+
+  .zh-fold summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+
+  .zh-fold[open] summary {
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .zh-fold p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .doc-table th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0.5rem 0.6rem;
+  }
+
+  .doc-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.6rem;
+    vertical-align: top;
+  }
+
+  .doc-table td strong {
+    color: var(--accent);
+  }
+
+  .further {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.1rem 1.4rem;
+    font-size: 0.92rem;
+  }
+
+  .further h2 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    border-bottom: none;
+  }
+
+  .further ul {
+    margin: 0;
+    padding-left: 1.3rem;
+  }
+
+  .further li {
+    margin-bottom: 0.35rem;
+  }
+</style>

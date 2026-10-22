@@ -2,77 +2,95 @@
   "sections": [
     {
       "label": "文档",
+      "label_en": "Docs",
       "items": [
         {
           "label": "文档区首页",
+          "label_en": "Docs home",
           "href": "/docs/"
         }
       ]
     },
     {
       "label": "产品文档",
+      "label_en": "Products",
       "items": [
         {
           "label": "Niubash — AI-native bash",
+          "label_en": "Niubash — AI-native bash",
           "href": "/products/niubash/"
         },
         {
           "label": "WinuxCmd — 原生 Unix 命令集",
+          "label_en": "WinuxCmd — native Unix commands",
           "href": "/products/winuxcmd/"
         },
         {
           "label": "Rubash — 可嵌入引擎",
+          "label_en": "Rubash — embeddable engine",
           "href": "/products/rubash/"
         },
         {
           "label": "niu-git — 原生 Windows Git",
+          "label_en": "niu-git — native Windows Git",
           "href": "/products/niu-git/"
         },
         {
           "label": "wpm — 包管理器",
+          "label_en": "wpm — package manager",
           "href": "/products/wpm/"
         },
         {
           "label": "Oh My Niu — 主题与插件",
+          "label_en": "Oh My Niu — themes & plugins",
           "href": "/products/oh-my-niu/"
         }
       ]
     },
     {
       "label": "niubash 与 bash 的差异",
+      "label_en": "niubash vs bash",
       "items": [
         {
           "label": "兼容总览：83/83 是什么意思",
+          "label_en": "Compatibility: what 83/83 means",
           "href": "/docs/compatibility/"
         },
         {
           "label": "路径与 MSYS：最大的行为差异",
+          "label_en": "Paths & MSYS: the biggest difference",
           "href": "/docs/paths-and-msys/"
         },
         {
           "label": "执行模型：零 fork 三层",
+          "label_en": "Execution model: three tiers, zero forks",
           "href": "/docs/execution-model/"
         },
         {
           "label": "性能特征：哪里快、哪里持平",
+          "label_en": "Performance: fast where, even where",
           "href": "/docs/performance-model/"
         }
       ]
     },
     {
       "label": "参考",
+      "label_en": "Reference",
       "items": [
         {
           "label": "CLI 与旗标参考",
+          "label_en": "CLI & flags reference",
           "href": "/docs/cli/"
         }
       ]
     },
     {
       "label": "完整文档",
+      "label_en": "Full documentation",
       "items": [
         {
           "label": "unixwin.github.io/niubash",
+          "label_en": "unixwin.github.io/niubash",
           "href": "https://unixwin.github.io/niubash/",
           "external": true
         }

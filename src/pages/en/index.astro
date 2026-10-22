@@ -55,14 +55,17 @@ interface InstallBar {
   note?: string;
   badge: string;
   tone: 'accent' | 'warn';
+  hideStars?: boolean; // star count is meaningless for these: wpm tracks wpm-source, oh-my-niu 1, niu-git 0
 }
 const installBars: Record<string, InstallBar> = {
   niubash: { cmd: 'irm unixwin.dev/install.ps1 | iex', badge: 'stable', tone: 'accent' },
   winuxcmd: { cmd: 'winuxcmd --version', badge: 'preinstalled', tone: 'accent' },
   rubash: { cmd: 'cargo add rubash', badge: 'beta · embeddable', tone: 'warn' },
-  'niu-git': { cmd: 'git --version', badge: 'preinstalled', tone: 'accent' },
-  wpm: { cmd: 'wpm install ripgrep', badge: 'built-in', tone: 'accent' },
-  'oh-my-niu': { cmd: 'niu plugin list', badge: 'bundled', tone: 'accent' },
+  'niu-git': { cmd: 'git --version', badge: 'preinstalled', tone: 'accent', hideStars: true },
+  // ripgrep ships preinstalled, so installing it says nothing — use neovim, a real
+  // installable from the index (preinstalled set is only gawk/niugit/ripgrep/fd)
+  wpm: { cmd: 'wpm install neovim', badge: 'built-in', tone: 'accent', hideStars: true },
+  'oh-my-niu': { cmd: 'niu plugin list', badge: 'bundled', tone: 'accent', hideStars: true },
 };
 
 // ---- Latest news: newest released version per repo, first line of first
@@ -232,6 +235,7 @@ const softwareAppJsonLd = {
 
     <!-- ============ Products: 3-column large cards ============ -->
     <Section id="products" title="Product Matrix" kicker="six projects · one family">
+      <p class="products-sub">All six ship with one niubash install — install niubash once and the whole family is in place.</p>
       <div class="product-grid">
         {ordered.map((p) => {
           const bar = installBars[p.id];
@@ -251,7 +255,7 @@ const softwareAppJsonLd = {
                 <p class="card-tagline-en">{p.tagline_zh}</p>
                 <footer class="card-foot">
                   <code class="card-cmd" title="CLI entry">$ {p.cmd}</code>
-                  <span class="card-stars" title="GitHub Stars">★ {shownStars}</span>
+                  {!bar?.hideStars && <span class="card-stars" title="GitHub Stars">★ {shownStars}</span>}
                   <a class="card-repo" href={`https://${p.repo}`} target="_blank" rel="noopener noreferrer">repo ↗</a>
                 </footer>
               </article>
@@ -410,7 +414,7 @@ const softwareAppJsonLd = {
             github.com/unixwin/niubash/releases
           </a>.
         </li>
-        <li>wpm ships inside WinuxCmd (type <code>wpm</code> for help); install packages like <code>wpm install ripgrep</code>, self-upgrade with <code>wpm update winuxcmd</code>.</li>
+        <li>wpm ships inside WinuxCmd (type <code>wpm</code> for help); install packages like <code>wpm install neovim</code>, self-upgrade with <code>wpm update winuxcmd</code>.</li>
         <li>
           Installs with <Badge tone="info">no admin rights</Badge>; PATH and a Windows Terminal profile are set up for you · docs at
           <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
@@ -958,6 +962,13 @@ const softwareAppJsonLd = {
   }
 
   /* ---------- Products: 3-column large cards (≥1200px), cell is the card ---------- */
+  .products-sub {
+    margin: -0.6rem 0 1.2rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
   .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));

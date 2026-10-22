@@ -1,0 +1,263 @@
+---
+/**
+ * /en/docs/performance-model/ — English edition of "Performance profile: where it is
+ * fast, where it is even". English skeleton (h1/lead/headings/table headers — tables
+ * fully translated, cells are numbers plus short phrases), Chinese prose folded into
+ * <details>. Facts: src/data/benchmarks.json (same source as /benchmarks/ and
+ * data/bench/: 2026-10-18 headToHead results.tsv / startup.tsv, rubash master 8ab35e89).
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Performance profile: where it is fast, where it is even"
+  description="niubash's zero-fork payoff lands on command substitution, subshells and background jobs; external processes sit at parity with GNU (the Win32 CreateProcess floor). Same-machine measurements: git startup ~14ms, one-shot execution 26.3ms, prompt reading .git/HEAD."
+  path="/en/docs/performance-model/"
+  lang="en"
+  enPath="/docs/performance-model/"
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>Performance profile: where it is fast, where it is even</h1>
+    <p class="lead">
+      The performance meaning of the zero-fork three-tier model (see the
+      <a href="/en/docs/execution-model/">execution model</a>) fits in one sentence:
+      <strong>wherever bash must create a process and niubash does not, niubash is faster; wherever
+      both must create a process, the two are even.</strong> Every number on this page is a
+      same-machine measurement (method at the end), benchmark artifacts ship with the package, and
+      each can be checked on the <a href="/en/benchmarks/">benchmarks page</a>.
+    </p>
+  </header>
+
+  <section>
+    <h2>Where zero fork pays off</h2>
+    <p>
+      Command substitution, subshells, background jobs — the constructs bash forks for on every use —
+      are <code>ShellState::clone</code> plus an fd-table copy in niubash, never process creation.
+      Same-session measurements of 2026-10-18 (750 iterations per workload, interleaved rotation,
+      warm-up discarded, min-of-3, in ms):
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Workload</th><th>rubash</th><th>Git Bash</th><th>WSL (reference)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Background subshell <code>( )</code> ×750</td><td><strong>1643</strong></td><td>2192</td><td>123</td></tr>
+        <tr><td>Background wait <code>sleep &amp; wait</code> ×750</td><td><strong>1696</strong></td><td>1967</td><td>154</td></tr>
+        <tr><td>Pure spawn ×750</td><td><strong>1696</strong></td><td>2119</td><td>158</td></tr>
+        <tr><td>Builtin loop ×750</td><td><strong>32</strong></td><td>40</td><td>3</td></tr>
+        <tr><td>Foreground external command ×750</td><td><strong>37</strong></td><td>41</td><td>857</td></tr>
+      </tbody>
+    </table>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original</summary>
+      <div lang="zh-CN">
+        <p>
+          对 Git Bash 是 8 个工作负载全部占优；WSL 列仅作参考——Linux 内核 fork 让它的
+          后台作业天然占优，但它的前台外部命令要跨 OS 文件边界（857 ms）、冷启动
+          202–278 ms，且带走一整套虚拟机。迁移评估时，按你的脚本里「fork 密集」还是
+          「外部命令密集」对号入座。
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>External processes: parity is a design fact</h2>
+    <p>
+      niubash does not claim faster external processes — they should not be faster. Single-spawn cost:
+      rubash 1.183 ms vs GNU 1.121 ms — <strong>even</strong>, because both land on the same Win32
+      <code>CreateProcess</code> floor. The entire zero-fork payoff comes from the "no process"
+      paths, not from making "necessary processes" faster. That is also the essential difference from
+      the MSYS layer: in Git Bash every process additionally pays the fork-emulation tax.
+    </p>
+  </section>
+
+  <section>
+    <h2>Hot paths inside the engine: gaps are engineered away</h2>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original</summary>
+      <div lang="zh-CN">
+        <p>
+          语言层的重负载也被逐个啃掉，而不是留着当「已知慢」：nvm.sh 这类重词法脚本的
+          解析差距从 720 倍压到 8 倍（重词法字节量 −40%）；数组元素写入从 O(n²) 改为
+          O(1) 追加——K=5000 时关联数组单次写快 45 倍、索引数组覆盖写快 177 倍；
+          多行粘贴的自动误执行从 186 次降到 0（257 行载荷从 300 秒超时降到 4.6 秒）。
+          这些不是理论优化：每项都有 PR 号与基准脚本可复现，夜间性能门盯住它们不回潮。
+        </p>
+      </div>
+    </details>
+    <p>
+      Summary in English: the heavy lexer workloads were closed one by one rather than left as "known
+      slow" — the nvm.sh-class parsing gap shrank from 720× to 8× (heavy-lexer bytes −40%); array
+      element writes went from O(n²) to O(1) append (at K=5000, associative-array single writes 45×
+      faster, indexed-array overwrite writes 177×); multiline-paste auto-execution misfires dropped
+      from 186 to 0 (a 257-line payload from a 300 s timeout to 4.6 s). None of these are theoretical:
+      each has a PR number and a reproducible benchmark script, and a nightly performance gate keeps
+      them from regressing.
+    </p>
+  </section>
+
+  <section>
+    <h2>Startup numbers</h2>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Metric</th><th>niubash family</th><th>Contrast</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>git startup (<code>git --version</code>)</td><td><strong>~14 ms</strong> (niu-git: MSVC + schannel, no MSYS)</td><td>Git Bash 45–103 ms</td></tr>
+        <tr><td>One-shot execution <code>niu -c true</code></td><td><strong>26.3 ms</strong></td><td>Git Bash 71 ms</td></tr>
+        <tr><td>Shell startup (5 measured runs)</td><td><strong>rubash 27–48 ms</strong></td><td>Git Bash 60–93 ms · WSL 202–278 ms</td></tr>
+        <tr><td>Prompt git segment</td><td><strong>reads <code>.git/HEAD</code>, ≤29 ms</strong></td><td>Git spawned per prompt: 113–362 ms</td></tr>
+        <tr><td>WinuxCmd tool layer</td><td>3.79 MB carrying 176 commands / 1,924 options, ~19 ms cold start</td><td>—</td></tr>
+        <tr><td>Install size</td><td>niu ≈16 MB · zero DLLs</td><td>Git Bash 440 MB + 20 MB <code>msys-2.0.dll</code></td></tr>
+      </tbody>
+    </table>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original</summary>
+      <div lang="zh-CN">
+        <p>
+          提示符一项值得展开：Git Bash 兼容主题不 spawn git 子进程，而是直接读
+          <code>.git/HEAD</code> 文件（微秒级），把「每敲一条命令付一次 git 启动」变成
+          「不付」。一次性执行数字对 agent 与 CI 尤其重要——<code>niu -c</code> 的
+          冷启动地板从 105.6 ms 一路压到 26.3 ms（一次性快路径六连 PR）。
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>How to read these numbers</h2>
+    <p>
+      Environment: Intel Xeon w5-3435 · Windows 10 19045 · same-machine WSL2 Ubuntu (GNU Bash 5.3.0
+      contrast) · Git Bash 5.3.0. Method: interleaved rotation (rubash → Git Bash → WSL), one warm-up
+      round discarded, min-of-3, identical timing for all three. Numbers move with versions; the
+      methodology does not: nothing unmeasured gets written, wins and losses both shown. The repo
+      also runs a nightly performance gate (per-asset timing trends; hard-fails over budget) against
+      regressions.
+    </p>
+    <p>
+      Full tables, raw TSVs and the runner scripts: <a href="/en/benchmarks/">/en/benchmarks/</a>.
+    </p>
+  </section>
+
+  <footer class="further">
+    <h2>Read further</h2>
+    <ul>
+      <li><a href="/en/benchmarks/">UNIXWIN benchmarks page (full tables + raw artifacts + method)</a></li>
+      <li><a href="https://unixwin.github.io/niubash/why-niubash/" target="_blank" rel="noopener noreferrer">Why Niubash (official docs: contrast table and design argument) ↗</a></li>
+      <li><a href="https://github.com/unixwin/niu-git" target="_blank" rel="noopener noreferrer">niu-git (the repo behind ~14 ms git startup) ↗</a></li>
+      <li><a href="/docs/performance-model/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
+    </ul>
+  </footer>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .zh-fold {
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.55rem 1rem;
+  }
+
+  .zh-fold summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+
+  .zh-fold[open] summary {
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .zh-fold p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .doc-table th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0.5rem 0.6rem;
+  }
+
+  .doc-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.6rem;
+    vertical-align: top;
+  }
+
+  .doc-table td strong {
+    color: var(--accent);
+  }
+
+  .further {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.1rem 1.4rem;
+    font-size: 0.92rem;
+  }
+
+  .further h2 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    border-bottom: none;
+  }
+
+  .further ul {
+    margin: 0;
+    padding-left: 1.3rem;
+  }
+
+  .further li {
+    margin-bottom: 0.35rem;
+  }
+</style>

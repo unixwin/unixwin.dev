@@ -23,7 +23,6 @@ const groups = [
 
 const statusLabel: Record<string, string> = { ready: '可用', partial: '部分', blocked: '暂不可', unverified: '待核验' };
 const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 'warn' : 'muted');
-const total = (agentsData.agents as any[]).length;
 ---
 
 <BaseLayout
@@ -40,31 +39,32 @@ const total = (agentsData.agents as any[]).length;
       <h1>把你的 AI Agent<br /><span class="hl">换到 niubash 上</span></h1>
       <p class="sub">
         前期主战场是 Windows：agent 每条命令都跑在真 bash 语法上，输出确定、git 快 3–7 倍。
-        目录共 <strong>{total} 家</strong>，按终端系 / VSCode 家族 / 有变通 / 暂不支持 / 尚未核验分组；
+        目录按终端系 / VSCode 家族 / 有变通 / 暂不支持 / 尚未核验分组；
         有换壳脚本的卡片点进去都有<strong>可复制的脚本</strong>、验证命令与回滚方法。
       </p>
-    </section>
-
-    <section class="callout" aria-label="一句话通则">
-      <p class="callout-title">一句话通则</p>
-      <p>{agentsData.universal.worksAlways}</p>
-      <div class="verify">
-        <span class="v-label">验证任何 agent 现在用的是哪个 shell：</span>
-        <code>{agentsData.universal.verifyCmd}</code>
-        <CopyButton copy={agentsData.universal.verifyCmd} label="复制" />
+      <div class="hero-cta">
+        <a class="cta-main" href="/agents/universal/">让 AI 接入 niubash →</a>
+        <p class="cta-note">已适配 <strong>24</strong> 个 AI agent——<strong>15</strong> 个开箱即用</p>
       </div>
-      <table class="v-table">
-        <tbody>
-          {agentsData.universal.verifyTable.map((r) => (
-            <tr><td><code>{r.sign}</code></td><td>{r.means}</td></tr>
-          ))}
-        </tbody>
-      </table>
     </section>
 
-    <a class="universal-link" href="/agents/universal/">
-      <strong>没找到你的 agent？</strong> 通用接入指南：四种探测机制 + 接线决策流，任何 agent 都能接上 niubash →
-    </a>
+    <section class="quick-cards" aria-label="快速直达">
+      <a class="quick-card" href="#ready">
+        <h2>① 我用 Claude Code / Codex / Cursor…</h2>
+        <p>去目录挑你的 agent——开箱可换与 VSCode 家族都有换壳脚本、验证命令与回滚方法。</p>
+        <span class="qc-go">去目录挑 →</span>
+      </a>
+      <a class="quick-card" href="/agents/universal/">
+        <h2>② 我的 agent 不在列表</h2>
+        <p>通用接线指南：四种探测机制 + 三步决策流，任何 agent 都能接上 niubash。</p>
+        <span class="qc-go">看通用指南 →</span>
+      </a>
+      <a class="quick-card" href="/ai/">
+        <h2>③ 让 agent 自己装</h2>
+        <p>AI 门户：把一键安装提示词粘给你的 agent，它自己完成安装与接线。</p>
+        <span class="qc-go">打开 AI 门户 →</span>
+      </a>
+    </section>
 
     {groups.map((g) => {
       const list = (agentsData.agents as any[]).filter((a) => a.group === g.key);
@@ -101,6 +101,39 @@ const total = (agentsData.agents as any[]).length;
       );
     })}
 
+    <details class="principle">
+      <summary>原理：它怎么选 shell（$SHELL 通则 + uname 签名表）</summary>
+      <p class="principle-plain">{agentsData.universal.worksAlways}</p>
+      <div class="verify">
+        <span class="v-label">验证任何 agent 现在用的是哪个 shell：</span>
+        <code>{agentsData.universal.verifyCmd}</code>
+        <CopyButton copy={agentsData.universal.verifyCmd} label="复制" />
+      </div>
+      <p class="principle-plain">
+        签名表用人话读：让 agent 跑上面的验证命令，拿输出逐行对照——看到
+        <code>MSYS_NT</code> 就是已经在 niu 里（成功）；<code>MINGW64</code> 是掉进了 Git Bash；
+        <code>Linux</code> 是掉进了 WSL；命令不存在、<code>$SHELL</code> 为空是还停在 PowerShell/cmd。
+      </p>
+      <table class="v-table">
+        <tbody>
+          {agentsData.universal.verifyTable.map((r) => (
+            <tr>
+              <td><code>{r.sign}</code></td>
+              <td>
+                {r.means}
+                {r.sign.includes('MSYS_NT') && (
+                  <span class="row-note">
+                    MSYS_NT 是我们有意伪装的兼容人格（uname 报 MSYS 让老脚本以为在 MSYS 里），
+                    并非真的 MSYS 运行时——niu 内部没有 MSYS。
+                  </span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </details>
+
     <section class="unverified">
       <p>
         状态口径：<strong>可用</strong>=当前版本可配置生效 · <strong>部分</strong>=有变通/部分场景 ·
@@ -124,26 +157,63 @@ const total = (agentsData.agents as any[]).length;
   .sub { color: var(--muted); max-width: 46rem; margin: 0.8rem 0 0; line-height: 1.75; }
   .sub strong { color: var(--text); }
 
-  .callout {
+  /* hero 级 CTA：大按钮 + 实数副文案（24/15 为写死口径，与 agents.md 名单一致） */
+  .hero-cta { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; margin: 1.3rem 0 0; }
+  .cta-main {
+    display: inline-flex; align-items: center; min-height: 48px;
+    background: var(--btn-bg); color: var(--btn-fg); border: 1px solid var(--btn-bg);
+    border-radius: var(--radius); padding: 0.7rem 1.5rem;
+    font-family: var(--font-mono); font-size: 0.98rem; font-weight: 600; letter-spacing: 0.02em;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  .cta-main:hover {
+    background: var(--btn-hover); border-color: var(--btn-hover);
+    transform: translateY(-1px); text-decoration: none;
+  }
+  .cta-note { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  .cta-note strong { color: var(--text); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  /* 首屏三张直入卡：目录 / 通用指南 / AI 门户 */
+  .quick-cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: 1rem; margin: 1.9rem 0 0.4rem;
+  }
+  .quick-card {
+    display: flex; flex-direction: column; gap: 0.45rem;
+    background: var(--bg-elev); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 1.05rem 1.15rem; color: var(--text); text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .quick-card:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+  .quick-card h2 { margin: 0; font-size: 1.02rem; }
+  .quick-card p { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.65; flex: 1; }
+  .qc-go { color: var(--link); font-size: 0.85rem; }
+
+  /* 通则与签名表：整体降权到页面底部，默认收起 */
+  .principle {
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     border: 1px solid var(--border);
     border-left: 3px solid var(--accent);
     border-radius: var(--radius);
-    padding: 1.1rem 1.3rem;
-    margin: 1.6rem 0 2.2rem;
+    padding: 0.95rem 1.25rem;
+    margin: 2.4rem 0 1rem;
   }
-  .callout-title { color: var(--accent); font-weight: 700; margin: 0 0 0.4rem; }
-  .callout p { margin: 0; line-height: 1.7; }
-  .verify { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
-  .v-label { color: var(--muted); font-size: 0.88rem; }
-  .verify code {
+  .principle summary { cursor: pointer; color: var(--accent); font-weight: 700; }
+  .principle[open] summary { margin-bottom: 0.7rem; }
+  .principle-plain { margin: 0.55rem 0; color: var(--muted); line-height: 1.75; font-size: 0.9rem; }
+  .principle-plain code, .verify code {
     background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 0.3rem 0.7rem; font-size: 0.88rem;
+    padding: 0.05rem 0.35rem; font-size: 0.85rem;
   }
+  .verify { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0.8rem 0 0; }
+  .verify code { padding: 0.3rem 0.7rem; font-size: 0.88rem; }
+  .v-label { color: var(--muted); font-size: 0.88rem; }
   .v-table { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-size: 0.85rem; }
   .v-table td { border-top: 1px solid var(--border); padding: 0.35rem 0.5rem; color: var(--muted); }
   .v-table td:first-child { color: var(--text); white-space: nowrap; }
+  .row-note { display: block; margin-top: 0.3rem; font-size: 0.8rem; color: var(--text); line-height: 1.65; }
 
   .group { margin: 2.2rem 0; }
   .group-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }

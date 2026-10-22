@@ -54,14 +54,16 @@ interface InstallBar {
   note?: string;
   badge: string;
   tone: 'accent' | 'warn';
+  hideStars?: boolean; // star 无意义的卡不显示 star：wpm 用的是 wpm-source 仓、oh-my-niu 1、niu-git 0
 }
 const installBars: Record<string, InstallBar> = {
   niubash: { cmd: 'irm unixwin.dev/install.ps1 | iex', badge: 'stable', tone: 'accent' },
   winuxcmd: { cmd: 'winuxcmd --version', badge: '预装', tone: 'accent' },
   rubash: { cmd: 'cargo add rubash', badge: 'beta · 嵌入', tone: 'warn' },
-  'niu-git': { cmd: 'git --version', badge: '预装', tone: 'accent' },
-  wpm: { cmd: 'wpm install ripgrep', badge: '内置', tone: 'accent' },
-  'oh-my-niu': { cmd: 'niu plugin list', badge: '随发行', tone: 'accent' },
+  'niu-git': { cmd: 'git --version', badge: '预装', tone: 'accent', hideStars: true },
+  // ripgrep 预装，装它等于没说话——换索引里真实需要装的 neovim（预装仅 gawk/niugit/ripgrep/fd）
+  wpm: { cmd: 'wpm install neovim', badge: '内置', tone: 'accent', hideStars: true },
+  'oh-my-niu': { cmd: 'niu plugin list', badge: '随发行', tone: 'accent', hideStars: true },
 };
 
 // ---- 最新动态：每仓最新一个已发布版本，取第一个非空分组的第一条，截断 60 字 ----
@@ -226,13 +228,14 @@ const softwareAppJsonLd = {
 
     <!-- ============ Products：3 列大卡 ============ -->
     <Section id="products" title="产品矩阵" kicker="six projects · one family">
+      <p class="products-sub">全部六项随 niubash 一键可得——装一次 niubash，六个产品全部就位。</p>
       <div class="product-grid">
         {ordered.map((p) => {
           const bar = installBars[p.id];
           return (
             <div class="product-cell">
               <a class="cell-cover" href={`/products/${p.id}/`} aria-label={`查看 ${p.name} 文档`}></a>
-              <ProductCard product={p} stars={repoMeta.repos?.[p.id]?.stars} />
+              <ProductCard product={p} stars={repoMeta.repos?.[p.id]?.stars} hideStars={bar?.hideStars} />
               <a class="cell-docs" href={`/products/${p.id}/`}>文档 →</a>
               {bar && (
                 <div class="cell-install">
@@ -379,7 +382,7 @@ const softwareAppJsonLd = {
             github.com/unixwin/niubash/releases
           </a>。
         </li>
-        <li>wpm 即 WinuxCmd 内置（输入 <code>wpm</code> 看 help）；装包如 <code>wpm install ripgrep</code>，自升级 <code>wpm update winuxcmd</code>。</li>
+        <li>wpm 即 WinuxCmd 内置（输入 <code>wpm</code> 看 help）；装包如 <code>wpm install neovim</code>，自升级 <code>wpm update winuxcmd</code>。</li>
         <li>
           安装 <Badge tone="info">免管理员权限</Badge>，PATH 与 Windows Terminal 配置自动就绪 · 文档见
           <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
@@ -928,6 +931,13 @@ const softwareAppJsonLd = {
   }
 
   /* ---------- Products：3 列大卡（≥1200px），.product-cell 即卡，ProductCard 透明融入 ---------- */
+  .products-sub {
+    margin: -0.6rem 0 1.2rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
   .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr));

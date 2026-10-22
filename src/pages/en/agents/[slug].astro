@@ -1,0 +1,187 @@
+---
+/**
+ * /en/agents/[slug] — English edition of the agent onboarding detail page.
+ * Data source: src/data/agents.json — English sibling fields (*_en) with
+ * fallback to the Chinese originals, so the page never renders empty.
+ * Body copy, badges, section headings and the banner are English; the
+ * top banner notes that the Chinese edition is the source of truth.
+ */
+import BaseLayout from '../../../components/BaseLayout.astro';
+import SiteHeader from '../../../components/SiteHeader.astro';
+import SiteFooter from '../../../components/SiteFooter.astro';
+import Badge from '../../../components/Badge.astro';
+import CopyButton from '../../../components/CopyButton.astro';
+import ZhOnlyBanner from '../../../components/ZhOnlyBanner.astro';
+import agentsData from '../../../data/agents.json';
+
+export function getStaticPaths() {
+  return (agentsData.agents as any[]).map((a) => ({ params: { slug: a.slug } }));
+}
+
+const agent = agentsData.agents.find((a: any) => a.slug === Astro.params.slug) as any;
+
+// 数据里的 name 是中文展示名（如 Codex（unixwin fork））；en 页把全角括号转半角
+const displayName: string = agent.name.replace(/（/g, ' (').replace(/）/g, ')').replace(/\)\s+\)/g, '))');
+
+const oneLiner = agent.oneLiner_en ?? agent.oneLiner;
+const mechanism = agent.mechanism_en ?? agent.mechanism;
+const difficulty = agent.difficulty_en ?? agent.difficulty;
+const steps: string[] = agent.steps_en ?? agent.steps ?? [];
+const verify: string = agent.verify_en ?? agent.verify ?? '';
+const rollback: string = agent.rollback_en ?? agent.rollback ?? '';
+const notes: string[] = agent.notes_en ?? agent.notes ?? [];
+const scriptLabel = agent.script ? agent.script.label_en ?? agent.script.label : '';
+
+const statusTone = agent.status === 'ready' ? 'accent' : agent.status === 'partial' ? 'warn' : 'muted';
+const statusLabel = { ready: 'Ready', partial: 'Partial', blocked: 'Blocked', unverified: 'Unverified' }[agent.status] ?? agent.status;
+const difficultyLabel = difficulty === '—' ? 'Difficulty —' : `Difficulty ${difficulty}`;
+---
+
+<BaseLayout
+  title={`${displayName} × niubash (English edition)`}
+  description={oneLiner}
+  theme="day"
+  path={`/en/agents/${agent.slug}/`}
+  lang="en"
+  enPath={`/agents/${agent.slug}/`}
+>
+  <SiteHeader />
+
+  <main class="container narrow">
+    <ZhOnlyBanner zhPath={`/agents/${agent.slug}/`} />
+
+    <p class="crumb"><a href="/en/agents/">← Agent directory</a></p>
+
+    <header class="head">
+      <h1 class="head-title">
+        <img class="head-icon" src={agent.icon} alt="" width="40" height="40" loading="eager" />
+        <span>{displayName}</span>
+      </h1>
+      <div class="badges">
+        <Badge tone={statusTone}>{statusLabel}</Badge>
+        <Badge tone="info">{mechanism}</Badge>
+        {(agent.platforms as string[]).map((p) => <Badge tone="muted">{p}</Badge>)}
+        <Badge tone="muted">{difficultyLabel}</Badge>
+      </div>
+      <p class="one">{oneLiner}</p>
+    </header>
+
+    {agent.script ? (
+      <section class="script-block" aria-label="Shell swap script">
+        <div class="script-head">
+          <span class="script-label">{scriptLabel}</span>
+          <CopyButton copy={agent.script.code} label="Copy script" title="Copy to clipboard" />
+        </div>
+        <pre class="script-code"><code>{agent.script.code}</code></pre>
+      </section>
+    ) : (
+      <section class="script-block is-none">
+        <p>
+          {agent.status === 'ready'
+            ? 'This agent needs no script.'
+            : 'No configuration script is available for this agent yet.'}
+        </p>
+      </section>
+    )}
+
+    {steps.length ? (
+      <section class="sec">
+        <h2>Steps</h2>
+        <ol class="steps">
+          {steps.map((s: string) => <li>{s}</li>)}
+        </ol>
+      </section>
+    ) : null}
+
+    {verify && verify !== '—' ? (
+      <section class="sec">
+        <h2>Verify</h2>
+        <p class="verify-line">{verify}</p>
+      </section>
+    ) : null}
+
+    {rollback && rollback !== '—' ? (
+      <section class="sec">
+        <h2>Rollback</h2>
+        <pre class="rollback"><code>{rollback}</code></pre>
+      </section>
+    ) : null}
+
+    {notes.length ? (
+      <section class="sec">
+        <h2>Notes &amp; pitfalls</h2>
+        <ul class="notes">
+          {notes.map((n: string) => <li>{n}</li>)}
+        </ul>
+      </section>
+    ) : null}
+
+    <section class="sec">
+      <h2>Sources</h2>
+      <ul class="sources">
+        {(agent.sources as string[]).map((s) => <li><code>{s}</code></li>)}
+        <li>
+          <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">
+            agents.md (the complete probe-mechanism document) ↗
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <p class="back-zh">
+      Chinese edition of this page: <a href={`/agents/${agent.slug}/`} hreflang="zh-CN" lang="zh-CN">/agents/{agent.slug}/</a>
+    </p>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<style>
+  .narrow { max-width: 52rem; }
+  .crumb { margin: 1.6rem 0 0.6rem; font-size: 0.88rem; }
+  .crumb a { color: var(--link); }
+
+  .head h1 { margin: 0 0 0.6rem; font-size: clamp(1.6rem, 4vw, 2.2rem); }
+  .head-title { display: flex; align-items: center; gap: 0.7rem; }
+  .head-icon {
+    flex: none;
+    width: 40px; height: 40px; object-fit: contain;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 4px;
+  }
+  .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .one { color: var(--muted); margin: 0.8rem 0 0; line-height: 1.7; }
+
+  .script-block {
+    background: var(--bg-code); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: var(--radius);
+    margin: 1.6rem 0; overflow: hidden;
+  }
+  .script-block.is-none { border-left-color: var(--border); padding: 0.9rem 1.2rem; color: var(--muted); }
+  .script-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+    padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-elev);
+  }
+  .script-label { color: var(--muted); font-size: 0.85rem; }
+  .script-code {
+    margin: 0; padding: 1rem 1.2rem; overflow-x: auto;
+    white-space: pre; font-size: 0.9rem; line-height: 1.65; color: var(--accent);
+  }
+
+  .sec { margin: 1.8rem 0; }
+  .sec h2 { font-size: 1.05rem; margin: 0 0 0.6rem; color: var(--accent); letter-spacing: 0.04em; }
+  .steps { margin: 0; padding-left: 1.2rem; line-height: 1.9; color: var(--text); }
+  .verify-line { color: var(--muted); line-height: 1.7; margin: 0; }
+  .rollback {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 0.7rem 1rem; margin: 0; overflow-x: auto; white-space: pre; font-size: 0.86rem;
+  }
+  .notes { margin: 0; padding-left: 1.2rem; line-height: 1.85; color: var(--muted); }
+  .sources { margin: 0; padding-left: 1.2rem; line-height: 1.85; color: var(--muted); font-size: 0.9rem; }
+  .sources a { color: var(--link); }
+
+  .back-zh { margin: 2.2rem 0 1.6rem; color: var(--muted); font-size: 0.85rem; }
+  .back-zh a { color: var(--link); }
+</style>

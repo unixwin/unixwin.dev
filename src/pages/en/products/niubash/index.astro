@@ -1,0 +1,439 @@
+---
+/**
+ * /en/products/niubash/ — English edition of the niubash product page.
+ * Skeleton English (h1/lead/headings/tables); prose-heavy Chinese sections folded
+ * into <details>. Bench and news tables fully translated (short cells).
+ * Same facts as the zh page (portal-dump 2026-10-19 audit, repo-meta 2026-10-19).
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+import CopyButton from '../../../../components/CopyButton.astro';
+
+const installWinget = 'winget install --id Unixwin.Niubash --source winget';
+const installWin = 'irm https://unixwin.dev/install.ps1 | iex';
+const installLinux = 'tar -xzf niubash-v*-linux-x86_64.tar.gz && niubash-v*-linux-x86_64/niu';
+const installSource = 'git clone https://github.com/unixwin/niubash.git && cd niubash && cargo build --release';
+
+const bench = [
+  {
+    a: 'One-shot execution niu -c true',
+    b: '26.3 ms (was 105.6 ms — six one-shot fast-path PRs)',
+    c: 'Git Bash 71 ms',
+    src: 'GITBASH-KILLER facet 6 · niubash PR #267–#272',
+  },
+  {
+    a: 'Prompt git segment',
+    b: 'reads .git/HEAD, ≤29 ms',
+    c: 'git spawned per prompt: 113–362 ms',
+    src: 'GITBASH-KILLER facet 3 (real repo, min-of-20)',
+  },
+  {
+    a: 'Install size',
+    b: 'niu ≈16 MB, zero DLLs',
+    c: 'Git Bash 440 MB + 20 MB msys-2.0.dll',
+    src: 'GITBASH-KILLER facet 4 (measured on real installs)',
+  },
+  {
+    a: 'Multiline paste',
+    b: 'auto-execution misfires 186 → 0; 257-line payload 300 s timeout → 4.6 s',
+    c: '—',
+    src: 'niubash PR #252/#288 · paste_multiline_bench.py',
+  },
+  {
+    a: 'Workspace unit tests',
+    b: '1026 passed / 0 failed',
+    c: '—',
+    src: 'CI run 39191023176 (FACTS.json)',
+  },
+];
+
+const news = [
+  {
+    version: '1.4.3',
+    date: '2026-10-21',
+    summary:
+      'Listed on the official winget source (Unixwin.Niubash); interactive multiline groups no longer wedge the REPL; vendored bash bumped to patch 20; -EncodedCommand full spelling; installer hardening.',
+  },
+  {
+    version: '1.4.2',
+    date: '2026-10-20',
+    summary:
+      'Root fix for windowless parents flashing a console (WinuxCmd shim v1.1.18 + engine-side suppression); x64 preload leg fails closed; gawk-preinstall 404 root-fixed.',
+  },
+  {
+    version: '1.4.0',
+    date: '2026-10-10',
+    summary:
+      'Git Bash-compatible default prompt (reads .git/HEAD, no git spawn), --encoded-command and --cwd-state, end-to-end vi mode, agent skill bundle, release packages preload gawk/niu-git/ripgrep/fd.',
+  },
+  {
+    version: '1.3.4',
+    date: '2026-10-05',
+    summary:
+      'Theme choice survives source and fresh terminals; multiline-theme cursor placement fixed; 178/178 WinuxCmd applet completions embedded; the golden user journey became a release gate.',
+  },
+  {
+    version: '1.3.3',
+    date: '2026-10-04',
+    summary:
+      'PROMPT_COMMAND probe first-key-eating fixed (typeahead guard); tr pipe option fixed; parse throughput +13% (nvm GNU ratio 18.0x → 15.6x).',
+  },
+];
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Niubash',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "AI-native bash for humans and AI agents — real bash syntax, real Unix commands, native Windows/Linux/macOS",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
+---
+
+<DocsLayout
+  title="niubash — the AI-native real Bash"
+  description="niubash product page: a Rust-built native three-platform bash-compatible shell. Zero-fork three-tier execution, no MSYS, all four path dialects, 83/83 GNU upstream corpora, agent-ready flags and wpm integration."
+  path="/en/products/niubash/"
+  lang="en"
+  enPath="/products/niubash/"
+  jsonLdExtra={productJsonLd}
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>niubash</h1>
+    <p class="lead">
+      The AI-native real Bash: real syntax, real Unix commands, native Windows / Linux / macOS.
+      One <code>niu.exe</code> packages the language engine (rubash), real Unix commands (WinuxCmd),
+      a git-aware prompt and a plugin system with a trust model; it is not MSYS2, Cygwin, Git Bash or
+      WSL — no POSIX emulation layer, no path-conversion heuristics.
+    </p>
+    <div class="badges">
+      <span class="p-badge">Rust</span>
+      <span class="p-badge">Windows · Linux · macOS</span>
+      <span class="p-badge">stable v1.4.3</span>
+    </div>
+    <p class="meta-line">
+      <a href="https://github.com/unixwin/niubash" target="_blank" rel="noopener noreferrer">github.com/unixwin/niubash ↗</a>
+      <span class="dot">·</span> Star 178
+      <span class="dot">·</span> latest v1.4.3 (measured via repo-meta)
+    </p>
+  </header>
+
+  <section>
+    <h2 id="why">Why niubash</h2>
+    <p>
+      Writing Bash on Windows has historically meant one of a few fates: install a whole MSYS
+      emulation layer (Git Bash — 440 MB plus an argument-rewriting msys-2.0.dll), boot a Linux VM
+      (WSL — paths flip sides), or give up Bash for PowerShell's verb-noun dialect. niubash's answer
+      is the fourth road: <strong>a from-scratch Rust engine that executes bash syntax directly</strong>,
+      Windows-native as the main battleground, with the same code shipped as portable binaries on
+      Linux and macOS.
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（4 张卡片 + 论证全文）</summary>
+      <div lang="zh-CN">
+        <p>
+          它能跑真插件、真脚本、真 dotfiles，靠的不是移植 GNU 代码，而是把兼容性当工程对象：
+          每一个行为主张都要对 vendored GNU bash-5.3 源码给 file:line 坐标，每一处差异都要双向差分到字节级。
+        </p>
+        <ul>
+          <li><strong>零 fork：三层执行模型</strong>——POSIX fork() 在 Win32 没有等价物，MSYS2/Cygwin 只能在 syscall 层伪造它。niu 的引擎 rubash 复刻 fork 的语义而非机制：子壳与命令替换在进程内完成，脚本可观察的一切与 GNU Bash 一致。命令替换类负载实测 13–62x 快于 GNU bash。</li>
+          <li><strong>无 MSYS：argv 永不改写</strong>——Git Bash 的 MSYS 运行时会在 spawn 前启发式改写「看起来像路径」的参数；niu 没有 MSYS 运行时：参数进什么，命令就收什么，无咒语可念。</li>
+          <li><strong>四大生态的路径方言全收</strong>——Windows 原生（D:\repo、D:/repo）、MSYS/Git Bash 形（/d/repo、/tmp、/usr/bin）、WSL 形（/mnt/d）、Cygwin 形（/cygdrive/d）全部接受且真折叠——既有脚本零修改。</li>
+          <li><strong>兼容性是测出来的，不是宣称的</strong>——对 GNU Bash 自己的 83 套上游语料做 true-baseline 双向测量：83/83 通过、82 套逐字节一致；另外全网 2686 仓 / 9701 资产每夜巡检，6336 条真实资产判定原文入仓可回放。</li>
+        </ul>
+        <p>
+          路径方言实测矩阵随审计包附上（PATH-MATRIX.md，约 100 条 PS 原生 argv 探针逐格实跑）；
+          执行模型细读见 <a href="/en/docs/execution-model/">执行模型：零 fork 三层</a>，
+          路径差异见 <a href="/en/docs/paths-and-msys/">路径与 MSYS</a>。
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="features">Core features</h2>
+    <p>
+      Real plugins (oh-my-bash, bash-it, bash-completion run unmodified), agent-ready flags
+      (<code>--encoded-command</code>, <code>--cwd-state</code>), $SHELL-based agent onboarding,
+      12 inlined file commands + 178 applet completions, built-in wpm, and a git-aware prompt that
+      never spawns git. The full nine-point list (Chinese):
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（九条特性全文）</summary>
+      <div lang="zh-CN">
+        <ul>
+          <li><strong>真·插件生态：上游 BASH 插件直接跑</strong>——oh-my-bash、bash-it、bash-completion、bash-preexec 源码一行不改原生运行；bash-completion 3796 行完整 source rc=0 曾是发布阻塞，如今是端到端门禁的一环。</li>
+          <li><strong>为 agent 而设的旗标面</strong>——niu --encoded-command &lt;base64&gt; 给 agent/CI 一条免引号通道；niu --cwd-state &lt;file&gt; 让链式一次性调用共享目录记忆。</li>
+          <li><strong>AI agent 接入：$SHELL 即机制</strong>——niu 导出 $SHELL，遵循 POSIX 约定的 agent 从 niu 会话启动即用、零配置；安装器在探针路径布放 bash 启动器命中 Claude Code 的第一探针。</li>
+          <li><strong>内联命令与编译进壳的补全</strong>——12 个高频文件命令内联执行，echo | cat 全程零进程；178 个 WinuxCmd applet 的真实旗标补全编译进 shell。</li>
+          <li><strong>wpm 联动：命令即包</strong>——rg / fd / bat / jq / node 一条 wpm install 到位；Windows 发行包预装 gawk、niu-git、ripgrep、fd。</li>
+          <li><strong>git 感知的快速提示符</strong>——默认提示符读 .git/HEAD 文件（微秒级）渲染分支与脏标记，不再每条提示符 spawn git 子进程（实测 113–362ms）。</li>
+          <li><strong>输入管线做到字节级</strong>——多行粘贴自动误执行 186 次 → 0，257 行载荷 300s 超时 → 4.6s；ConPTY 粘贴丢字符、typeahead 吃键、控制台 read 三面逐项与 GNU 行为对齐。</li>
+          <li><strong>跨平台到 CI 腿：三个发布平台，六个发布目标</strong>——Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六目标每次发布冒烟四查；Android 双目标 incubating，OpenHarmony 仅 CI 编译检查。</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="install">Install &amp; quick start</h2>
+    <p>Windows prefers winget (the official Microsoft source; the manifest carries an InstallerSha256 check):</p>
+    <div class="cmd">
+      <pre><code>{installWinget}</code></pre>
+      <CopyButton copy={installWinget} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p>Or a one-line PowerShell script (no admin required; sets up PATH and a Windows Terminal profile; SHA256 verified):</p>
+    <div class="cmd">
+      <pre><code>{installWin}</code></pre>
+      <CopyButton copy={installWin} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p class="first-run">
+      On Windows the install ships a complete command layer: the full WinuxCmd root (176 Unix commands
+      plus the built-in wpm package manager, under <code>&#123;app&#125;\winuxcmd\</code>, PATH pointed at
+      <code>winuxcmd\bin</code>), and per <code>preinstall.json</code> preloads gawk (with an awk shim),
+      niu-git, ripgrep and fd — git on PATH is native git (~14 ms). Only gawk is x64-only; ARM64
+      installs likewise preload niu-git / ripgrep / fd.
+    </p>
+    <p>Linux / macOS: grab the portable tar.gz and unpack:</p>
+    <div class="cmd">
+      <pre><code>{installLinux}</code></pre>
+      <CopyButton copy={installLinux} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p>Build from source (Rust 1.95+):</p>
+    <div class="cmd">
+      <pre><code>{installSource}</code></pre>
+      <CopyButton copy={installSource} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p class="first-run">
+      First run of <code>niu</code> starts a setup wizard: prompt theme, completion style and font
+      detection, writing pure-bash-syntax <code>~/.niubashrc</code> — afterwards, all configuration is
+      that one file.
+    </p>
+  </section>
+
+  <section>
+    <h2 id="deep">Deep dive: AI integration, plugins and the prompt</h2>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（AI 集成 / 插件系统 / 提示符 三节全文）</summary>
+      <div lang="zh-CN">
+        <p><strong>AI 集成</strong>：agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：<code>niu -c true</code> 的冷启动地板从 105.6 ms 压到 26.3 ms（一次性快路径六连 PR；29 例行为电池零差异）。其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，与 <code>-c</code> 同路径、同 BASH_EXECUTION_STRING 契约。其三，目录记忆 <code>--cwd-state</code>。会话级接入：<strong>从 niu 会话启动的 agent 直接拿到 niu 导出的 $SHELL</strong>。逐家 agent 见 <a href="/en/agents/">AI Agent 接入目录</a>；给 agent 的一键安装提示词见 <a href="/en/ai/">给 AI 的门户</a>；全部旗标语义见 <a href="/en/docs/cli/">CLI 与旗标参考</a>。</p>
+        <p><strong>插件系统</strong>：外部 bash 生态走「先装、后审、再信」：<code>niu plugin add</code> 克隆源（新源默认不受信），<code>niu plugin trust</code> 审阅校验和后放行，<code>niu plugin enable</code> 在 rc 尾部维护托管块——块外内容永不改写。声明式 spec（~/.niubash/plugins.toml）是唯一事实源，sync / restore / rollback 一族动词带 lockfile 锁定，镜像（niu plugin mirror）对国内网络友好。运行时信任层会复验 pin。</p>
+        <p><strong>提示符</strong>：默认提示符是 Git Bash 骨架，但分支段读 .git/HEAD 文件而不是 fork git——「提示符永不 spawn」红线，实测冷 39 ms / 暖 p50 2.5 ms，对照 Git Bash 每提示符 __git_ps1 约 100–300 ms。PS1 / 主题声明照常接管，set -o vi 的编辑模式指示器保留。</p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="bench">Measured numbers</h2>
+    <p>Every row is a same-machine, reproducible measurement; benchmark scripts ship with the repo. Full comparison on the <a href="/en/benchmarks/">benchmarks page</a>.</p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>Metric</th><th>niu</th><th>Contrast</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          {
+            bench.map((r) => (
+              <tr>
+                <td>{r.a}</td>
+                <td><strong>{r.b}</strong></td>
+                <td>{r.c}</td>
+                <td><span class="src">{r.src}</span></td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="news">Release feed</h2>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>Version</th><th>Date</th><th>Summary</th></tr></thead>
+        <tbody>
+          {
+            news.map((n) => (
+              <tr>
+                <td><code>v{n.version}</code></td>
+                <td>{n.date}</td>
+                <td>{n.summary}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="src-line">
+      Latest releases from changelogs.json (the niubash repo's CHANGELOG.md); the full feed lives on the <a href="/en/changelog/">changelog</a>.
+    </p>
+  </section>
+
+  <section>
+    <h2 id="links">Related links</h2>
+    <h3>On this site</h3>
+    <ul>
+      <li><a href="/en/products/rubash/">rubash product page</a> — the language engine behind niubash</li>
+      <li><a href="/en/products/niu-git/">niu-git product page</a> — the native git shipped with the niubash Windows package</li>
+      <li><a href="/en/docs/compatibility/">Compatibility: what 83/83 means</a> · <a href="/en/docs/execution-model/">Execution model</a> · <a href="/en/docs/paths-and-msys/">Paths &amp; MSYS</a> · <a href="/en/docs/performance-model/">Performance profile</a></li>
+      <li><a href="/en/agents/">AI agent directory</a> · <a href="/en/ai/">Portal for AI</a> · <a href="/en/benchmarks/">Benchmarks</a> · <a href="/en/changelog/">Changelog</a></li>
+    </ul>
+    <h3>Off site</h3>
+    <ul>
+      <li><a href="https://github.com/unixwin/niubash" target="_blank" rel="noopener noreferrer">GitHub repo ↗</a> · <a href="https://github.com/unixwin/niubash/releases" target="_blank" rel="noopener noreferrer">Releases ↗</a></li>
+      <li><a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">Full manual (GitHub Pages) ↗</a></li>
+      <li><a href="/products/niubash/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
+    </ul>
+  </section>
+</DocsLayout>
+
+<style>
+  .doc-head h1 {
+    border-bottom: 3px solid var(--accent);
+    border-image: linear-gradient(90deg, var(--accent), transparent 70%) 1;
+    padding-bottom: 0.5rem;
+  }
+
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.12em 0.4em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .p-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--accent);
+    border-radius: calc(var(--radius) * 0.75);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    padding: 0.24rem 0.6rem;
+    white-space: nowrap;
+  }
+
+  .meta-line {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .meta-line .dot {
+    margin: 0 0.4rem;
+  }
+
+  section h2 {
+    margin-top: 2.6rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .zh-fold {
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.55rem 1rem;
+  }
+
+  .zh-fold summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+
+  .zh-fold[open] summary {
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .zh-fold p,
+  .zh-fold li {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .zh-fold ul {
+    padding-left: 1.3rem;
+  }
+
+  .zh-fold li {
+    margin-bottom: 0.45rem;
+    line-height: 1.7;
+  }
+
+  .cmd {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0 0 1.05rem;
+  }
+
+  .cmd pre {
+    flex: 1 1 auto;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .first-run {
+    border-left: 3px solid var(--accent);
+    padding-left: 0.9rem;
+    color: var(--muted);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .cli-table {
+    width: 100%;
+    min-width: 620px;
+  }
+
+  .cli-table td strong {
+    color: var(--accent);
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  .src-line {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 960px) {
+    .cmd {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>

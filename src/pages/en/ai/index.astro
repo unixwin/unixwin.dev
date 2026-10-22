@@ -204,6 +204,10 @@ const skillSummary = [
         you are done when the verification prints <code>MSYS_NT-</code>. The machine edition
         lives at <a href="/agents.md">/agents.md</a> (Content-Type text/markdown, Chinese for now).
       </p>
+      <div class="hero-cta">
+        <a class="cta-main" href="#install-prompt">Wire up your AI agent →</a>
+        <p class="cta-note"><strong>24</strong> AI agents covered — <strong>15</strong> work out of the box (<a href="/en/agents/">agent directory</a>)</p>
+      </div>
     </section>
 
     <!-- ============ Fast-updates notice: we ship quickly ============ -->
@@ -231,7 +235,7 @@ const skillSummary = [
         <div class="code-head">
           <span class="code-lang">prompt · en</span>
           <span class="big-copy">
-            <CopyButton copy={installPrompt} label="Copy the full prompt" />
+            <CopyButton copy={installPrompt} label="Copy the full prompt" title="Copy to clipboard" />
           </span>
         </div>
         <pre><code>{installPrompt}</code></pre>
@@ -255,7 +259,7 @@ const skillSummary = [
       <div class="codebox">
         <div class="code-head">
           <span class="code-lang">bash</span>
-          <CopyButton copy={wpmCmds} label="Copy" />
+          <CopyButton copy={wpmCmds} label="Copy" title="Copy to clipboard" />
         </div>
         <pre><code>{wpmCmds}</code></pre>
       </div>
@@ -273,7 +277,7 @@ const skillSummary = [
       <div class="codebox">
         <div class="code-head">
           <span class="code-lang">bash</span>
-          <CopyButton copy={skillCommands} label="Copy" />
+          <CopyButton copy={skillCommands} label="Copy" title="Copy to clipboard" />
         </div>
         <pre><code>{skillCommands}</code></pre>
       </div>
@@ -330,7 +334,7 @@ const skillSummary = [
         <div class="code-head">
           <span class="code-lang">instruction · en</span>
           <span class="big-copy">
-            <CopyButton copy={agentTemplate} label="Copy the instruction template" />
+            <CopyButton copy={agentTemplate} label="Copy the instruction template" title="Copy to clipboard" />
           </span>
         </div>
         <pre><code>{agentTemplate}</code></pre>
@@ -352,7 +356,7 @@ const skillSummary = [
         <div class="verify-inline">
           <span class="v-label">Verify command:</span>
           <code>{verifyCmd}</code>
-          <CopyButton copy={verifyCmd} label="Copy" />
+          <CopyButton copy={verifyCmd} label="Copy" title="Copy to clipboard" />
           <table class="v-table">
             <tbody>
               {verifyTable.map((r) => (
@@ -448,6 +452,24 @@ const skillSummary = [
   }
   .sub { color: var(--muted); max-width: 48rem; margin: 0.8rem 0 0; line-height: 1.75; }
   .sub strong { color: var(--text); }
+
+  /* Hero-level CTA: same button + numbers as the /agents/ directory (24/15 hardcoded, matches the agents.md roster) */
+  .hero-cta { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; margin: 1.3rem 0 0; }
+  .cta-main {
+    display: inline-flex; align-items: center; min-height: 48px;
+    background: var(--btn-bg); color: var(--btn-fg); border: 1px solid var(--btn-bg);
+    border-radius: var(--radius); padding: 0.7rem 1.5rem;
+    font-family: var(--font-mono); font-size: 0.98rem; font-weight: 600; letter-spacing: 0.02em;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  .cta-main:hover {
+    background: var(--btn-hover); border-color: var(--btn-hover);
+    transform: translateY(-1px); text-decoration: none;
+  }
+  .cta-note { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  .cta-note strong { color: var(--text); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .cta-note a { color: var(--link); }
   .sub code, .lead code, .skill-card code {
     background: var(--bg-code);
     border: 1px solid var(--border);

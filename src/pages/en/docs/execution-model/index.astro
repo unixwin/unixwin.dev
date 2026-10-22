@@ -1,0 +1,254 @@
+---
+/**
+ * /en/docs/execution-model/ — English edition of "Execution model: three tiers, zero forks".
+ * English skeleton (h1/lead/headings/table headers), Chinese prose folded into <details>.
+ * Facts: rubash docs/architecture.md, rubash docs/builtins.md, niubash docs/src/builtins.md,
+ * HIGHLIGHTS #1/#4.
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Execution model: three tiers, zero forks"
+  description="The niubash engine replicates fork's semantics, not its mechanism: in-process subshells, a real-handle fd table (POSIX dup semantics), real processes only at boundaries; 62 real builtins + 12 inlined coreutils + pipeline-inline arms — observable behavior identical to GNU Bash."
+  path="/en/docs/execution-model/"
+  lang="en"
+  enPath="/docs/execution-model/"
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>Execution model: three tiers, zero forks</h1>
+    <p class="lead">
+      POSIX <code>fork()</code> has no equivalent on Win32. MSYS2/Cygwin's answer is to
+      <strong>fabricate</strong> it at the syscall layer — expensive, fragile, and famous for its
+      quirks. niubash's engine (rubash) takes a different road: <strong>replicate fork's semantics,
+      not its mechanism</strong>. The result: subshells and command substitution at zero
+      process-creation cost, while everything a script can observe — exit codes, fd inheritance,
+      shared offsets, signal disposition — matches GNU Bash.
+    </p>
+  </header>
+
+  <section>
+    <h2>The three-tier model</h2>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Tier</th><th>Mechanism</th><th>Which face of fork it covers</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. In-process subshells</strong></td>
+          <td><code>( list )</code> and <code>$( )</code> never create a process: <code>ShellState::clone</code> copies variables, aliases, functions, traps and history; the subshell ends and the copy is discarded.</td>
+          <td>fork's copied "memory face".</td>
+        </tr>
+        <tr>
+          <td><strong>2. A real-handle fd table</strong></td>
+          <td>Slots hold native Windows <code>HANDLE</code>s; handles duplicated via <code>DuplicateHandle</code> share the same kernel file object — hence shared file offsets, exactly POSIX "dup shares the open file description" (proven with a POC before landing). <code>fork_table()</code> copies the whole table handle by handle.</td>
+          <td>fork copies the fd table but not the file object.</td>
+        </tr>
+        <tr>
+          <td><strong>3. Real processes only at boundaries</strong></td>
+          <td>External commands and pipeline members start via <code>CreateProcess</code> + <code>os_pipe</code>; background jobs and coprocs each hold a real process, job control builds on Job Objects, SIGCONT goes through <code>ResumeThread</code>.</td>
+          <td>Where fork is genuinely unavoidable: the process boundary.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      In other words: what can avoid creating a process (subshells, command substitution) never
+      creates one; what must create a process (external commands, pipelines, background jobs) takes
+      Win32's native path directly. No "simulated POSIX" layer sits in between.
+    </p>
+  </section>
+
+  <section>
+    <h2>62 real builtins + 12 inlined coreutils + pipeline-inline arms</h2>
+    <p>
+      Command words dispatch in three tiers. <strong>62 real builtins</strong> execute in-process
+      (all <strong>61 of GNU Bash 5.3's builtins covered, none missing</strong>, plus an in-process
+      <code>env</code> — coreutils semantics, sorted output, <code>-0</code> support). There are also
+      hidden fast-paths (<code>sleep</code>/<code>dirname</code>/<code>basename</code>/<code>uname</code>/<code>arch</code>):
+      simple argument forms run in-process, complex forms fall back to the external command, and
+      introspection (<code>type</code>/<code>command -v</code>/<code>enable</code>) reports them as
+      <strong>external commands — same as GNU Bash reports</strong>.
+    </p>
+    <table class="doc-table">
+      <thead>
+        <tr><th>In-process tier</th><th>Roster</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Inlined file commands (12)</td>
+          <td><code>pwd</code> <code>printf</code> <code>mkdir</code> <code>touch</code> <code>chmod</code> <code>cp</code> <code>rm</code> <code>rmdir</code> <code>cat</code> <code>sed</code> <code>mkfifo</code> <code>tty</code></td>
+          <td>High-frequency file commands execute in-process inside the engine (aligned to GNU coreutils stdout/rc; complex forms with flags fall back to the external command).</td>
+        </tr>
+        <tr>
+          <td>Pipeline-inline arms</td>
+          <td><code>true</code> <code>:</code> <code>false</code> <code>echo</code> <code>printf</code> <code>trap</code> <code>head</code> <code>cat</code> <code>sed</code> <code>grep</code> <code>wc</code> <code>tr</code></td>
+          <td>Matched by the command's <strong>position in the pipeline</strong>: a hit runs in-process; only refused forms (e.g. grep regex metacharacters) fall back to the external binary.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Combined, a pipeline like <code>echo | cat</code> is <strong>entirely zero-process</strong>.
+      The roster is not a documentation slogan: the builtin whitelist and the fast-path list are
+      guarded by cargo-test documentation-sync tests — change either side of code or docs without
+      the other and the build fails.
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original</summary>
+      <div lang="zh-CN">
+        <p>
+          命令词按三层分发。<strong>62 个真内建</strong>进程内执行（GNU Bash 5.3 的
+          61 个内建<strong>全覆盖、无缺失</strong>，外加进程内 <code>env</code>——
+          coreutils 语义、排序输出、支持 <code>-0</code>）。另有隐藏 fast-path
+          （<code>sleep</code>/<code>dirname</code>/<code>basename</code>/<code>uname</code>/<code>arch</code>）：
+          简单参数形态进程内执行，复杂形态回退外部命令，而 introspection
+          （<code>type</code>/<code>command -v</code>/<code>enable</code>）报告为
+          <strong>外部命令——与 GNU Bash 的报告一致</strong>。
+        </p>
+        <p>
+          组合起来，<code>echo | cat</code> 这样的管道<strong>一整个零进程</strong>。
+          名单不是文档口号：内建白名单与 fast-path 清单由 <code>cargo test</code> 的
+          文档同步测试守护——代码与文档任何一侧变动，另一侧不改则构建失败。
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Observable behavior: zero difference, proven</h2>
+    <p>
+      "Implemented differently" is not a euphemism for "behaves differently". The observable surface
+      of this model — exit code propagation, fd inheritance and shared offsets, signal disposition —
+      is exactly what GNU's 83 upstream test corpora cover: 83/83 passing, 82 suites byte-identical
+      (see the <a href="/en/docs/compatibility/">compatibility overview</a>). As corroborating
+      evidence, the engine also runs the core loop of the bashdb debugger end-to-end
+      (list/step/next/where/continue/quit) and git's own test framework <code>t/test-lib.sh</code> —
+      both extremely sensitive to execution-model details.
+    </p>
+    <p>
+      For the performance payoff of this design (subshells, command substitution, background jobs)
+      and the honest parity floor of external processes, see
+      <a href="/en/docs/performance-model/">the performance profile</a>.
+    </p>
+  </section>
+
+  <footer class="further">
+    <h2>Read further</h2>
+    <ul>
+      <li><a href="https://unixwin.github.io/niubash/architecture/" target="_blank" rel="noopener noreferrer">niubash architecture (official docs: rubash lib + winuxcmd tiers) ↗</a></li>
+      <li><a href="https://unixwin.github.io/niubash/builtins/" target="_blank" rel="noopener noreferrer">Built-ins and the fast path (official docs) ↗</a></li>
+      <li><a href="https://github.com/unixwin/rubash/blob/master/docs/builtins.md" target="_blank" rel="noopener noreferrer">rubash builtin/fast-path single-source roster (Chinese; guarded by doc-sync tests) ↗</a></li>
+      <li><a href="/docs/execution-model/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
+    </ul>
+  </footer>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .zh-fold {
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.55rem 1rem;
+  }
+
+  .zh-fold summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+
+  .zh-fold[open] summary {
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .zh-fold p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .doc-table th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0.5rem 0.6rem;
+  }
+
+  .doc-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.6rem;
+    vertical-align: top;
+  }
+
+  .doc-table td strong {
+    color: var(--accent);
+  }
+
+  .further {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.1rem 1.4rem;
+    font-size: 0.92rem;
+  }
+
+  .further h2 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    border-bottom: none;
+  }
+
+  .further ul {
+    margin: 0;
+    padding-left: 1.3rem;
+  }
+
+  .further li {
+    margin-bottom: 0.35rem;
+  }
+</style>

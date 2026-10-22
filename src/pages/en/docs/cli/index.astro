@@ -1,0 +1,757 @@
+---
+/**
+ * /en/docs/cli/ — English edition of the CLI & flags reference.
+ * The body is table-shaped and short-phrased, so this page is fully translated
+ * (unlike the four deep-dive articles, whose prose stays folded in Chinese).
+ * Facts: niubash repo docs/src/advanced-usage.md, getting-started.md, installer.md
+ * (plus skills/niubash/references/wpm.md, docs/src/agents.md, niu --help from
+ * src/main.rs, wpm-source/docs/index-schema.md). Each row cites its source file.
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+
+interface Row {
+  cmd: string;
+  purpose: string;
+  note: string;
+  src: string;
+}
+
+const basics: Row[] = [
+  {
+    cmd: 'niubash',
+    purpose: 'Start the interactive REPL',
+    note: 'The daily shell; loads ~/.niubashrc and the interactive lifecycle hooks.',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: "niu -c '<cmd>'",
+    purpose: 'Run one command, then exit',
+    note: 'The script / test / CI / agent channel: no rc, no plugins, no interactive hooks; use NIU_ENV (or BASH_ENV) to point at a one-shot init file when initialization is needed.',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: "niu -C '<cmd>' · niu --repl-command <cmd>",
+    purpose: 'One-shot REPL command',
+    note: 'Loads the same startup state as the interactive REPL (rc + hooks), runs one command, then exits.',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu --encoded-command <b64>',
+    purpose: 'Execute a base64-encoded command',
+    note: 'A quote-free channel for agents/CI; optional v1: prefix guards against MSYS path rewriting — semantics identical to -c.',
+    src: 'niu --help (src/main.rs)',
+  },
+  {
+    cmd: 'niu --cwd-state <file> [-c ...]',
+    purpose: 'Directory memory across invocations',
+    note: 'Restores the recorded directory at startup, writes the final directory back at exit; one file per workspace isolates agents.',
+    src: 'niu --help (src/main.rs)',
+  },
+  {
+    cmd: 'niu -V · niu --version',
+    purpose: 'Version and component info',
+    note: 'The first thing to check when diagnosing: confirm the active binary version before anything else.',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu <script> [args]',
+    purpose: 'Run a script file',
+    note: 'Runs the script from a file argument, passing arguments through.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu setup',
+    purpose: 'Re-run the prompt / plugin setup',
+    note: 'Wizard-style reconfiguration; safe to run repeatedly.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu font',
+    purpose: 'Nerd Font detection and install advice',
+    note: 'Detects font gaps and recommends installs.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu -h · niu --help',
+    purpose: 'Show help',
+    note: 'The source this page is built from.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu --completion-probe <line> [cursor]',
+    purpose: 'Debug: print completion candidates',
+    note: 'Given an input line (optionally a cursor position), prints the candidates the completion engine would produce — for writing completion plugins or debugging completion.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+];
+
+const wt: Row[] = [
+  {
+    cmd: 'niu --install-wt-profile',
+    purpose: 'Add/update the Windows Terminal profile',
+    note: "Writes Niubash's WT profile.",
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu --install-wt-profile --set-default',
+    purpose: 'Also set it as the WT default profile',
+    note: 'Use together with the previous flag.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu --install-wt-shortcuts',
+    purpose: 'Rewrite desktop / Start-menu shortcuts',
+    note: 'When WT is detected, rewrites them as wt.exe -p Niubash.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu --install-wt-shortcuts --update-only',
+    purpose: 'Only update existing shortcuts',
+    note: 'Creates nothing new; edits existing files only.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: '--quiet',
+    purpose: 'Suppress non-error output',
+    note: 'The profile and shortcuts flag groups each carry a same-named quiet flag.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+];
+
+const selfupdate: Row[] = [
+  {
+    cmd: 'niu --self-update',
+    purpose: 'Download and run the latest release installer',
+    note: 'WinHTTP follows GitHub releases/latest.',
+    src: 'installer.md · niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu --self-update --check',
+    purpose: 'Report the latest version only',
+    note: 'Does not update.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu --self-update --dry-run',
+    purpose: 'Download the installer without running it',
+    note: 'For verifying the download chain.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'self-update (REPL command)',
+    purpose: 'Update Niubash and exit the shell',
+    note: 'The in-session equivalent verb.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'update-niubash',
+    purpose: 'Alias of self-update',
+    note: 'Synonymous entry point.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+];
+
+const plugin: Row[] = [
+  {
+    cmd: 'niu plugin add <id|owner/repo|url|path>',
+    purpose: 'Install an external plugin source (untrusted)',
+    note: 'Four locator forms supported.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin list [--json]',
+    purpose: 'List sources, assets and activation state',
+    note: '--json is machine-readable.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin enable|disable <target>',
+    purpose: 'Activate / deactivate a source or asset',
+    note: 'Granular down to asset level.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin update · sync · restore · rollback · clean',
+    purpose: 'The lockfile verb family',
+    note: 'vim-plug / lazy.nvim-style lock and restore semantics.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin trust <id>',
+    purpose: 'Review and activate a source\'s assets',
+    note: 'The trust-check layer.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin discover [--verbose]',
+    purpose: 'Read-only overview of external plugin sources',
+    note: 'Changes no state.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin source <command>',
+    purpose: 'The full source protocol',
+    note: 'add / trust / sign / verify / remove / update / rollback / list.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin recipe <command>',
+    purpose: 'Recipe index',
+    note: 'list / show / add.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin distro <command>',
+    purpose: 'Bundle distribution',
+    note: 'list / import / remove / apply.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin mirror <command>',
+    purpose: 'Git-fetch mirrors',
+    note: 'list / show / set — friendly to networks behind GitHub throttling.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'niu plugin ui',
+    purpose: 'Menu-driven UI',
+    note: 'Sections by state; verbs match the command line.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+];
+
+const env: Row[] = [
+  {
+    cmd: '~/.niubashrc',
+    purpose: 'Interactive startup config file',
+    note: 'Pure bash syntax; loaded by the interactive REPL and -C, not by -c.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'NIU_ENV=<file>',
+    purpose: 'Non-interactive one-shot init file',
+    note: 'Sourced before -c / script / stdin startup; takes priority over BASH_ENV; unset by default to keep -c fast.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'BASH_ENV=<file>',
+    purpose: 'The GNU bash-compatible synonym',
+    note: 'Same semantics; lower priority than NIU_ENV.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+  {
+    cmd: 'NIU_LANG=<zh|en>',
+    purpose: 'Setup-wizard language',
+    note: 'Fallback order: Windows UI language → LC_ALL / LANG.',
+    src: 'niu --help, live binary (1.4.0)',
+  },
+];
+
+const skills: Row[] = [
+  {
+    cmd: 'niu skill install',
+    purpose: 'Install the AI agent skill bundle',
+    note: 'Defaults to ~/.claude/skills/niubash/ (SKILL.md + references/).',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu skill install --target claude',
+    purpose: 'Install for Claude only',
+    note: 'Same as the default target; byte-exact on disk.',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu skill install --target zcode',
+    purpose: 'Install for ZCode',
+    note: "Writes into ZCode's skills directory.",
+    src: 'niu --help (src/main.rs)',
+  },
+  {
+    cmd: 'niu skill install --target cursor',
+    purpose: 'Install for Cursor',
+    note: "Writes into Cursor's skills directory.",
+    src: 'niu --help (src/main.rs)',
+  },
+  {
+    cmd: 'niu skill install --target all',
+    purpose: 'Install to claude + zcode + cursor',
+    note: 'Covers all three agent hosts at once.',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu skill install --target C:/agents/skills',
+    purpose: 'Install to any directory (universal form)',
+    note: 'Lands as <dir>/niubash/ for any agent host to pick up.',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu skill status',
+    purpose: 'Check bundle status per target',
+    note: 'current / outdated = byte comparison + sha256; niu doctor carries an advisory line.',
+    src: 'advanced-usage.md',
+  },
+];
+
+const plugins: Row[] = [
+  {
+    cmd: 'niu plugin add <id|owner/repo|url|path>',
+    purpose: 'Install an external plugin source',
+    note: 'Clones into ~/.niubash/sources/<id> and registers the registry; a new source is untrusted by default and add executes nothing.',
+    src: 'getting-started.md',
+  },
+  {
+    cmd: 'niu plugin trust <id>',
+    purpose: 'Review-pass the execution gate',
+    note: 'Enables after checksum review; enable before trust is rejected.',
+    src: 'getting-started.md',
+  },
+  {
+    cmd: 'niu plugin enable <target> · disable <target>',
+    purpose: 'Activate / deactivate sources or theme assets',
+    note: 'Maintains the # >>> niu source <id> managed block at the tail of ~/.niubashrc; content outside the block is never rewritten. After disable, the builtin prompt (floor) returns.',
+    src: 'getting-started.md',
+  },
+  {
+    cmd: 'niu plugin sync [--prune | --adopt]',
+    purpose: 'Reconcile the spec with what is installed',
+    note: 'Lockfile-style verb family: update / sync / restore / rollback / clean; --adopt declares an already-installed source into the spec.',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'niu plugin mirror <command>',
+    purpose: 'Git-fetch mirror control',
+    note: 'list / show / set <url|none>: a configurable insteadOf mirror, applied only to the git transport layer.',
+    src: 'niu --help (src/main.rs)',
+  },
+  {
+    cmd: 'niu plugin list [--json]',
+    purpose: 'Inventory of sources, assets and activation state',
+    note: '--json for agents (likewise recipe list --json); plus the read-only discover overview.',
+    src: 'advanced-usage.md',
+  },
+];
+
+const wpm: Row[] = [
+  {
+    cmd: 'wpm list [--json] · wpm installed',
+    purpose: 'Package catalogue and locally installed state',
+    note: '--json emits schema:1-versioned pure JSON; installed lists only this root\'s installed packages.',
+    src: 'installer.md · index-schema.md',
+  },
+  {
+    cmd: 'wpm search <q> · wpm info <pkg> [--json]',
+    purpose: 'Search packages / show package details',
+    note: 'If the index is stale, run wpm index update first; info --json returns the full Package record.',
+    src: 'skills/wpm.md · index-schema.md',
+  },
+  {
+    cmd: 'wpm install <pkg>',
+    purpose: 'Install a command package',
+    note: 'The first channel for the Unix tool layer on Windows (rg / fd / bat / jq / node …).',
+    src: 'skills/wpm.md',
+  },
+  {
+    cmd: 'wpm update winuxcmd',
+    purpose: 'Update the command layer itself',
+    note: 'Refreshes the WinuxCmd command set in place and rebuilds command links; distinct from niu --self-update (two update surfaces).',
+    src: 'installer.md',
+  },
+  {
+    cmd: 'wpm uninstall <pkg>',
+    purpose: 'Uninstall a command package',
+    note: 'Mutating subcommands (install / uninstall / update) have no --json yet: exit codes are the contract; progress text is display only.',
+    src: 'index-schema.md',
+  },
+  {
+    cmd: 'wpm links rebuild --force · wpm links list',
+    purpose: 'Repair / inspect command links',
+    note: 'If a package is present but hard links are missing (locked after updates, access denied), rebuild first; list supports --json.',
+    src: 'installer.md · skills/wpm.md',
+  },
+  {
+    cmd: 'wpm index status · wpm index update',
+    purpose: 'Index status / refresh',
+    note: 'status reports the local index version and package count (--json includes root and fallback source).',
+    src: 'skills/wpm.md · index-schema.md',
+  },
+];
+
+const doctor: Row[] = [
+  {
+    cmd: 'niu doctor',
+    purpose: 'One-shot health check',
+    note: 'Covers links, core, rc, bundle and the agent-skill advisory line; migration windows and PATH shadowing get a read-only report too.',
+    src: 'skills/wpm.md · CHANGELOG.md',
+  },
+  {
+    cmd: 'niu --version · command -v niubash · command -v winuxcmd.exe',
+    purpose: 'Capture the active binary and execution paths',
+    note: 'Step one for "command missing / served by the wrong provider".',
+    src: 'advanced-usage.md',
+  },
+  {
+    cmd: 'echo "$SHELL"; uname -a',
+    purpose: 'Confirm the shell an agent actually uses',
+    note: 'MSYS_NT-… = niu; MINGW64_NT-… = Git Bash; Linux = you fell into WSL.',
+    src: 'agents.md',
+  },
+  {
+    cmd: "niu -c 'echo command-mode:$SHELL' · niu -C 'echo repl-command:$SHELL'",
+    purpose: 'Verify both one-shot startup surfaces',
+    note: '-c loads nothing; -C matches the REPL — the two channels agent integrations must tell apart.',
+    src: 'advanced-usage.md',
+  },
+];
+---
+
+<DocsLayout
+  title="CLI & flags reference"
+  description="The complete niu command-line reference: basic invocations and every flag (-c/-C/--encoded-command/--cwd-state/--completion-probe), Windows Terminal integration, self-update, all plugin subcommands, skill/wpm quick reference, the GNU bash-compatible surface, and configuration environment variables. Source: live niu --help output."
+  path="/en/docs/cli/"
+  lang="en"
+  enPath="/docs/cli/"
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>CLI &amp; flags reference</h1>
+    <p class="lead">
+      The complete reference for the <code>niu</code> command line: basic invocations and every flag,
+      WT integration, self-update, all plugin subcommands, skill / wpm and diagnostics. Each row gives
+      the command, its purpose and a note; notes cite the fact's source file in the niubash repo. For
+      fine-grained semantics and the full manual, see the outbound links at the end.
+    </p>
+  </header>
+
+  <section>
+    <h2 id="basics">Basic invocations</h2>
+    <p>
+      Three execution paths are deliberately separated: the interactive REPL, the zero-load one-shot
+      <code>-c</code>, and the REPL-equivalent one-shot <code>-C</code>. Automation uses only the last
+      two; interactive content stays in the rc.
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>Command</th><th>Purpose</th><th>Notes (source)</th></tr>
+        </thead>
+        <tbody>
+          {
+            basics.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">({r.src})</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="wt">Windows Terminal integration</h2>
+    <p>Two independent flag groups — profile and shortcuts — each with a quiet switch.</p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>Command</th><th>Purpose</th><th>Notes (source)</th></tr></thead>
+        <tbody>
+          {wt.map((r) => (
+            <tr><td><code>{r.cmd}</code></td><td>{r.purpose}</td><td>{r.note}<span class="src">({r.src})</span></td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="self-update">Self-update</h2>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>Command</th><th>Purpose</th><th>Notes (source)</th></tr></thead>
+        <tbody>
+          {selfupdate.map((r) => (
+            <tr><td><code>{r.cmd}</code></td><td>{r.purpose}</td><td>{r.note}<span class="src">({r.src})</span></td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="plugin">plugin subcommands (complete)</h2>
+    <p>Installing, trusting and locking the external bash ecosystem (oh-my-bash / bash-it / bash-completion etc.).</p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>Command</th><th>Purpose</th><th>Notes (source)</th></tr></thead>
+        <tbody>
+          {plugin.map((r) => (
+            <tr><td><code>{r.cmd}</code></td><td>{r.purpose}</td><td>{r.note}<span class="src">({r.src})</span></td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="bash-compat">GNU bash-compatible surface</h2>
+    <p>
+      The options below are <strong>not listed in <code>niu --help</code> but all supported</strong> —
+      the rubash engine aligns with GNU Bash 5.3 semantics, so GNU's invocation surface carries over:
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>Surface</th><th>Content</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>GNU long options</code></td>
+            <td>
+              <code>--debug</code> <code>--debugger</code> <code>--dump-po-strings</code>{' '}
+              <code>--dump-strings</code> <code>--help</code> <code>--init-file</code>{' '}
+              <code>--login</code> <code>--noediting</code> <code>--noprofile</code>{' '}
+              <code>--norc</code> <code>--posix</code> <code>--pretty-print</code>{' '}
+              <code>--rcfile</code> <code>--restricted</code> <code>--verbose</code>{' '}
+              <code>--version</code>
+            </td>
+            <td>One-to-one with the 16 long options listed by bash --help.</td>
+          </tr>
+          <tr>
+            <td><code>Invocation combos (startup only)</code></td>
+            <td><code>-i -l -r -s -D</code> · <code>-c command</code> · <code>-O shopt_option</code></td>
+            <td>Interactive / login / restricted / read stdin / echo per line / set a shopt.</td>
+          </tr>
+          <tr>
+            <td><code>set option surface</code></td>
+            <td><code>-abefhkmnptuvxBCEHPT</code> · <code>-o option</code></td>
+            <td>The same set of single-letter options and -o names as GNU (<code>niu -c 'help set'</code> lists them all).</td>
+          </tr>
+          <tr>
+            <td><code>Builtin help</code></td>
+            <td><code>niu -c 'help set'</code> · <code>niu -c help</code></td>
+            <td>set option descriptions and the builtin list — GNU's own entry points.</td>
+          </tr>
+          <tr>
+            <td><code>rc selection</code></td>
+            <td><code>--rcfile</code> / <code>--init-file</code></td>
+            <td>Point at an alternative startup file.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="src-line">Source: cross-checked against <code>bash --help</code> (same-machine GNU Bash 5.3.0 output); compatibility is governed by the <a href="/en/docs/compatibility/">83/83 suite ledger</a>.</p>
+  </section>
+
+  <section>
+    <h2 id="env">Configuration and environment variables</h2>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>Item</th><th>Purpose</th><th>Notes (source)</th></tr></thead>
+        <tbody>
+          {env.map((r) => (
+            <tr><td><code>{r.cmd}</code></td><td>{r.purpose}</td><td>{r.note}<span class="src">({r.src})</span></td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="skill">skill subcommands</h2>
+    <p>
+      Installing and checking the AI agent skill bundle (capability surface + dialect contract).
+      Every <code>--target</code> value: <code>claude</code> (default), <code>zcode</code>,
+      <code>cursor</code>, <code>all</code>, and any directory.
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>Command</th><th>Purpose</th><th>Notes (source)</th></tr>
+        </thead>
+        <tbody>
+          {
+            skills.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">({r.src})</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="plugins">plugin subcommands (workflow)</h2>
+    <p>
+      Installing, trusting and activating the external bash ecosystem (oh-my-bash, bash-it, any git
+      source) — always "install first, review second, trust third"; the declarative spec is the single
+      source of truth.
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>Command</th><th>Purpose</th><th>Notes (source)</th></tr>
+        </thead>
+        <tbody>
+          {
+            plugins.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">({r.src})</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="wpm">wpm quick reference</h2>
+    <p>
+      The Winux package manager: the first channel for the Unix command layer (<code>ls</code>,
+      <code>grep</code>, <code>rg</code> …) on Windows. Query subcommands support <code>--json</code>
+      (with a <code>schema</code> version field); mutating subcommands speak in exit codes.
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>Command</th><th>Purpose</th><th>Notes (source)</th></tr>
+        </thead>
+        <tbody>
+          {
+            wpm.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">({r.src})</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="doctor">doctor and diagnostics</h2>
+    <p>Capture the active binary and execution paths first, then run the health check — in the wrong order you end up fixing the wrong install.</p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>Command</th><th>Purpose</th><th>Notes (source)</th></tr>
+        </thead>
+        <tbody>
+          {
+            doctor.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.purpose}</td>
+                <td>
+                  {r.note}
+                  <span class="src">({r.src})</span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="further">
+    <h2>Full manual</h2>
+    <p>
+      This page is the quick-reference cut; for fine-grained semantics, installer contracts and the
+      complete manual of every subcommand, see GitHub Pages:
+      <a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
+        unixwin.github.io/niubash ↗
+      </a>.
+      Chinese edition: <a href="/docs/cli/" hreflang="zh-CN" lang="zh-CN">/docs/cli/</a>.
+    </p>
+  </footer>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.12em 0.4em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  section h2 {
+    margin-top: 2.6rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .cli-table {
+    width: 100%;
+    min-width: 620px;
+  }
+
+  .cli-table td:first-child code {
+    white-space: nowrap;
+  }
+
+  .cli-table td strong {
+    color: var(--accent);
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+    white-space: nowrap;
+  }
+
+  .further {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.1rem 1.4rem;
+    font-size: 0.92rem;
+  }
+
+  .further h2 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    border-bottom: none;
+    padding: 0;
+  }
+
+  .further p {
+    margin: 0;
+  }
+</style>

@@ -113,7 +113,9 @@ export function resolveSwitchPair(pathname: string): SwitchPair {
     // 精确镜像：/en/ + PAIRED_ZH_ROUTES 直接回指 zh 页
     const zhPath = enToZh(p);
     if (PAIRED_ZH_ROUTES.has(zhPath)) return { lang: 'en', otherPath: zhPath };
-    // en 深页回退：/en/docs/** → /docs/；其余 → /
+    // en 深页回退：/en/docs/**、/en/products/**、/en/agents/** 均有 zh 镜像，
+    // 直接回指剥前缀后的 zh 深页；其余未配对 /en/** → /
+    if (/^\/en\/(docs|products|agents)\//.test(p)) return { lang: 'en', otherPath: zhPath };
     return { lang: 'en', otherPath: zhPath.startsWith('/docs/') ? '/docs/' : '/' };
   }
   // zh 侧：精确配对优先

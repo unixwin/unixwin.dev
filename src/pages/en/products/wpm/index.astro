@@ -1,0 +1,474 @@
+---
+/**
+ * /en/products/wpm/ — English edition of the wpm product page.
+ * Skeleton English; prose-heavy Chinese folded into <details>; the built-in-sources
+ * and measured-numbers tables fully translated.
+ * Facts mirror the zh page (wpm-source README/docs/index-schema.md, repo-meta 2026-10-19).
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+import Badge from '../../../../components/Badge.astro';
+import CopyButton from '../../../../components/CopyButton.astro';
+import repoMeta from '../../../../data/repo-meta.json';
+
+const meta = repoMeta.repos.wpm;
+const stars = typeof meta?.stars === 'number' ? meta.stars : null;
+const winuxLatest =
+  typeof repoMeta.repos.winuxcmd?.latest === 'string' ? repoMeta.repos.winuxcmd.latest : '';
+
+const quickStart = [
+  'wpm index update                 # refresh the official index',
+  'wpm install ripgrep fd jq        # install several packages at once (rg / fd / jq land on PATH)',
+  'wpm installed                    # what this machine has installed',
+  'wpm info ripgrep --json          # the full package record (machine-readable)',
+].join('\n');
+const cnMirror = 'wpm source use official-cn';
+
+const sources = [
+  { name: 'official-github-raw', region: 'global', priority: '10', note: 'canonical: index.json on raw.githubusercontent.com' },
+  { name: 'official-jsdelivr', region: 'global', priority: '15', note: 'CDN mirror: cdn.jsdelivr.net/gh/unixwin/wpm-source@main' },
+  { name: 'official-github-release', region: 'global', priority: '20', note: 'release-pinned: releases/latest/download/wpm-index.json' },
+  { name: 'official-cn', region: 'cn', priority: '30', note: 'nginx cache proxy at gh.caomengxuan666.com; artifact URLs proxied, GitHub sources as fallback' },
+];
+
+const factRows = [
+  { metric: 'Official index size', value: '281 packages (wpm-source index.json, version official-2026.10.17)', src: 'wpm-source/index.json packages[] counted 2026-10-19' },
+  { metric: 'Shim dispatch hops', value: '12.1 ms (winuxcmd-shim.exe forwarder; the previous hard link to winuxcmd.exe cost 24.5 ms)', src: 'WinuxCmd CHANGELOG 1.1.14, measured' },
+  { metric: 'In-use file upgrades', value: 'Forced upgrade succeeded with 28 fsmonitor--daemon processes holding the payload; packages intact', src: 'WinuxCmd CHANGELOG 1.1.13, verified on a real install' },
+  { metric: 'Rollback copy governance', value: 'Newest two kept automatically and pruned (one machine had accumulated 61.8 MB)', src: 'WinuxCmd CHANGELOG 1.1.14' },
+  { metric: 'Cache key', value: '<pkg>-<version>-<sha8> (download pre-check + cache-reuse double verification)', src: 'WinuxCmd#1154/#1157 (HIGHLIGHTS #13)' },
+];
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'wpm',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "Package manager built into WinuxCmd with the official 281-package index",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
+---
+
+<DocsLayout
+  title="wpm — the package manager built into WinuxCmd"
+  description="wpm product page: a C++ package manager compiled into winuxcmd.exe with zero runtime dependencies; official index of 281 packages, sha256/size/urls triples, flat/shim dual layouts, a schema:1 --json contract, four mirror sources (gh.caomengxuan666.com for China) and self-update rollback."
+  path="/en/products/wpm/"
+  lang="en"
+  enPath="/products/wpm/"
+  jsonLdExtra={productJsonLd}
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>wpm: the package manager built into WinuxCmd</h1>
+    <p class="lead">
+      <strong>wpm is not a standalone program</strong> — it is compiled into <code>winuxcmd.exe</code>
+      as a subcommand family (C++, no Node/Python/.NET runtime). Have
+      <a href="/en/products/winuxcmd/">WinuxCmd</a> and you have wpm: it manages the index, download
+      verification and command links, plus updates of <code>winuxcmd.exe</code> itself. Tools that
+      should not be re-implemented get installed as real distributions.
+    </p>
+    <div class="badge-row">
+      <Badge text="C++ (built into winuxcmd.exe)" tone="accent" />
+      <Badge text="Windows x64 · ARM64" tone="info" />
+      <Badge text={`ships with winuxcmd.exe${winuxLatest ? ` · ${winuxLatest}` : ''}`} tone="warn" />
+      <Badge text="MIT" tone="muted" />
+    </div>
+    <p class="repo-line">
+      <a href="https://github.com/unixwin/wpm-source" target="_blank" rel="noopener noreferrer">
+        github.com/unixwin/wpm-source ↗
+      </a>
+      <span class="src">(the official index repo; stars per repo-meta.json, measured 2026-10-19:
+        {stars !== null ? ` ${stars} stars` : ' —'})</span>
+    </p>
+  </header>
+
+  <section>
+    <h2>Why wpm</h2>
+    <p>
+      Installing CLI tools on Windows usually means adding another package manager and its runtime.
+      wpm trades the other way: the package manager lives inside the command set itself, and the
+      package boundary is the command boundary — single-exe tools install flat; toolchains with DLLs
+      install self-contained.
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（4 张卡片全文）</summary>
+      <div lang="zh-CN">
+        <ul>
+          <li><strong>不是外挂程序</strong>——wpm 以 C++ 实现并编译进 winuxcmd.exe 本体——没有 Node.js、Python 或 .NET 运行时依赖。</li>
+          <li><strong>装的是命令，不是软件</strong>——winget/scoop/choco 管理「应用程序」；wpm 只收便携命令行工具与可搬迁工具链，装完即在 PATH 上。</li>
+          <li><strong>SHA-256 是硬门</strong>——索引里每个构件带 sha256/size/urls 三元组；无校验和的远程构件拒绝安装。</li>
+          <li><strong>为 shell 生态而生</strong>——niubash 的发行流水线用 wpm 预装 gawk；oh-my-niu 的环境包声明 wpm 包清单。</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Core features</h2>
+    <p>
+      Official index of 281 packages; the sha256/size/urls triple contract; flat and shim layouts;
+      hard-link entries (zero launch overhead); a schema:1 --json contract for GUI/TUI/agents; four
+      mirror sources with fallback; two anti-poisoning locks; and self-update with rollback. Full
+      eight-point list (Chinese):
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（八条特性全文）</summary>
+      <div lang="zh-CN">
+        <ul>
+          <li><strong>官方索引 281 包</strong>——wpm-source 仓维护的官方索引（schema:1）覆盖 ripgrep、fd、jq、fzf、bat、neovim、curl、wget、make、openssh、goawk、bsdtar 等便携 CLI。</li>
+          <li><strong>三元组契约</strong>——每个构件必须带 sha256（64 位小写十六进制）、size（字节数）与 urls（多个则顺序尝试）。</li>
+          <li><strong>flat / shim 双布局</strong>——flat 单 exe 直接进 usr\bin\；shim 载荷自包含在 opt\&lt;pkg&gt;\，卸载即删目录。</li>
+          <li><strong>硬链接入口</strong>——每个命令在 bin\ 下是「指向真二进制的硬链接」，入口零启动开销。</li>
+          <li><strong>--json 契约</strong>——查询类子命令输出带 schema:1 版本字段的纯 JSON。</li>
+          <li><strong>四源镜像与回退</strong>——github-raw / jsdelivr / release-pinned / official-cn 按优先级自动回退。</li>
+          <li><strong>防投毒两道锁</strong>——索引文件内声明的 sources 永不并入候选；wpm index update 记录 last_index_sha256。</li>
+          <li><strong>自更新与回滚</strong>——wpm update winuxcmd 异步换镜像；.wpm\backup\ 自动保留最新两份回滚。</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Install &amp; quick start</h2>
+    <p>
+      wpm has no installer of its own — it lands together with WinuxCmd. First thing after installing
+      WinuxCmd: refresh the index.
+    </p>
+    <div class="codeblock">
+      <p class="cmd-label">wpm ships built into winuxcmd.exe — install WinuxCmd (or niubash) and it is there; nothing separate to install.</p>
+    </div>
+    <p class="cmd-label">The four-command starter (each line's comment says what it does):</p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{quickStart}</code></pre>
+      <CopyButton copy={quickStart} label="Copy" title="Copy to clipboard" />
+    </div>
+    <h3>First-run orientation</h3>
+    <p>
+      <code>wpm --help</code> lists every subcommand (install/uninstall/update/list/search/info/installed/
+      export/restore/outdated/categories/index/source/links/clean/version). If the index is
+      unreachable (<code>no reachable index source</code>), switch sources and retry with
+      <code>wpm index update -s official-jsdelivr</code>; behind a proxy set <code>WPM_HTTPS_PROXY</code>
+      and friends (WinHTTP auto-detects system proxies and PAC). On Chinese networks, switch straight
+      to the official mirror:
+    </p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{cnMirror}</code></pre>
+      <CopyButton copy={cnMirror} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p>
+      To clear caches/staging/rollback directories: <code>wpm clean [cache|staging|backup|all]</code>;
+      to replay a machine's package list: <code>wpm export &gt; profile.txt</code> then
+      <code>wpm restore profile.txt</code>.
+    </p>
+  </section>
+
+  <section>
+    <h2>Deep dive: the package model and the index</h2>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（索引结构 / 三元组 / 双布局 / --json 契约 / wpm-artifacts 全文）</summary>
+      <div lang="zh-CN">
+        <p><strong>索引结构</strong>：索引是一个 JSON 文件（wpm-source/index.json）：顶层 schema:1、version（如 official-2026.10.17）、updated、sources[] 与 packages[]。包记录含 name/version/description/kind/category/license/commands[] 与按平台分组的 artifacts（windows-x64 / windows-arm64）。</p>
+        <p><strong>构件三元组与文件映射</strong>：每个构件必须携带 sha256（缺失即拒绝远程安装）、size 与 urls，外加显式 files 映射（from → to）。下载先算校验和再解压；缓存键 &lt;pkg&gt;-&lt;version&gt;-&lt;sha8&gt; 双校验（WinuxCmd#1154/#1157）。写侧同样严格：映射指向构件已不再携带的文件时以「extracted path not found」失败，不猜。</p>
+        <p><strong>flat 与 shim 双布局</strong>：flat（默认）把映射文件直接装入 usr\bin\；shim 把载荷自包含装到 &lt;root&gt;\opt\&lt;pkg&gt;\，usr\bin\&lt;cmd&gt;.exe 是转发入口（winuxcmd-shim.exe 小转发器，分发跳数 24.5 ms → 12.1 ms）。无论哪种布局，bin\&lt;command&gt;.exe 都是指向真二进制的硬链接。</p>
+        <p><strong>--json 契约</strong>：查询类子命令的输出是纯 JSON、不混人类可读文本，顶层带 schema:1 版本字段；完整契约见 wpm-source/docs/index-schema.md。</p>
+        <p><strong>wpm-artifacts 与工具链层</strong>：category: "toolchain" 的语言运行时与 SDK 有四条准入（自包含便携、可搬迁、官方发布或 unixwin/wpm-artifacts 的 CI 构建镜像且 SHA-256 钉死、许可允许再分发）。GUI 应用、MSI/MSIX、服务驱动、生态包管理器本身明确出局。</p>
+      </div>
+    </details>
+    <h3>Mirror mechanism</h3>
+    <table>
+      <thead>
+        <tr><th>Built-in source</th><th>Region</th><th>Priority</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        {
+          sources.map((s) => (
+            <tr>
+              <td><code>{s.name}</code></td>
+              <td>{s.region}</td>
+              <td>{s.priority}</td>
+              <td>{s.note}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p>
+      Sources fall back automatically by priority (lower number wins); <code>wpm source use</code>
+      pins a favorite and <code>wpm source add</code> adds your own. The security boundary is written
+      down: the candidate-source set = the built-in registry + user-added sources —
+      <strong>sources declared inside the index file are never merged in</strong> (a compromised
+      mirror cannot persistently inject download locations); <code>wpm index update</code> records
+      <code>last_success_source</code> and <code>last_index_sha256</code>, and warns when a
+      non-preferred source delivers a different index — a poisoned mirror cannot swap it silently.
+    </p>
+  </section>
+
+  <section>
+    <h2>Measured numbers</h2>
+    <table>
+      <thead>
+        <tr><th>Metric</th><th>Value</th><th>Source</th></tr>
+      </thead>
+      <tbody>
+        {
+          factRows.map((r) => (
+            <tr>
+              <td>{r.metric}</td>
+              <td><strong>{r.value}</strong></td>
+              <td class="src">{r.src}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Release feed</h2>
+    <p class="src-line">
+      wpm has no version of its own — <strong>it ships with winuxcmd.exe</strong>, and its entries are
+      recorded in WinuxCmd's changelog. The wpm-related content of the newest three versions
+      (changelogs.json, fetched 2026-10-19; the full feed lives on the <a href="/en/changelog/">changelog</a>):
+    </p>
+    <ul class="changelog-list">
+      <li>
+        <strong>Unreleased (the WinuxCmd release line)</strong>
+        <span>
+          WSL interop paths: <code>/mnt/X/…</code> operands fold in the same shape as <code>/X/…</code>
+          and <code>X:\…</code> (#1172) — every tool crossing the shared argument boundary
+          (ls/du/sed/cp…) benefits at once, including toolchains installed via wpm.
+        </span>
+      </li>
+      <li>
+        <strong>v1.1.14 (2026-10-17)</strong>
+        <span>
+          New <code>wpm links verify</code> (per-path report of links not running the current
+          winuxcmd.exe) and the <code>winuxcmd-shim.exe</code> forwarder (24.5 ms → 12.1 ms; older
+          installs switch over smoothly via <code>wpm links rebuild --force</code>); fixed
+          <code>wpm update winuxcmd</code> leaving command links on the old image; rollback copies now
+          keep the newest two and auto-prune (one machine had accumulated 61.8 MB; reclaimed with
+          <code>wpm clean backup</code>).
+        </span>
+      </li>
+      <li>
+        <strong>v1.1.13 (2026-10-17)</strong>
+        <span>
+          Files held by running processes upgrade via rename-aside: <code>wpm install --force</code>
+          succeeded on a real install with 28 fsmonitor--daemon payload holders, packages intact;
+          upgrades either complete or leave everything untouched (failed file names and holding
+          processes reported together); <code>wpm clean staging/all</code> also clears parked
+          <code>.wpm-old-&lt;pid&gt;</code> directories.
+        </span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related links</h2>
+    <div class="link-cols">
+      <div>
+        <h3>On this site</h3>
+        <ul>
+          <li><a href="/en/products/winuxcmd/">WinuxCmd product page</a> — wpm's host binary</li>
+          <li><a href="/en/products/niubash/">Niubash product page</a> — the release pipeline preloads gawk via wpm</li>
+          <li><a href="/en/products/oh-my-niu/">Oh My Niu product page</a> — env packages declare wpm package lists</li>
+          <li><a href="/en/docs/cli/">CLI &amp; flags reference</a> — includes the wpm quick-reference table</li>
+          <li><a href="/en/docs/">Docs home</a> · <a href="/en/changelog/">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>In the repo</h3>
+        <ul>
+          <li><a href="https://github.com/unixwin/wpm-source" target="_blank" rel="noopener noreferrer">GitHub: unixwin/wpm-source ↗</a> (the official index repo)</li>
+          <li><a href="https://github.com/unixwin/wpm-source/blob/main/docs/index-schema.md" target="_blank" rel="noopener noreferrer">index.json &amp; --json contract, full text ↗</a></li>
+          <li><a href="https://github.com/unixwin/WinuxCmd/blob/master/DOCS/en/wpm_guide.md" target="_blank" rel="noopener noreferrer">wpm user guide (every subcommand) ↗</a></li>
+          <li><a href="https://github.com/unixwin/wpm-artifacts" target="_blank" rel="noopener noreferrer">wpm-artifacts: the self-hosted artifacts repo ↗</a></li>
+          <li><a href="/products/wpm/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .repo-line {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .repo-line a {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  .zh-fold {
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.55rem 1rem;
+  }
+
+  .zh-fold summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+
+  .zh-fold[open] summary {
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .zh-fold p,
+  .zh-fold li {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0.5rem 0.6rem;
+  }
+
+  td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.6rem;
+    vertical-align: top;
+  }
+
+  td strong {
+    color: var(--accent);
+  }
+
+  td.src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  .codeblock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .codeblock pre.cmd {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cmd-label {
+    margin: 1rem 0 0.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .src-line {
+    color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  .changelog-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .changelog-list li {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-2);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.75rem 1rem;
+    margin: 0;
+  }
+
+  .changelog-list strong {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    color: var(--accent);
+  }
+
+  .changelog-list span {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.87rem;
+    color: var(--muted);
+  }
+
+  .link-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.4rem;
+  }
+
+  .link-cols h3 {
+    margin-top: 0.4rem;
+    font-size: 0.92rem;
+    font-family: var(--font-mono);
+    color: var(--accent-2);
+  }
+
+  .link-cols ul {
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 720px) {
+    .link-cols {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

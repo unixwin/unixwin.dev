@@ -1,0 +1,441 @@
+---
+/**
+ * /en/products/niu-git/ — English edition of the niu-git product page.
+ * Skeleton English; prose-heavy Chinese folded into <details>; the speed table,
+ * measured-numbers and release-feed tables fully translated.
+ * Facts mirror the zh page (niu-git README, wpm/niugit.json, repo-meta 2026-10-19).
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+import CopyButton from '../../../../components/CopyButton.astro';
+
+const verifyGit = 'git --version';
+const migrate1 = 'wpm update winuxcmd';
+const migrate2 = 'wpm install niugit --force';
+const migrateBoth = `${migrate1}\n${migrate2}`;
+
+const speed = [
+  { who: 'niu-git (flat layout)', version: '13.7 ms mean / 11.5 ms min', status: '22.6 ms mean / 17.4 ms min', best: true },
+  { who: 'Git for Windows mingw64\\bin\\git.exe', version: '51.3 ms mean', status: '30.6 ms mean', best: false },
+  { who: 'Git for Windows cmd\\git.exe (the usual PATH entry)', version: '45.3 ms mean', status: '50.1 ms mean', best: false },
+  { who: 'time git … inside the Git Bash prompt', version: '73–103 ms real', status: '—', best: false },
+];
+
+const bench = [
+  {
+    a: 'git --version',
+    b: '13.7 ms mean / 11.5 ms min (~14 ms)',
+    c: 'Git Bash 45–103 ms',
+    src: 'niu-git README Speed table (measured 2026-10)',
+  },
+  {
+    a: 'git status --porcelain',
+    b: '22.6 ms mean / 17.4 ms min',
+    c: 'GfW cmd\\git.exe 50.1 ms mean',
+    src: 'same table',
+  },
+  {
+    a: 'Install size',
+    b: 'bundle 29 MB / zip 33 MB',
+    c: 'MinGit zip 37 MB',
+    src: 'niu-git README Status section',
+  },
+  {
+    a: 'Upstream t/ suites (curated subset)',
+    b: '2861 ok / 0 hard failures',
+    c: '14 # TODO known breakage entries',
+    src: 'niu-git README Test section',
+  },
+  {
+    a: 'Launcher quoting differential',
+    b: '49/49 pass',
+    c: '—',
+    src: 'niu-git PR #6 · test-launcher.py',
+  },
+];
+
+const news = [
+  {
+    version: 'v2.56.0.1',
+    date: '—',
+    summary:
+      'Latest tag: upstream baseline advanced to git 2.56.0.windows.2; git --version carries the 2.56.0.windows.2.niugit distro marker (repo-meta, measured 2026-10-19; no releases page — the tag is the version).',
+  },
+  {
+    version: 'v2.55.0.5',
+    date: '—',
+    summary:
+      'Dispatcher retired: patch #3 self-location maps the real mingw64/bin/git.exe straight onto usr\\bin\\git.exe — wpm flat measures 13.7 ms mean for git --version, 22.6 ms for git status; wpm/niugit.json is this version\'s index entry (sha256/size aligned with the local build).',
+  },
+  {
+    version: 'v2.55.0.windows.2',
+    date: '—',
+    summary:
+      'Phase 0 PoC finalized: git-for-windows v2.55.0.windows.2 built with MSVC + CMake + vcpkg, zlib/iconv static, bundle 29 MB; init/add/commit/log/status, schannel https clone, and hooks via the PATH sh all verified.',
+  },
+];
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'niu-git',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "Native Windows Git distribution without MSYS, ~14 ms startup",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
+---
+
+<DocsLayout
+  title="niu-git — native Windows Git"
+  description="niu-git product page: real git-for-windows C sources built natively with MSVC — no MSYS, no OpenSSL (schannel + the Windows cert store), no bundled shell/perl; git --version in ~14 ms versus Git Bash's 45–103 ms; the shell-scripted parts run on niubash's sh."
+  path="/en/products/niu-git/"
+  lang="en"
+  enPath="/products/niu-git/"
+  jsonLdExtra={productJsonLd}
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>niu-git</h1>
+    <p class="lead">
+      Native Windows Git, no MSYS: the real git-for-windows C sources built with MSVC —
+      no bundled bash, no bundled perl, no bundled OpenSSL; TLS goes through schannel and the
+      Windows certificate store. The <code>git</code> on PATH is git itself, <code>git --version</code>
+      starts in about 14 ms, and the scripted parts (hooks, bisect, mergetool) run on niubash's
+      <code>sh</code>.
+    </p>
+    <div class="badges">
+      <span class="p-badge">C (MSVC)</span>
+      <span class="p-badge">Windows</span>
+      <span class="p-badge">stable</span>
+    </div>
+    <p class="meta-line">
+      <a href="https://github.com/unixwin/niu-git" target="_blank" rel="noopener noreferrer">github.com/unixwin/niu-git ↗</a>
+      <span class="dot">·</span> Star 0
+      <span class="dot">·</span> latest v2.56.0.1 (repo-meta, measured 2026-10-19; no releases page — the tag is the version)
+    </p>
+  </header>
+
+  <section>
+    <h2 id="why">Why niu-git</h2>
+    <p>
+      Nearly everyone on Windows has a git on PATH that "boots an MSYS2 runtime before doing work":
+      calling from cmd / PowerShell hops through the cmd\git.exe launcher, calling from Git Bash pays
+      an extra fork — so every git status pays tax for a POSIX world you don't need. niu-git's stance
+      is plain: the git binary is a C program, so build it natively as one; git's scripted parts are
+      shell, so hand them to a real shell.
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（4 张卡片全文）</summary>
+      <div lang="zh-CN">
+        <ul>
+          <li><strong>快是结构性的，不是调优</strong>——Git Bash 的 git 跑在 MSYS2 运行时里，每次调用都付一遍 POSIX 运行时初始化；niu-git 的 usr\bin\git.exe 就是 git 本体：一次 CreateProcess，无 MSYS DLL、进程树里无 bash 无 perl。</li>
+          <li><strong>无 MSYS、无 OpenSSL、无捆绑脚本运行时</strong>——MSVC + CMake 构建 git-for-windows 真实 C 源码；TLS 只走 schannel；zlib / iconv 静态链接；shell 脚本部分由 PATH 上的 niubash sh 承担。</li>
+          <li><strong>参数保真：引号纪律与消息字面字节</strong>——commit -m 载荷、D:\dir\ 路径规格、CJK 与多行消息逐字节存活；差分套件 49/49 钉死；消息载荷永不改写。</li>
+          <li><strong>边界诚实：不带的说清楚</strong>——perl 命令（send-email、svn、cvs*）不提供而不是运行时才失败；git-gui / gitk 不随发；git grep -P 没有——用 WinuxCmd 的 grep -P。</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="features">Core features</h2>
+    <p>
+      Real git C sources, natively built with MSVC; ~14 ms startup; schannel TLS with credential
+      helpers untouched; a clean division of labor with niubash's sh; an upstream test baseline on
+      record; and it arrives together with niubash. Full six-point list (Chinese):
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（六条特性全文）</summary>
+      <div lang="zh-CN">
+        <ul>
+          <li><strong>真 git C 源码，MSVC 原生构建</strong>——上游 git-for-windows 的 C 源码 + 仓内三枚补丁（#1 schannel 容忍 stale http.sslBackend；#2 POSIX 形路径参数 + 消息守卫；#3 system prefix 自定位），源码永不入仓，CI 拉上游 tarball 打补丁。</li>
+          <li><strong>~14 ms 启动</strong>——wpm flat 布局实测 git --version 13.7 ms 均值；v2.55.0.5 起根入口 launcher 退役，无包装 hop。</li>
+          <li><strong>schannel TLS 与凭据不越权</strong>——TLS 走 Windows 证书库；自配的任何凭据 helper 照常生效；系统 gitconfig 刻意不设默认 helper；自带 172 KB 的 wincred 小助手。</li>
+          <li><strong>与 niubash sh 的分工</strong>——hooks、git bisect、git mergetool、git filter-branch、git submodule、git request-pull 跑在 niubash 提供的 sh 上。</li>
+          <li><strong>上游测试基线在案</strong>——curated subset 2861 ok / 14 例 # TODO known breakage / 0 硬失败；t0001-init 102/103。</li>
+          <li><strong>随 niubash 一起到货</strong>——niubash 1.4.0 的 Windows 发行包经 wpm 预装 niu-git（ARM64 同样预装）。</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="install">Install &amp; quick start</h2>
+    <p>
+      Windows: the niubash release package already preloads niu-git (the bundle list lives in
+      niubash's scripts/release/preinstall.json; niu-git and gawk are windows-x64 assets, the ARM64
+      leg ships only ripgrep and fd per the preinstall.json notes). Verify:
+    </p>
+    <div class="cmd">
+      <pre><code>{verifyGit}</code></pre>
+      <CopyButton copy={verifyGit} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p>Migrating from a MinGit shim install (the flat layout needs WinuxCmd/wpm 1.1.9+):</p>
+    <div class="cmd">
+      <pre><code>{migrateBoth}</code></pre>
+      <CopyButton copy={migrateBoth} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p class="first-run">
+      One-line first-run check: <code>git --version</code> should print a version string of the
+      <code>2.56.0.windows.2.niugit</code> shape — upstream suffix and the niu-git distro marker both
+      present. niubash users can skip this: the Windows package already ships niu-git (x64 and ARM64).
+    </p>
+  </section>
+
+  <section>
+    <h2 id="deep">Deep dive: speed, the native toolchain and sh interplay</h2>
+    <h3>Speed comparison</h3>
+    <p>
+      Windows x64, warm cache, Python subprocess timing, 15 rounds, a small repo (measured 2026-10).
+      The gap is structural: niu-git reaches the git binary in one CreateProcess; the Git Bash side
+      pays MSYS2 runtime initialization per call (plus a fork inside the prompt).
+    </p>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>git on PATH</th><th>git --version</th><th>git status --porcelain</th></tr>
+        </thead>
+        <tbody>
+          {
+            speed.map((r) => (
+              <tr class={r.best ? 'is-best' : ''}>
+                <td>{r.best ? <strong>{r.who}</strong> : r.who}</td>
+                <td>{r.version}</td>
+                <td>{r.status}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（MSVC / schannel 与 sh 联动 两节全文）</summary>
+      <div lang="zh-CN">
+        <p><strong>MSVC / schannel：原生工具链到底</strong>——构建链是 MSVC + CMake（+ vcpkg），TLS 只编 schannel：证书与系统更新走 Windows 证书库，不携带 OpenSSL 及其随附 dll；zlib 与 iconv 静态链接。patch #1 容忍遗留的 http.sslBackend 配置——警告并回落，而不是拒绝启动。</p>
+        <p><strong>与 niubash sh 联动</strong>——git 的脚本面不是被删掉，是被分工：hooks、git bisect、git mergetool、git filter-branch、git submodule、git request-pull 交给 PATH 上的 sh（即 <a href="/en/products/niubash/">niubash</a> 的 sh shim）。perl 依赖的 send-email / svn / cvs* 诚实缺席；git grep -P 没有时用 <a href="/en/products/winuxcmd/">WinuxCmd</a> 的 grep -P。路径方言总账见 <a href="/en/docs/paths-and-msys/">路径与 MSYS</a>。</p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="bench">Measured numbers</h2>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead>
+          <tr><th>Metric</th><th>niu-git</th><th>Contrast</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          {
+            bench.map((r) => (
+              <tr>
+                <td>{r.a}</td>
+                <td><strong>{r.b}</strong></td>
+                <td>{r.c}</td>
+                <td><span class="src">{r.src}</span></td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="news">Release feed</h2>
+    <div class="table-scroll">
+      <table class="cli-table">
+        <thead><tr><th>Version</th><th>Date</th><th>Summary</th></tr></thead>
+        <tbody>
+          {
+            news.map((n) => (
+              <tr>
+                <td><code>{n.version}</code></td>
+                <td>{n.date}</td>
+                <td>{n.summary}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="src-line">
+      niu-git is outside changelogs.json's fetch scope (no releases page, no CHANGELOG — the tag is
+      the version, per the FACTS.json products ruling); the table above summarizes the in-repo README,
+      wpm/niugit.json and portal repo-meta tag measurements. Other repos' full feed:
+      <a href="/en/changelog/">changelog</a>.
+    </p>
+  </section>
+
+  <section>
+    <h2 id="links">Related links</h2>
+    <h3>On this site</h3>
+    <ul>
+      <li><a href="/en/products/niubash/">niubash product page</a> — the other half of the sh interplay; the Windows package ships niu-git</li>
+      <li><a href="/en/products/winuxcmd/">WinuxCmd product page</a> — the provider of wpm and grep -P</li>
+      <li><a href="/en/docs/paths-and-msys/">Paths &amp; MSYS</a> · <a href="/en/benchmarks/">Benchmarks</a> (git startup ~14 ms vs 45–103 ms) · <a href="/en/changelog/">Changelog</a></li>
+    </ul>
+    <h3>Off site</h3>
+    <ul>
+      <li><a href="https://github.com/unixwin/niu-git" target="_blank" rel="noopener noreferrer">GitHub repo ↗</a> (a patch repo: sources never committed; CI pulls the upstream tarball and applies patches/)</li>
+      <li><a href="https://github.com/unixwin/niu-git/tags" target="_blank" rel="noopener noreferrer">Tags (versions are tags) ↗</a></li>
+      <li><a href="/products/niu-git/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
+    </ul>
+  </section>
+</DocsLayout>
+
+<style>
+  .doc-head h1 {
+    border-bottom: 3px solid var(--accent);
+    border-image: linear-gradient(90deg, var(--accent), transparent 70%) 1;
+    padding-bottom: 0.5rem;
+  }
+
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.12em 0.4em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .p-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--accent);
+    border-radius: calc(var(--radius) * 0.75);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    padding: 0.24rem 0.6rem;
+    white-space: nowrap;
+  }
+
+  .meta-line {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .meta-line .dot {
+    margin: 0 0.4rem;
+  }
+
+  section h2 {
+    margin-top: 2.6rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .zh-fold {
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.55rem 1rem;
+  }
+
+  .zh-fold summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+
+  .zh-fold[open] summary {
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .zh-fold p,
+  .zh-fold li {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .zh-fold ul {
+    padding-left: 1.3rem;
+  }
+
+  .zh-fold li {
+    margin-bottom: 0.45rem;
+    line-height: 1.7;
+  }
+
+  .cmd {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0 0 1.05rem;
+  }
+
+  .cmd pre {
+    flex: 1 1 auto;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .first-run {
+    border-left: 3px solid var(--accent);
+    padding-left: 0.9rem;
+    color: var(--muted);
+  }
+
+  .first-run code {
+    overflow-wrap: anywhere;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .cli-table {
+    width: 100%;
+    min-width: 620px;
+  }
+
+  .cli-table td strong {
+    color: var(--accent);
+  }
+
+  .cli-table tr.is-best td {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  .src-line {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 960px) {
+    .cmd {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>

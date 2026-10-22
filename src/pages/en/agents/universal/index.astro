@@ -1,0 +1,544 @@
+---
+/**
+ * /en/agents/universal/ — English edition of the universal agent onboarding guide.
+ * Teaches wiring ANY AI agent's default shell to niubash (not just the catalogued ones).
+ * Source of truth: niubash repo docs/src/agents.md
+ * (https://unixwin.github.io/niubash/agents.html, verified 2026-10-16).
+ * Structure: breadcrumb+H1 → four-mechanism table → three-step wiring flow
+ * (with three copy blocks) → self-check for uncatalogued agents → four known
+ * traps → sources & back link. Chinese edition: /agents/universal/.
+ */
+import BaseLayout from '../../../../components/BaseLayout.astro';
+import SiteHeader from '../../../../components/SiteHeader.astro';
+import SiteFooter from '../../../../components/SiteFooter.astro';
+import Badge from '../../../../components/Badge.astro';
+import CopyButton from '../../../../components/CopyButton.astro';
+import ZhOnlyBanner from '../../../../components/ZhOnlyBanner.astro';
+
+const VERIFY_CMD = 'echo "SHELL=$SHELL"; uname -s; uname -a';
+
+const CODE_STEP1 = String.raw`# 1) Enter a niu session ($SHELL is exported here, pointing at niu.exe)
+niu
+
+# 2) Start your agent from inside the niu session (example):
+opencode          # or codex / any CLI agent
+
+# 3) Have the agent run the verify command below, then match the output
+#    against step 2's signature table:
+#    echo "SHELL=$SHELL"; uname -s; uname -a`;
+
+const CODE_SHELL = String.raw`# Persist SHELL into the user environment (same trick as the installer:
+# one registry value, no elevation required)
+# Adjust the path to your actual install location; default is %LOCALAPPDATA%\Programs\Niubash
+[Environment]::SetEnvironmentVariable('SHELL', "$env:LOCALAPPDATA\Programs\Niubash\niu.exe", 'User')
+
+# Undo (matches the installer's uninstall semantics):
+# [Environment]::SetEnvironmentVariable('SHELL', $null, 'User')
+
+# Note: only affects processes started afterwards — reopen your terminal / agent`;
+
+const CODE_PROFILE = String.raw`// VS Code family settings.json (VS Code / Windsurf / Trae / ZCode, plus the
+// extensions that run commands through the editor terminal or an automation
+// profile: Cline, Roo Code, Kilo Code, Continue, ...)
+// Swap path for your actual install; default %LOCALAPPDATA%\Programs\Niubash\niu.exe:
+"terminal.integrated.automationProfile.windows": {
+  "path": "C:\\Users\\<your-user-name>\\AppData\\Local\\Programs\\Niubash\\niu.exe",
+  "args": []
+}`;
+
+const CODE_PROBE = String.raw`# The installer's optional elevated step (run once as administrator) places the
+# placeholders mechanism 3 needs:
+#   C:\Program Files\Git\bin\bash.exe         <- Claude Code / VS Code family hard-coded probe 1
+#   C:\Program Files (x86)\Git\bin\bash.exe   <- second candidate path
+#   C:\Program Files\Git\bin\sh.exe           <- for tools that want sh next to bash
+# Verify the placeholders (first line should print True; second should print MSYS_NT-...):
+Test-Path 'C:\Program Files\Git\bin\bash.exe'
+& 'C:\Program Files\Git\bin\bash.exe' -c 'uname -s'`;
+---
+
+<BaseLayout
+  title="Universal guide: wire any AI agent to niubash"
+  description="Four mechanisms × a three-step decision flow: switch any AI agent's default shell to niubash — the $SHELL convention, explicit configuration, the Git for Windows probe, and bare-name resolution; with a verify command, copy-paste snippets and known traps."
+  theme="day"
+  path="/en/agents/universal/"
+  lang="en"
+  enPath="/agents/universal/"
+>
+  <SiteHeader />
+
+  <main class="container narrow">
+    <ZhOnlyBanner zhPath="/agents/universal/" />
+
+    <p class="crumb"><a href="/en/agents/">← Agent directory</a><span> / Universal guide</span></p>
+
+    <header class="head">
+      <h1>Wire <span class="hl">any agent</span> onto niubash</h1>
+      <div class="badges">
+        <Badge tone="accent">Universal guide</Badge>
+        <Badge tone="info">Works for any agent</Badge>
+        <Badge tone="muted">Source of truth: agents.md</Badge>
+      </div>
+      <p class="one">
+        How an agent picks its shell follows patterns — work out its detection mechanism and you can
+        wire it. Your agent never runs commands inside "the shell you are using": it picks its own,
+        and on Windows that pick is decided by exactly four detection mechanisms. This page takes them
+        apart one by one, then gives a three-step decision flow that works for agents the catalogue
+        has never listed.
+      </p>
+    </header>
+
+    <!-- ============ 2. Four mechanisms ============ -->
+    <section class="sec" id="mechanisms">
+      <h2>The four detection mechanisms</h2>
+      <p class="lead">
+        From agents.md, "The four mechanisms". The first three are wireable by you; the fourth is the
+        hard limit behind every bare-name invocation — and the reason the other three exist.
+        Each row's "how to wire it" lands on the matching copy block in the
+        <a href="#flow">step-3 flow</a>.
+      </p>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Mechanism</th><th>Coverage</th><th>How to wire it</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="mname">① $SHELL · POSIX convention</span></td>
+              <td>
+                Agents that read the process environment — the largest class, including all
+                POSIX-style CLIs (opencode is the pure specimen: zero occurrences of
+                <code>niu</code> in the binary, no shell setting; <code>$SHELL</code> is the
+                whole mechanism).
+                <span class="sub">Works automatically inside a niu session: niu exports
+                <code>SHELL=&lt;path to niu.exe&gt;</code>. But <code>$SHELL</code> is not
+                persisted — the same agent launched from the Start menu / Explorer sees an empty value.</span>
+              </td>
+              <td>Launch the agent inside niu (step 3 · try step 1 first), or persist <code>SHELL</code> into the user environment (block a).</td>
+            </tr>
+            <tr>
+              <td><span class="mname">② per-agent explicit configuration</span></td>
+              <td>
+                Agents exposing a shell settings field / CLI flag:
+                Zed (<code>terminal.shell.program</code>), Claude Code
+                (<code>CLAUDE_CODE_GIT_BASH_PATH</code>), the VS Code family
+                (<code>automationProfile</code>), DSH (profile plugin).
+                <span class="sub">Config-reading mechanisms are launch-method independent — set once, effective forever.</span>
+              </td>
+              <td>Find its shell setting via the section-4 self-check, then point it at <code>niu.exe</code> or the installer-placed <code>bash.exe</code> (block b is the universal VS Code family snippet).</td>
+            </tr>
+            <tr>
+              <td><span class="mname">③ Git for Windows probe</span></td>
+              <td>
+                Agents with hard-coded Git paths, or that infer from <code>git</code> on PATH:
+                Claude Code (scans <code>C:\Program Files\Git</code> and the x86 directory first, then infers from <code>git</code>),
+                the whole VS Code family (Copilot / Windsurf / Trae / ZCode + the Cline, Roo Code, Kilo Code, Continue extensions).
+                <span class="sub">It probes fixed locations: <code>C:\Program Files\Git\bin\bash.exe</code> and friends.</span>
+              </td>
+              <td>The niubash installer already places a <code>bash.exe</code> placeholder on those paths (x86 candidates and <code>sh.exe</code> included); run once as administrator (block c verifies).</td>
+            </tr>
+            <tr>
+              <td><span class="mname">④ Bare-name resolution</span></td>
+              <td>
+                Callers that throw the bare name <code>bash</code> / <code>sh</code> to
+                <code>PATH</code> / <code>ComSpec</code> / <code>PATHEXT</code>.
+                <span class="sub">The hard limit: in CreateProcess's search order the system directory (System32) comes before PATH — a bare
+                <code>bash</code> always hits <code>C:\Windows\System32\bash.exe</code> (WSL) first.
+                See agents.md, "Why PATH cannot win against System32".</span>
+              </td>
+              <td>A user PATH cannot outrank System32: either give a full path that lands on the Git probe (fold into ③), or make the caller use <code>sh</code> (no System32 namesake exists).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 3. Wiring decision flow ============ -->
+    <section class="sec" id="flow">
+      <h2>The wiring decision flow (three steps)</h2>
+
+      <div class="step">
+        <div class="step-no" aria-hidden="true">1</div>
+        <div class="step-body">
+          <h3>Step 1 · Always try "launch from a niu session" first</h3>
+          <p class="note">
+            This is the only approach that "just works" most of the time:
+            <strong>niu exports <code>SHELL=&lt;path to niu.exe&gt;</code></strong>, and any agent
+            honoring the POSIX convention picks it up as-is. That is how the agents.md author runs:
+            process tree <code>powershell.exe ← niu.exe ← opencode.exe</code>, while opencode's shell
+            selector is literally
+            <code>process.env.SHELL ?? which("bash") ?? "/bin/sh"</code>.
+            Zero cost — try it first.
+          </p>
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-label">Launch inside a niu session + verify</span>
+              <CopyButton copy={CODE_STEP1} label="Copy all" title="Copy to clipboard" />
+            </div>
+            <pre><code>{CODE_STEP1}</code></pre>
+          </div>
+          <div class="verify-row">
+            <span class="v-label">The verify command to have the agent run:</span>
+            <code>{VERIFY_CMD}</code>
+            <CopyButton copy={VERIFY_CMD} label="Copy" title="Copy to clipboard" />
+          </div>
+          <p class="note">
+            But <code>$SHELL</code> is <strong>not persisted</strong>: it exists only in descendant
+            processes of the niu session. The same agent launched from the Start menu / Explorer sees
+            an empty <code>$SHELL</code> and falls back to <code>which("bash")</code> — which on a
+            WSL-installed machine resolves to <code>C:\Windows\System32\bash.exe</code>, and suddenly
+            commands run inside Linux. The next two steps pin the result down.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-no" aria-hidden="true">2</div>
+        <div class="step-body">
+          <h3>Step 2 · Match the output against the signature table</h3>
+          <p class="note">Compare the three lines the agent produced with the table:</p>
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>You see</th><th>Actual shell</th><th>Next move</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>uname -s</code> = <code>MSYS_NT-…</code>, and <code>uname -a</code> ends with <code>x86_64 Msys</code></td>
+                  <td><strong>niu</strong> (winuxcmd shim)</td>
+                  <td><span class="m-chip good">Success</span> <code>$SHELL</code> points at <code>niu.exe</code>; add block a to pin it across launch methods.</td>
+                </tr>
+                <tr>
+                  <td><code>uname -s</code> = <code>MINGW64_NT-…</code>, <code>MSYSTEM=MINGW64</code></td>
+                  <td><strong>Git Bash</strong> (Git for Windows' own runtime)</td>
+                  <td>A probe-type mechanism won the race: go <span class="m-chip">mechanism ③</span> (once the placeholders are in place, the probe hits niubash's <code>bash.exe</code>) or <span class="m-chip">mechanism ②</span> (explicit); persisting <code>$SHELL</code> also works as a floor.</td>
+                </tr>
+                <tr>
+                  <td><code>uname -s</code> = <code>Linux</code></td>
+                  <td><strong>WSL</strong> — the agent fell back to <code>which("bash")</code> and hit <code>System32\bash.exe</code></td>
+                  <td>The deepest silent wrong-shell hit: go <span class="m-chip">mechanism ②</span> or <span class="m-chip">mechanism ③</span>, and use <span class="m-chip">mechanism ①</span> (block a) to prevent the fallback.</td>
+                </tr>
+                <tr>
+                  <td><code>uname</code> missing, <code>$SHELL</code> empty</td>
+                  <td><strong>PowerShell or cmd</strong> (tell them apart via <code>$PSVersionTable.PSVersion</code> vs <code>%COMSPEC%</code>)</td>
+                  <td>Safe but not bash-compatible: go <span class="m-chip">mechanism ②</span> (for the VS Code family that is block b).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="note">
+            The same signature check shows up in Cursor's own support thread: fixed means
+            <code>uname -a</code> ends with <code>MINGW64_NT-…</code> instead of
+            <code>microsoft-standard-WSL2</code> — the niu target is <code>MSYS_NT-…</code>
+            (ending <code>x86_64 Msys</code>).
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-no" aria-hidden="true">3</div>
+        <div class="step-body">
+          <h3>Step 3 · Configure per mechanism (three copy blocks)</h3>
+
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-label">Block a · persist $SHELL (mechanism ① · PowerShell · user-level · no admin)</span>
+              <CopyButton copy={CODE_SHELL} label="Copy" title="Copy to clipboard" />
+            </div>
+            <pre><code>{CODE_SHELL}</code></pre>
+          </div>
+          <p class="note">
+            The installer itself writes <code>SHELL</code> into the user environment too (removed on
+            uninstall) — item 1 of agents.md's "Recommended order of work": one registry value, no
+            elevation, covering the largest agent class (all POSIX-style CLIs) and making
+            <code>$SHELL</code> independent of the launch method. The command above is its manual twin.
+          </p>
+
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-label">Block b · settings.json automationProfile (mechanism ② · universal for the VS Code family)</span>
+              <CopyButton copy={CODE_PROFILE} label="Copy" title="Copy to clipboard" />
+            </div>
+            <pre><code>{CODE_PROFILE}</code></pre>
+          </div>
+          <p class="note">
+            Agents that shell out through an automation profile inherit this setting (the VS Code
+            family's explicit-control method). Beyond the placeholder paths, pointing the profile
+            straight at <code>niu.exe</code> skips one hop of the <code>bash.exe</code> launcher.
+          </p>
+          <p class="warn-note">
+            <strong>The Cursor exception:</strong> Cursor's IDE agent ignores
+            <code>terminal.integrated.defaultProfile.windows</code> and
+            <code>automationProfile.windows</code> and still runs PowerShell (workaround: enable the
+            Legacy Terminal Tool setting); its Agent CLI is hard-coded to PowerShell. See the
+            <a href="/en/agents/cursor/">Cursor detail page</a>.
+          </p>
+
+          <div class="code-card">
+            <div class="code-head">
+              <span class="code-label">Block c · verify the installer's Git probe placeholders (mechanism ③)</span>
+              <CopyButton copy={CODE_PROBE} label="Copy" title="Copy to clipboard" />
+            </div>
+            <pre><code>{CODE_PROBE}</code></pre>
+          </div>
+          <p class="note">
+            These files are placed by <strong>the installer's optional elevated step</strong> — run
+            once as administrator (<code>Program Files</code> is not writable from a user PATH). One
+            cost, the whole family benefits: Claude Code's and the VS Code family's hard-coded probes
+            all land on niubash's launcher from then on. That <code>bash.exe</code> is not niu itself
+            but a launcher that starts <code>niu.exe</code> as a child
+            (<code>agent → bash.exe → niu.exe</code>): about <strong>17.6 ms</strong> extra per
+            <code>-c</code> call (niubash#377); the historical "one console window flash per command"
+            problem (niubash#379) was fixed in rubash#668 — verify the flashes are gone once you upgrade.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 4. Self-check ============ -->
+    <section class="sec" id="diy">
+      <h2>Agent not in the catalogue? Ask three questions</h2>
+      <p class="lead">
+        The verified list is short; the agent ecosystem is not. Most agents hide their shell
+        detection in one of three places — ask, in order:
+      </p>
+      <ul class="qa-list">
+        <li class="qa">
+          <h3>One: check its settings</h3>
+          <p>
+            Go through its docs, settings UI and config schema looking for <code>shell</code>,
+            <code>terminal</code>, <code>bash</code>, <code>profile</code>; check <code>--help</code>
+            for a <code>--shell</code>-style flag. Verified agents' knobs look like this:
+            Zed → <code>terminal.shell.program</code>;
+            Claude Code → <code>CLAUDE_CODE_GIT_BASH_PATH</code> in settings.json;
+            the VS Code family → <code>terminal.integrated.automationProfile.windows</code>;
+            DSH → <code>dsh plugin --profile web add @cmx666/dsh-niu-bundle@&lt;version&gt;</code>.
+            Found one? That is <strong>mechanism ②</strong> — point it at <code>niu.exe</code> or the
+            placeholder <code>bash.exe</code>.
+          </p>
+        </li>
+        <li class="qa">
+          <h3>Two: check its code</h3>
+          <p>
+            If you can read the source or the binary, search for <code>detect</code> / <code>shell</code>.
+            Real specimens: Cursor's <code>detectShellType()</code>, Gemini CLI's
+            <code>getShellConfiguration()</code>, Codex's
+            <code>codex-rs/shell-command/src/shell_detect.rs</code>, and the VS Code family's probe
+            array buried in <code>app.asar</code> (hard-codes <code>C:\Program Files\Git\bin\bash.exe</code>
+            and the x86 candidate, then infers from <code>which("git")</code>). What it <strong>reads</strong>
+            tells you the mechanism — env var → ①; config field → ②; hard-coded Git path / git inference → ③;
+            bare name on PATH → ④ — then wire per the section-2 table.
+          </p>
+        </li>
+        <li class="qa">
+          <h3>Three: check whether it can be saved at all</h3>
+          <p>
+            If it unconditionally returns PowerShell (Gemini CLI today:
+            <code>getShellConfiguration()</code> has no bash branch on Windows), or hard-codes it
+            (Cursor CLI today: <code>$SHELL</code> / <code>$COMSPEC</code> both ignored) — no
+            configuration can save it; classify as "not supported yet" and wait for upstream to
+            expose a shell path.
+          </p>
+        </li>
+      </ul>
+      <div class="pr-cta">
+        <p>
+          <strong>Figured it out? PRs welcome</strong> — add your findings to the <a href="/en/agents/">/en/agents/
+          catalogue</a> (agent name, mechanism class, configuration method, verify output):
+          <a href="https://github.com/unixwin/unixwin.dev" target="_blank" rel="noopener noreferrer">github.com/unixwin/unixwin.dev ↗</a>.
+          The "not verified here" list in agents.md is still long — Amazon Q Developer CLI, Goose, Amp,
+          OpenHands, Devin… every bit of reconnaissance is a contribution.
+        </p>
+      </div>
+      <p class="warn-note">
+        <strong>Two things not to do while wiring</strong> (agents.md, "Two things not to do"):
+        first, never add <code>winuxcmd\usr\bin</code> to PATH — hundreds of names, many colliding
+        with System32; second, never try to replace <code>C:\Windows\System32\bash.exe</code>.
+      </p>
+    </section>
+
+    <!-- ============ 5. Known traps ============ -->
+    <section class="sec" id="traps">
+      <h2>Known traps · four of them</h2>
+      <ul class="trap-list">
+        <li class="trap">
+          <h3>MSYSTEM is empty</h3>
+          <p>
+            Inside a niu session <code>MSYSTEM</code> is empty. Tools that sniff it to detect MSYS
+            (e.g. the Gemini CLI community proposal) cannot see niu at all; setting it yourself is
+            experimental — untested, and it changes how other MSYS-aware tools behave.
+            <span class="src">Source: <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.md · Known traps, item 1</a></span>
+          </p>
+        </li>
+        <li class="trap">
+          <h3>uname reporting MSYS_NT is deliberate compatibility</h3>
+          <p>
+            The winuxcmd shim's <code>uname</code> reports <code>MSYS_NT-…</code> — on purpose:
+            any tool branching on <code>uname</code> classifies the host as MSYS, which autotools-style
+            tooling can literally observe. Do not "fix" it as a bug.
+            <span class="src">Source: <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.md · Known traps, item 2</a></span>
+          </p>
+        </li>
+        <li class="trap">
+          <h3>WSL bash silently runs Linux</h3>
+          <p>
+            A bare <code>bash</code> that resolves to the Windows WSL launcher starts bash inside
+            Linux <strong>without a single error message</strong> — the agent quietly runs your
+            commands on another operating system. That is where step 2's
+            <code>uname -s = Linux</code> row comes from.
+            <span class="src">Source: <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.md · Known traps, item 4</a></span>
+          </p>
+        </li>
+        <li class="trap">
+          <h3>The System32 search order</h3>
+          <p>
+            When a bare <code>bash</code> is handed to CreateProcess the search order is: app
+            directory → current directory → system directory → Windows directory → PATH. The system
+            directory always beats PATH, so a user-level PATH cannot outrank
+            <code>System32\bash.exe</code> — <code>subprocess(['bash', ...])</code> demonstrably lands
+            in WSL this way, while <code>cmd /c bash</code> and PowerShell's <code>&amp; bash</code>
+            are resolved by the shell itself, where PATH rules.
+            <span class="src">Source: <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">agents.md · Why PATH cannot win against System32</a></span>
+          </p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============ 6. Sources ============ -->
+    <section class="sec">
+      <h2>Sources</h2>
+      <ul class="sources">
+        <li>
+          Single source of truth: <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">Coding agents on Windows, and the shell they run ↗</a>
+          (the online copy of the niubash repo's <code>docs/src/agents.md</code>) — this page's four
+          mechanisms, verify signature table, path ownership and all traps come from that document.
+        </li>
+        <li>Verification environment for that document: niu 1.4.0, niu-git 2.55.0.5 (flat layout), Git for Windows 2.50.1, a WSL2 distro installed; verified 2026-10-16.</li>
+        <li class="back">
+          <a href="/en/agents/">← Back to the agent directory</a>: opencode, Claude Code, Codex, the VS Code family,
+          Zed, DSH, Cursor, Gemini CLI, Aider each have a dedicated swap page.
+        </li>
+        <li class="back">Chinese edition: <a href="/agents/universal/" hreflang="zh-CN" lang="zh-CN">/agents/universal/</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<style>
+  .narrow { max-width: 54rem; }
+
+  .crumb { margin: 1.6rem 0 0.6rem; font-size: 0.88rem; color: var(--muted); }
+  .crumb a { color: var(--link); }
+
+  .head h1 { margin: 0 0 0.6rem; font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.3; }
+  .hl {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .one { color: var(--muted); margin: 0.9rem 0 0; line-height: 1.75; }
+  .one strong { color: var(--text); }
+
+  .sec { margin: 2.2rem 0; }
+  .sec > h2 { font-size: 1.15rem; margin: 0 0 0.4rem; color: var(--accent); letter-spacing: 0.04em; }
+  .lead { color: var(--muted); line-height: 1.75; margin: 0 0 1rem; font-size: 0.92rem; }
+  .lead a { color: var(--link); }
+
+  .tbl code, .note code, .qa code, .verify-row code, .warn-note code, .pr-cta code, .trap code, .sources code, .lead code {
+    background: var(--bg-code); border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.5); padding: 0.05rem 0.35rem;
+    font-size: 0.82em; overflow-wrap: anywhere;
+  }
+  .code-card pre code { background: var(--bg-code); border: 0; padding: 0; font-size: inherit; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+  .tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
+  .tbl th {
+    text-align: left; font-size: 0.78rem; letter-spacing: 0.05em; color: var(--muted);
+    background: var(--bg-elev); padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .tbl td {
+    border-top: 1px solid var(--border); padding: 0.7rem 0.8rem; vertical-align: top;
+    font-size: 0.88rem; line-height: 1.7; color: var(--text);
+  }
+  .tbl tbody tr:first-child td { border-top: 0; }
+  .mname { font-weight: 700; white-space: nowrap; }
+  .tbl .sub { display: block; margin-top: 0.3rem; color: var(--muted); font-size: 0.82rem; line-height: 1.65; }
+
+  .m-chip {
+    display: inline-flex; align-items: center; border: 1px solid var(--accent-2); color: var(--accent-2);
+    border-radius: calc(var(--radius) * 0.75); padding: 0.06rem 0.5rem;
+    font-family: var(--font-mono); font-size: 0.72rem; white-space: nowrap;
+  }
+  .m-chip.good { border-color: var(--accent); color: var(--accent); }
+
+  .step { display: flex; gap: 0.9rem; margin: 1.9rem 0 0; }
+  .step-no {
+    flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%;
+    border: 1px solid var(--accent); color: var(--accent); font-family: var(--font-mono);
+    display: flex; align-items: center; justify-content: center; font-size: 0.95rem; margin-top: 0.15rem;
+  }
+  .step-body { flex: 1; min-width: 0; }
+  .step-body h3 { margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--text); }
+
+  .code-card {
+    background: var(--bg-code); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: var(--radius);
+    margin: 0.9rem 0; overflow: hidden;
+  }
+  .code-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+    padding: 0.55rem 1rem; border-bottom: 1px solid var(--border); background: var(--bg-elev);
+  }
+  .code-label { color: var(--muted); font-size: 0.82rem; }
+  .code-card pre {
+    margin: 0; padding: 0.95rem 1.15rem; overflow-x: auto; white-space: pre;
+    font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.7; color: var(--accent);
+  }
+
+  .verify-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0.8rem 0 0; }
+  .v-label { color: var(--muted); font-size: 0.88rem; }
+
+  .note { color: var(--muted); font-size: 0.9rem; line-height: 1.75; margin: 0.7rem 0 0; }
+  .note strong { color: var(--text); }
+  .warn-note {
+    border: 1px solid var(--border); border-left: 3px solid var(--warn);
+    border-radius: var(--radius); padding: 0.75rem 1rem; margin: 0.9rem 0 0;
+    color: var(--muted); font-size: 0.88rem; line-height: 1.7;
+  }
+  .warn-note strong { color: var(--warn); }
+  .warn-note a { color: var(--link); }
+
+  .qa-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.9rem; }
+  .qa { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1.1rem; }
+  .qa h3 { margin: 0 0 0.4rem; font-size: 0.98rem; color: var(--accent); }
+  .qa p { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.75; }
+  .qa p strong { color: var(--text); }
+
+  .pr-cta {
+    background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 1rem 1.2rem; margin-top: 1.1rem;
+    color: var(--muted); line-height: 1.75; font-size: 0.9rem;
+  }
+  .pr-cta p { margin: 0; }
+  .pr-cta a { color: var(--link); }
+  .pr-cta strong { color: var(--text); }
+
+  .trap-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.9rem; }
+  .trap {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-left: 3px solid var(--warn); border-radius: var(--radius); padding: 0.8rem 1.05rem;
+  }
+  .trap h3 { margin: 0 0 0.3rem; font-size: 0.95rem; color: var(--text); }
+  .trap p { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.7; }
+  .trap .src { display: block; margin-top: 0.4rem; font-size: 0.76rem; }
+  .trap .src a { color: var(--link); }
+
+  .sources { margin: 0; padding-left: 1.2rem; line-height: 1.85; color: var(--muted); font-size: 0.9rem; }
+  .sources a { color: var(--link); }
+  .back { margin-top: 0.4rem; }
+  .back a { font-weight: 600; }
+</style>

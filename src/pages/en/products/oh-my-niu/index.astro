@@ -1,0 +1,501 @@
+---
+/**
+ * /en/products/oh-my-niu/ — English edition of the Oh My Niu product page.
+ * Skeleton English; prose-heavy Chinese folded into <details>; the theme-gallery,
+ * catalog and measured-numbers tables fully translated.
+ * Facts mirror the zh page (oh-my-niu README/docs/design.md, repo-meta 2026-10-19).
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+import Badge from '../../../../components/Badge.astro';
+import CopyButton from '../../../../components/CopyButton.astro';
+import repoMeta from '../../../../data/repo-meta.json';
+
+const meta = repoMeta.repos['oh-my-niu'];
+const stars = typeof meta?.stars === 'number' ? meta.stars : null;
+const latest = typeof meta?.latest === 'string' ? meta.latest : '';
+
+const rcBootstrap = [
+  '# Three lines in ~/.niubashrc: pick plugins, pick a theme, source the framework',
+  "NIU_PLUGINS=(prompt-core git docker zoxide)",
+  "NIU_THEME=minimal",
+  'source "$NIUBASH/oh-my-niu.niu"',
+].join('\n');
+const pluginOps = [
+  'niu plugin themes            # theme overview',
+  'niu plugin doctor            # bundle health check',
+  'niu plugin update oh-my-niu  # update independently of the niubash-shipped offline baseline',
+  'niu plugin rollback oh-my-niu',
+].join('\n');
+const mooCmd = 'niu_moo "Bash, native on Windows."   # a cowsay-style speech bubble';
+
+const themeGroups = [
+  { group: 'Oh My Zsh classics', items: 'agnoster · avit · bira · clean · fishy · lambda · robbyrussell' },
+  { group: 'Powerlevel-style', items: 'p10-lean · p10-classic · p10-rainbow · p10-pure' },
+  { group: 'Oh My Posh-style', items: 'dracula · catppuccin-mocha · gruvbox · spaceship · tokyonight' },
+  { group: 'Official basics', items: 'default · dark · light · colorful · minimal · classic · pure · compact · cyberpunk · forest · ocean' },
+];
+
+const catalogRows = [
+  { id: 'oh-my-bash', origin: 'github.com/ohmybash/oh-my-bash', note: 'bash framework: 80+ themes, plugins and aliases (MIT)' },
+  { id: 'bash-it', origin: 'github.com/Bash-it/bash-it', note: 'community aliases, plugins, completions and themes (MIT)' },
+  { id: 'bash-completion', origin: 'github.com/scop/bash-completion', note: 'the standard bash completion library (GPL-2.0+, fetched on demand)' },
+];
+
+const factRows = [
+  { metric: 'Themes', value: '27 (27 theme-* plugin directories and 27 themes/*.toml assets, name-for-name identical)', src: 'in-repo plugins/ and themes/ counts, measured 2026-10-19' },
+  { metric: 'Plugin directories', value: '50 (27 themes + 23 feature plugins)', src: 'in-repo plugins/ count, measured 2026-10-19' },
+  { metric: 'Completion definitions', value: '174 TOML files', src: 'in-repo completions/ count, measured 2026-10-19' },
+  { metric: 'Index pack entries', value: '22 (bundle 2.0.0, min_niubash 1.0.0)', src: 'oh-my-niu/index.toml' },
+  { metric: 'Alias packs / env packages', value: '5 TOML packs · 2 official envs (git / cicd)', src: 'in-repo aliases/ · envs/ counts' },
+];
+
+const productJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Oh My Niu',
+  applicationCategory: 'DeveloperTool',
+  operatingSystem: 'Windows, Linux, macOS',
+  description: "Oh-My-style plugin framework for niubash: themes, plugins, completions",
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
+};
+---
+
+<DocsLayout
+  title="Oh My Niu — the official themes & plugin framework for Niubash"
+  description="Oh My Niu product page: niubash's official Oh-My-style plugin framework and bundled distribution — 27 themes, 50 plugin directories, 174 completion definitions, env packages and prompt-core; plugins are directories, themes are plugins; ships with niubash, updates independently; the catalog points at official upstreams."
+  path="/en/products/oh-my-niu/"
+  lang="en"
+  enPath="/products/oh-my-niu/"
+  jsonLdExtra={productJsonLd}
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>Oh My Niu: the theme &amp; plugin framework for Niubash</h1>
+    <p class="lead">
+      niubash's <strong>official Oh-My-style plugin framework and bundled distribution</strong>:
+      plugins are directories, themes are plugins, and the shell core only provides loading
+      primitives. Out of the box you get <strong>27 themes</strong> and a family of feature plugins
+      (git / docker / kubectl / zoxide / fzf…); it ships with
+      <a href="/en/products/niubash/">niubash</a> as an offline baseline and then updates and rolls
+      back independently. It is not a zsh compatibility layer — the useful shape of Oh My Zsh, with a
+      bash body.
+    </p>
+    <div class="badge-row">
+      <Badge text="Shell (.niu / bash)" tone="accent" />
+      <Badge text="Ships with niubash · all platforms" tone="info" />
+      <Badge text={latest || 'v2.0.0'} tone="warn" />
+      <Badge text="MIT" tone="muted" />
+    </div>
+    <p class="repo-line">
+      <a href="https://github.com/unixwin/oh-my-niu" target="_blank" rel="noopener noreferrer">
+        github.com/unixwin/oh-my-niu ↗
+      </a>
+      {stars !== null && <span class="stars">{stars} stars</span>}
+      <span class="src">(repo-meta.json, measured 2026-10-19)</span>
+    </p>
+  </header>
+
+  <section>
+    <h2>Why Oh My Niu</h2>
+    <p>
+      People used to Oh My Zsh / fish plugin managers / PowerShell prompt frameworks expect not one
+      specific theme but a model: <strong>list plugins, pick a theme, source one line — everything is
+      in place</strong>. Native shells often lack that layer; oh-my-niu adds it to niubash while
+      deliberately refusing to weld the framework into the shell.
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（3 张卡片全文）</summary>
+      <div lang="zh-CN">
+        <ul>
+          <li><strong>Oh My 的形状，bash 的身体</strong>——Oh My Zsh 真正好用的不是 zsh 语法，而是「插件即目录、按可预测顺序加载」的模型；用户零学习成本。</li>
+          <li><strong>shell 出原语，框架出组合</strong>——niubash 拥有加载、生命周期钩子、权限审阅、更新回滚等原语；oh-my-niu 拥有框架库、插件目录、主题与默认组合。bundled 不等于 built in——与第三方插件走同一套系统。</li>
+          <li><strong>catalog 指向官方上游</strong>——niu plugin catalog 的三个 bash 生态源直指各自官方仓：上游插件一行不改即可原生运行，官方 bundle 只是选项之一。</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Core features</h2>
+    <p>
+      A gallery of 27 themes; themes-as-plugins; the prompt-core segment registry; a Starship takeover
+      mode; the feature plugin family; five new 2.0 first-party plugins; alias/completion/keybinding
+      asset packs; and env packages that wire a whole toolchain in one command. Full eight-point list
+      (Chinese):
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（八条特性全文）</summary>
+      <div lang="zh-CN">
+        <ul>
+          <li><strong>主题画廊</strong>——27 款主题（plugins/theme-* 目录与 themes/*.toml 资产层一一对应）：Oh My Zsh 经典款、Powerlevel 风 p10 四款、Oh My Posh 风配色款与官方基础款。</li>
+          <li><strong>主题即插件</strong>——每款主题是一个普通插件目录，与功能插件同一加载面。</li>
+          <li><strong>prompt-core</strong>——提示符 API 与 segment 注册表的拥有者，默认开启；git 段解析为 niubash 原生 Vcs 段（1.4.1+），零 git 子进程。</li>
+          <li><strong>Starship 接管模式</strong>——加载 starship 插件、留空 NIU_THEME，由 Starship 接管 PROMPT_COMMAND/PS1/PS2/PS0。</li>
+          <li><strong>功能插件族</strong>——git、docker、kubectl、npm、jj、zoxide、direnv、dotenv、fzf、last-working-dir、thefuck、path-tools、extract、common-aliases、keybindings、command-not-found、winuxcmd-core……</li>
+          <li><strong>2.0 新一方插件</strong>——command-timer、auto-env、dirmarks、git-fetch-reminder、env-sync。</li>
+          <li><strong>别名 / 补全 / 键位资产</strong>——aliases/ 五组 TOML；completions/ 174 个 TOML 补全定义；keybindings/ emacs 与 vi 预设。</li>
+          <li><strong>环境包（envs）</strong>——一个小 TOML 声明装哪些 wpm 包、启用哪些插件：niu env use git 一键配好原生 Git 工具链。</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Install &amp; quick start</h2>
+    <p>
+      The bundle ships with niubash (the offline baseline); enabling it takes three rc lines. You can
+      also install/update/roll back through the <code>niu plugin</code> command family. The entry file
+      <code>oh-my-niu.niu</code> is re-entrant — sourcing twice is a no-op; add <code>--reload</code>
+      for a full reload.
+    </p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{rcBootstrap}</code></pre>
+      <CopyButton copy={rcBootstrap} label="Copy" title="Copy to clipboard" />
+    </div>
+    <h3>First-run orientation</h3>
+    <div class="codeblock">
+      <pre class="cmd"><code>{pluginOps}</code></pre>
+      <CopyButton copy={pluginOps} label="Copy" title="Copy to clipboard" />
+    </div>
+    <p>
+      Changing themes: edit <code>NIU_THEME</code> and reopen the terminal; keep config changes in
+      <code>~/.niubashrc</code> (sourcing itself writes nothing to disk, and plugins never rewrite the
+      rc without an explicit user command). To verify everything works, make the cow speak:
+    </p>
+    <div class="codeblock">
+      <pre class="cmd"><code>{mooCmd}</code></pre>
+      <CopyButton copy={mooCmd} label="Copy" title="Copy to clipboard" />
+    </div>
+  </section>
+
+  <section>
+    <h2>Deep dive: the theme gallery</h2>
+    <p>
+      The gallery is not a static skin library — every theme is an ordinary plugin directory under
+      <code>plugins/theme-*/</code> (<code>plugin.toml</code> metadata + a <code>*.plugin.niu</code>
+      behavior), rendered by prompt-core's segment registry; the <code>themes/*.toml</code> asset
+      layer serves manifest compatibility and review. Four style groups:
+    </p>
+    <table>
+      <thead>
+        <tr><th>Group</th><th>Themes</th></tr>
+      </thead>
+      <tbody>
+        {
+          themeGroups.map((g) => (
+            <tr>
+              <td><strong>{g.group}</strong></td>
+              <td><code>{g.items}</code></td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p class="src-line">
+      Source: the oh-my-niu README "First-Party Plugins" table and the plugins/, themes/ directories
+      (measured 2026-10-19: 27 theme-* directories and 27 themes/*.toml, identical sets; the four
+      groups above total 27).
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original（目录优先 / catalog / niu plugin 联动 三节全文）</summary>
+      <div lang="zh-CN">
+        <p><strong>目录优先模型</strong>——行为本体在 plugins/&lt;name&gt;/；packs/、aliases/、completions/、prompts/、keybindings/、themes/ 是过渡期的 manifest 兼容与审阅元数据面。新行为先进插件目录，再暴露 TOML 元数据供审阅、托管安装、更新与回滚——设计全文见仓内 docs/design.md（framework-first）。</p>
+        <p><strong>catalog 指向官方上游</strong>——niu plugin 的三个内置 bash 生态源不绑 oh-my-niu——origin 直指官方上游仓，上游资产一行不改原生运行（兼容性是被 rubash 引擎测出来的事实）。</p>
+        <p><strong>与 niu plugin 命令联动</strong>——bundle 契约：api = "niubash:plugin-bundle@0.1.0"、min_niubash = "1.0.0"（2.0 线自旧 winuxsh: 前缀迁至 niubash:）。发布档附 .sha256，经 niu plugin update oh-my-niu 升级、niu plugin rollback 回滚；niu plugin review/search/themes/doctor 是审阅与诊断面（CLI 全录见 <a href="/en/docs/cli/">CLI 参考</a>）。</p>
+      </div>
+    </details>
+    <h3>The catalog points at official upstreams</h3>
+    <table>
+      <thead>
+        <tr><th>catalog source</th><th>Official origin</th><th>Content</th></tr>
+      </thead>
+      <tbody>
+        {
+          catalogRows.map((r) => (
+            <tr>
+              <td><code>{r.id}</code></td>
+              <td>{r.origin}</td>
+              <td>{r.note}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p class="src-line">Source: niubash <code>crates/niubash-runtime/src/plugins/descriptors.rs</code> (ManagerDescriptor origin field) · HIGHLIGHTS #13.</p>
+  </section>
+
+  <section>
+    <h2>Measured numbers</h2>
+    <p class="src-line">Framework projects don't do micro-benchmarks — these numbers are the structural ledger and in-repo measured counts (2026-10-19):</p>
+    <table>
+      <thead>
+        <tr><th>Metric</th><th>Value</th><th>Source</th></tr>
+      </thead>
+      <tbody>
+        {
+          factRows.map((r) => (
+            <tr>
+              <td>{r.metric}</td>
+              <td><strong>{r.value}</strong></td>
+              <td class="src">{r.src}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Release feed</h2>
+    <p class="src-line">
+      oh-my-niu keeps its own CHANGELOG. Latest 3 versions (changelogs.json, fetched 2026-10-19; the
+      full feed lives on the <a href="/en/changelog/">changelog</a>):
+    </p>
+    <ul class="changelog-list">
+      <li>
+        <strong>2.0.0</strong>
+        <span>
+          Renamed oh-my-winuxsh → oh-my-niu (aligned with the niubash 1.0.0 branding); bundle/plugin
+          API prefix <code>winuxsh:</code> → <code>niubash:</code>, env prefix now <code>NIU_*</code>;
+          new first-party plugins command-timer / auto-env / dirmarks / git-fetch-reminder / env-sync;
+          the git prompt segment resolves to the native Vcs segment for niubash 1.4.1+ (in-process
+          rendering, zero git subprocesses).
+        </span>
+      </li>
+      <li>
+        <strong>1.0.1</strong>
+        <span>
+          First source packs (Git/Docker/kubectl/npm/zoxide/direnv/dotenv/fzf/last-working-dir/thefuck);
+          framework entry point, directory-first official plugins, prompt-core and the seven theme
+          plugins minimal/classic/pure/compact/cyberpunk/forest/ocean; runtime smoke scripts;
+          deterministic release packaging (zip + sha256).
+        </span>
+      </li>
+      <li>
+        <strong>1.0.0</strong>
+        <span>
+          Founded as the official plugin bundle: bundle metadata (api = winuxsh:plugin-bundle@0.1.0,
+          min_winuxsh 0.8.3), alias/completion/prompt-preset/keybinding/theme assets and author
+          templates, deterministic release packaging with checksums.
+        </span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Related links</h2>
+    <div class="link-cols">
+      <div>
+        <h3>On this site</h3>
+        <ul>
+          <li><a href="/en/products/niubash/">Niubash product page</a> — the host shell and plugin primitives</li>
+          <li><a href="/en/products/rubash/">Rubash product page</a> — the engine that runs upstream plugins unmodified</li>
+          <li><a href="/en/products/winuxcmd/">WinuxCmd product page</a> — what winuxcmd-core completes</li>
+          <li><a href="/en/products/wpm/">wpm product page</a> — the package channel behind env packages</li>
+          <li><a href="/en/docs/cli/">CLI &amp; flags reference</a> — the full niu plugin / niu env listing</li>
+          <li><a href="/en/docs/">Docs home</a> · <a href="/en/changelog/">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>In the repo</h3>
+        <ul>
+          <li><a href="https://github.com/unixwin/oh-my-niu" target="_blank" rel="noopener noreferrer">GitHub: unixwin/oh-my-niu ↗</a></li>
+          <li><a href="https://github.com/unixwin/oh-my-niu/blob/main/docs/design.md" target="_blank" rel="noopener noreferrer">Framework design (framework-first) ↗</a></li>
+          <li><a href="https://github.com/unixwin/oh-my-niu/blob/main/docs/authoring.md" target="_blank" rel="noopener noreferrer">Plugin authoring guide ↗</a></li>
+          <li><a href="https://github.com/unixwin/oh-my-niu/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG ↗</a></li>
+          <li><a href="/products/oh-my-niu/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0.9rem 0 0.5rem;
+  }
+
+  .repo-line {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 0;
+  }
+
+  .repo-line a {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+  }
+
+  .stars {
+    margin-left: 0.6rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+  }
+
+  .src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  .zh-fold {
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.55rem 1rem;
+  }
+
+  .zh-fold summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+
+  .zh-fold[open] summary {
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .zh-fold p,
+  .zh-fold li {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0.5rem 0.6rem;
+  }
+
+  td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.6rem;
+    vertical-align: top;
+  }
+
+  td strong {
+    color: var(--accent);
+  }
+
+  td.src {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76em;
+  }
+
+  .codeblock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .codeblock pre.cmd {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cmd-label {
+    margin: 1rem 0 0.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .src-line {
+    color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  .changelog-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .changelog-list li {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-2);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.75rem 1rem;
+    margin: 0;
+  }
+
+  .changelog-list strong {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    color: var(--accent);
+  }
+
+  .changelog-list span {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.87rem;
+    color: var(--muted);
+  }
+
+  .link-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.4rem;
+  }
+
+  .link-cols h3 {
+    margin-top: 0.4rem;
+    font-size: 0.92rem;
+    font-family: var(--font-mono);
+    color: var(--accent-2);
+  }
+
+  .link-cols ul {
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 720px) {
+    .link-cols {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

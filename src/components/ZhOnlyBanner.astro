@@ -1,0 +1,67 @@
+---
+/**
+ * ZhOnlyBanner — en 深页顶部的「中文暂缺」提示条。
+ *
+ * 用在正文仍是中文（或中文折叠态）的 /en/** 页面顶部：不藏页脚、进入即见。
+ * 双语对照 + 直达对应中文页的链接。zhPath 缺省时按当前路径剥掉 /en 前缀。
+ *
+ * Props:
+ *   zhPath  string  对应中文页路径（可选；缺省 = 当前路径去 /en 前缀）
+ *
+ * 示例：
+ *   <ZhOnlyBanner zhPath="/docs/cli/" />
+ */
+interface Props {
+  zhPath?: string;
+}
+
+const { zhPath } = Astro.props;
+const resolved =
+  zhPath ?? ('/' + Astro.url.pathname.replace(/^\/+/, '').replace(/^en\/?/, ''));
+---
+
+<aside class="zh-banner" role="note" aria-label="Language availability notice">
+  <p class="zh-banner-en">
+    <strong>This page is available in Chinese only for now</strong> — the English edition is
+    being translated. The skeleton below is English; folded sections carry the Chinese source.
+  </p>
+  <p class="zh-banner-zh" lang="zh-CN">本页正文暂为中文（英文版翻译中）；已折叠的区块是中文原文。</p>
+  <p class="zh-banner-go">
+    <a href={resolved} hreflang="zh-CN" lang="zh-CN">跳转中文版 · Read the Chinese edition →</a>
+  </p>
+</aside>
+
+<style>
+  .zh-banner {
+    border: 1px solid var(--warn);
+    border-left: 4px solid var(--warn);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--warn) 7%, var(--bg-elev));
+    padding: 0.85rem 1.1rem;
+    margin: 0 0 1.6rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .zh-banner p {
+    margin: 0;
+  }
+
+  .zh-banner-en strong {
+    color: var(--warn);
+  }
+
+  .zh-banner-zh {
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .zh-banner-go {
+    margin-top: 0.45rem;
+  }
+
+  .zh-banner-go a {
+    color: var(--link);
+    font-weight: 600;
+  }
+</style>

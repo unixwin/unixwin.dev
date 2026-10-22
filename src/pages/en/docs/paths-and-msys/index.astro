@@ -1,0 +1,284 @@
+---
+/**
+ * /en/docs/paths-and-msys/ — English edition of "Paths & MSYS: the biggest behavioral
+ * difference". English skeleton (h1/lead/headings/table headers), Chinese prose folded
+ * into <details>. Facts: niubash docs/src/windows-path-contract.md, rubash
+ * docs/platform-identity.md, niubash docs/src/platform-support.md, HIGHLIGHTS #2/#3.
+ */
+import DocsLayout from '../../../../components/DocsLayout.astro';
+---
+
+<DocsLayout
+  title="Paths & MSYS: the biggest behavioral difference"
+  description="niubash accepts all four path dialects (C:\\, /d/, /mnt/d, /cygdrive/d); argv stays byte-for-byte verbatim with no MSYS runtime; uname reporting MSYS_NT is a deliberate compatibility persona; the write-side bare-drive gap is tracked in the open."
+  path="/en/docs/paths-and-msys/"
+  lang="en"
+  enPath="/docs/paths-and-msys/"
+  zhBanner
+>
+  <header class="doc-head">
+    <h1>Paths &amp; MSYS: the biggest behavioral difference</h1>
+    <p class="lead">
+      For every predecessor of "bash on Windows", paths are the compulsory question: either rewrite
+      arguments heuristically before spawn like Git Bash, or force a new <code>/mnt/c</code> dialect
+      like WSL. niubash's answer is a third one: <strong>all four ecosystem path dialects are accepted
+      and genuinely folded, while argv itself arrives byte-for-byte verbatim</strong> — because path
+      translation is a table-driven engine responsibility, not a compatibility layer hiding inside
+      child processes.
+    </p>
+  </header>
+
+  <section>
+    <h2>Four dialects, one engine accepts them all</h2>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Dialect</th><th>Example</th><th>Folding behavior</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Windows native</td>
+          <td><code>C:\repo</code>, <code>C:/repo</code></td>
+          <td>First-class citizen — the native form is the shell's internal representation; there is nothing to "convert to".</td>
+        </tr>
+        <tr>
+          <td>MSYS / Git Bash form</td>
+          <td><code>/d/repo</code>, <code>/tmp</code>, <code>/usr/bin</code></td>
+          <td>Native children receive <code>D:\repo</code>; <code>/usr/bin</code>, <code>/etc</code>, <code>/tmp</code> map to real Windows directories under the install root. Exception: <code>cmd.exe</code> receives <code>/d/repo</code> verbatim (<code>/d</code> is indistinguishable from its own switches).</td>
+        </tr>
+        <tr>
+          <td>WSL form</td>
+          <td><code>/mnt/d/repo</code></td>
+          <td><strong>Genuinely folded</strong> to <code>D:\repo</code> (<code>pwd -P</code> reports <code>/d/repo</code>). Contrast: Git Bash's <code>/mnt/d</code> is a false positive — it silently lands in the install root <code>D:\Git\mnt\d</code>.</td>
+        </tr>
+        <tr>
+          <td>Cygwin form</td>
+          <td><code>/cygdrive/d/repo</code></td>
+          <td>Fully accepted at the external-command layer; the builtin-side branch is being completed (rubash#850).</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      The translation rules are <strong>table-driven and context-free</strong> (rubash#600): no
+      guessing "does this argument look like a path", no looking at argument position, no checking
+      whether the target exists — paths about to be created also get a legal Win32 form. The shipped
+      PATH-MATRIX runs ~100 probes across the full dialect × execution-layer matrix, and every gap
+      has a filed ticket (WinuxCmd#1244, rubash#850, niu-git#18).
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original</summary>
+      <div lang="zh-CN">
+        <p>
+          翻译规则是<strong>表驱动且与上下文无关</strong>的（rubash#600）：不猜「这个参数
+          像不像路径」、不看参数位置、不看目标存在与否——即将创建的路径也得到合法的
+          Win32 形态。随包的 PATH-MATRIX 以约 100 条探针逐格实跑了方言 × 执行层的全量
+          矩阵，缺口全部开票在案（WinuxCmd#1244、rubash#850、niu-git#18）。
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>argv byte-for-byte verbatim: MSYS_NO_PATHCONV does not exist here</h2>
+    <p>
+      Git Bash's MSYS runtime <strong>heuristically rewrites</strong> path-looking arguments before
+      spawn: <code>/c</code> becomes <code>C:\</code>, a non-existent <code>/foo</code> expands into
+      the Git install path, the pattern in <code>git grep "/fn main"</code> gets silently rewritten.
+      That is why every veteran user has had to learn the <code>MSYS_NO_PATHCONV</code> /
+      <code>MSYS2_ARG_CONV_EXCL</code> incantations — <strong>the existence of an off switch is itself
+      the official admission of the problem</strong>.
+    </p>
+    <p>
+      niubash has no MSYS runtime; those two environment variables <strong>do not exist here and do
+      not need to</strong>. The boundary is a written core invariant — "what must be verbatim is not
+      converted": commit messages, branch names, quoted operands, the syntax data of
+      grep/sed/awk/find (patterns, script text, <code>-name</code>-style values),
+      <code>/cygdrive/…</code>, <code>/dev/*</code>, the environment-variable channel, every
+      non-path-shaped word — all reach the child process byte-for-byte. The only switch,
+      <code>__RUBASH_ARGV_DIALECT=legacy</code>, is a documented dialect selector (an emergency
+      fallback to the old behavior), not a life raft for "heuristics that might guess wrong".
+    </p>
+    <details class="zh-fold">
+      <summary>中文原文 · Chinese original</summary>
+      <div lang="zh-CN">
+        <p>
+          <code>$PWD</code> 恒为 POSIX 形态（如 <code>/d/repo</code>）是配套裁决：这是
+          nvm 死循环根因（rubash#537）修复的同一决定，生态脚本对 <code>$PWD</code> 的
+          POSIX 假设因此成立。
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>uname reporting MSYS_NT: a deliberate compatibility persona</h2>
+    <p>
+      On Windows, <code>uname -s</code> reports <code>MSYS_NT-…</code> (mapped to
+      <code>MINGW64_NT-</code> and friends in the MSYS2 manner when <code>MSYSTEM</code> is set),
+      with <code>$OSTYPE=msys</code> and <code>$MACHTYPE=x86_64-pc-msys</code>. This is not an
+      impersonation of a runtime but a <strong>compatibility persona</strong> (rubash#154): plenty of
+      ecosystem scripts use <code>case "$(uname -s)"</code> matching <code>MINGW*|MSYS*|CYGWIN*</code>
+      as their branching gate, and the persona opens those gates so scripts take their most-tested
+      paths. Under the label there is <strong>no MSYS2 runtime at all</strong>: no
+      <code>msys-2.0.dll</code>, no <code>cygwin1.dll</code>, no POSIX argv conversion layer inside
+      child processes.
+    </p>
+    <p>
+      One-line contrast: <strong>Git Bash = MSYS2 runtime + real bash; niubash = native engine +
+      compatibility persona.</strong> The persona is disclosed everywhere (<code>--help</code> /
+      <code>--identity</code>), and <code>RUBASH_IDENTITY=native</code> switches to the honest native
+      face (<code>uname -s → Windows_NT</code>, <code>OSTYPE=windows</code>).
+    </p>
+  </section>
+
+  <section>
+    <h2>Honesty section: the write-side gap, tracked in the open</h2>
+    <div class="note">
+      <p>
+        A boundary contract is not zero gaps. <strong>The bare-drive-root gap in write-side
+        commands</strong> is being closed: #1230 audited 15 write-side commands, with
+        <code>mkdir</code>'s true write-mode support (#1233) the most urgent. That is the value of a
+        boundary contract — gaps are enumerable, ticketable and fixable, instead of scattered in the
+        fog of "sometimes it behaves like Linux, sometimes not". Every cell closed turns another
+        PATH-MATRIX cell green.
+      </p>
+    </div>
+  </section>
+
+  <footer class="further">
+    <h2>Read further</h2>
+    <ul>
+      <li><a href="https://unixwin.github.io/niubash/windows-path-contract/" target="_blank" rel="noopener noreferrer">Windows path contract (official niubash docs) ↗</a></li>
+      <li><a href="https://unixwin.github.io/niubash/platform-support/" target="_blank" rel="noopener noreferrer">Platform support: no MSYS runtime, identity persona ↗</a></li>
+      <li><a href="https://github.com/unixwin/rubash/blob/master/docs/platform-identity.md" target="_blank" rel="noopener noreferrer">rubash platform identity &amp; path dialects (engine-side full text) ↗</a></li>
+      <li><a href="/docs/paths-and-msys/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
+    </ul>
+  </footer>
+</DocsLayout>
+
+<style>
+  .lead {
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  .lead strong {
+    color: var(--accent);
+  }
+
+  section h2 {
+    margin-top: 2.4rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  code {
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.35em;
+    font-size: 0.88em;
+    color: var(--text);
+  }
+
+  .zh-fold {
+    margin: 1.2rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 0.55rem 1rem;
+  }
+
+  .zh-fold summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+
+  .zh-fold[open] summary {
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .zh-fold p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.2rem 0 1.6rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .doc-table th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0.5rem 0.6rem;
+  }
+
+  .doc-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.6rem;
+    vertical-align: top;
+  }
+
+  .doc-table td strong {
+    color: var(--accent);
+  }
+
+  .note {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--radius);
+    background: var(--bg-code);
+    padding: 0.9rem 1.2rem;
+    font-size: 0.92rem;
+    margin: 1.4rem 0;
+  }
+
+  .note p {
+    margin: 0;
+  }
+
+  .note strong {
+    color: var(--warn);
+  }
+
+  .further {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    padding: 1.1rem 1.4rem;
+    font-size: 0.92rem;
+  }
+
+  .further h2 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    border-bottom: none;
+  }
+
+  .further ul {
+    margin: 0;
+    padding-left: 1.3rem;
+  }
+
+  .further li {
+    margin-bottom: 0.35rem;
+  }
+</style>

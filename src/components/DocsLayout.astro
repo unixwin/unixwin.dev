@@ -19,22 +19,27 @@
  *   lang        'zh' | 'en'  页面语言（可选，默认 zh，透传 BaseLayout）
  *   enPath      string  另一语言页路径（可选，透传 BaseLayout，供 hreflang 互链）
  *   toc         boolean 是否渲染右栏 On this page（默认 true；卡片首页传 false）
+ *   zhBanner    boolean en 页顶部渲染「正文暂为中文」提示条（默认 false；
+ *                       与 ZhOnlyBanner 组件同款，链接按 path 去 /en 前缀）
  */
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from './SiteHeader.astro';
 import SiteFooter from './SiteFooter.astro';
 import Sidebar from './Sidebar.astro';
 import TocRight from './TocRight.astro';
+import ZhOnlyBanner from './ZhOnlyBanner.astro';
 import nav from '../data/docs-nav.json';
 
 interface NavItem {
   label: string;
+  label_en?: string;
   href: string;
   external?: boolean;
 }
 
 interface NavSection {
   label: string;
+  label_en?: string;
   items: NavItem[];
 }
 
@@ -45,26 +50,58 @@ interface Props {
   lang?: 'zh' | 'en';
   enPath?: string;
   toc?: boolean;
+  zhBanner?: boolean;
   jsonLdExtra?: Record<string, unknown>;
 }
 
-const { title, description, path, lang, enPath, toc = true, jsonLdExtra } = Astro.props;
+const { title, description, path, lang, enPath, toc = true, zhBanner = false, jsonLdExtra } = Astro.props;
 
 const LAST_UPDATED = '2026-10-19';
 
+// —— 文案：zh 渲染与从前完全一致；en 页面包屑/页尾导航用英文 ——
+const isEn = lang === 'en';
+const T = isEn
+  ? {
+      crumbRoot: 'Docs',
+      crumbAria: 'Breadcrumb',
+      updated: 'Last updated',
+      prev: 'Previous',
+      next: 'Next',
+      manual: 'Full manual',
+    }
+  : {
+      crumbRoot: '文档',
+      crumbAria: '面包屑',
+      updated: '最后更新',
+      prev: '上一页',
+      next: '下一页',
+      manual: '完整手册',
+    };
+
+// en 页把 docs-nav 的站内深链改写到 /en/ 镜像（/docs/<slug>/ → /en/docs/<slug>/ 等）
+function localizeHref(href: string): string {
+  if (!isEn || /^https?:\/\//.test(href) || href.startsWith('/en')) return href;
+  if (/^\/docs\/.+/.test(href)) return `/en${href}`;
+  if (/^\/products\/.+/.test(href)) return `/en${href}`;
+  return href;
+}
+
 const sections = (nav as { sections: NavSection[] }).sections;
 
-const currentPath = (Astro.url.pathname.replace(/\/+$/, '') || '/');
+// en 页按「剥掉 /en 前缀」的路径反查 docs-nav（zh href 为唯一键）
+const currentPath = (Astro.url.pathname.replace(/\/+$/, '') || '/').replace(/^\/en(?=\/|$)/, '');
 
 // —— 面包屑与 prev/next：docs-nav.json 反查 ——
 let currentSection: NavSection | null = null;
 let currentLabel: string | null = null;
+let currentLabelEn: string | null = null;
 for (const section of sections) {
   for (const item of section.items) {
     const normalized = item.href.replace(/\/+$/, '') || '/';
     if (!/^https?:\/\//.test(item.href) && normalized === currentPath) {
       currentSection = section;
       currentLabel = item.label;
+      currentLabelEn = item.label_en ?? item.label;
     }
   }
 }
@@ -86,14 +123,15 @@ const showPager = !isDocsHome && (prev !== null || next !== null) && index >= 0;
   <div class="container docs-grid">
     <Sidebar />
     <main class="docs-main">
+      {zhBanner && isEn && <ZhOnlyBanner />}
       {
         showCrumb && (
-          <nav class="crumbs" aria-label="面包屑">
-            <a href="/docs/">文档</a>
+          <nav class="crumbs" aria-label={T.crumbAria}>
+            <a href={isEn ? '/en/docs/' : '/docs/'}>{T.crumbRoot}</a>
             <span aria-hidden="true">/</span>
-            <span>{currentSection!.label}</span>
+            <span>{isEn ? (currentSection!.label_en ?? currentSection!.label) : currentSection!.label}</span>
             <span aria-hidden="true">/</span>
-            <span class="crumb-current" aria-current="page">{currentLabel}</span>
+            <span class="crumb-current" aria-current="page">{isEn ? (currentLabelEn ?? currentLabel) : currentLabel}</span>
           </nav>
         )
       }
@@ -103,24 +141,24 @@ const showPager = !isDocsHome && (prev !== null || next !== null) && index >= 0;
       {
         showPager && (
           <footer class="doc-pager">
-            <p class="doc-updated">最后更新 {LAST_UPDATED}</p>
+            <p class="doc-updated">{T.updated} {LAST_UPDATED}</p>
             <div class="pager-row">
               {prev ? (
-                <a class="pager-link is-prev" href={prev.href}>
-                  <span class="pager-dir">上一页</span>
-                  <span class="pager-label">{prev.label}</span>
+                <a class="pager-link is-prev" href={localizeHref(prev.href)}>
+                  <span class="pager-dir">{T.prev}</span>
+                  <span class="pager-label">{isEn ? (prev.label_en ?? prev.label) : prev.label}</span>
                 </a>
               ) : (
                 <span />
               )}
               {next ? (
-                <a class="pager-link is-next" href={next.href}>
-                  <span class="pager-dir">下一页</span>
-                  <span class="pager-label">{next.label}</span>
+                <a class="pager-link is-next" href={localizeHref(next.href)}>
+                  <span class="pager-dir">{T.next}</span>
+                  <span class="pager-label">{isEn ? (next.label_en ?? next.label) : next.label}</span>
                 </a>
               ) : (
                 <a class="pager-link is-next" href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">
-                  <span class="pager-dir">完整手册</span>
+                  <span class="pager-dir">{T.manual}</span>
                   <span class="pager-label">unixwin.github.io/niubash ↗</span>
                 </a>
               )}

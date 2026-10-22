@@ -161,10 +161,10 @@
       "difficulty": "零配置",
       "oneLiner": "unixwin 维护的 Codex fork 内置 ShellType::Niu——npm i -g @unixwin/codex（另有 wpm install codex）装好即被选中。",
       "script": {
-        "label": "npm · 安装 unixwin fork（内置 ShellType::Niu 原生探测）",
+        "label": "wpm · 安装 unixwin fork（内置 ShellType::Niu 原生探测；装后在 niu 里启动，优先级高于 System32）",
+        "label_en": "wpm · install the unixwin fork (native ShellType::Niu detection; launch from niu — beats System32 on PATH)",
         "lang": "bash",
-        "code": "npm install -g @unixwin/codex",
-        "label_en": "npm · 安装 unixwin fork（内置 ShellType::Niu 原生探测）"
+        "code": "wpm install codex"
       },
       "steps": [
         "执行上面的 npm 安装命令装 fork 版（npm latest 0.1.1，2026-10-22 实测）；wpm 索引亦有收录，wpm install codex 亦可用",
@@ -716,7 +716,7 @@
       "name": "DSH（DeepSeek Harness）",
       "status": "ready",
       "group": "ready",
-      "icon": "/assets/agents/dsh.svg",
+      "icon": "/assets/agents/dsh.png",
       "variants": [
         "CLI"
       ],
@@ -727,10 +727,10 @@
       "difficulty": "初",
       "oneLiner": "一条命令装插件包：启用 niu-sandbox 与 tool-bash，并禁用 PowerShell 行。",
       "script": {
-        "label": "命令行 · 安装 niu profile 插件包（0.2.1-rc.1 为 npm latest，2026-10-22 实测）",
+        "label": "dsh · 安装 profile 插件包（npm 包 @cmx666/dsh-niu-bundle@0.2.1-rc.1）",
+        "label_en": "dsh · install the profile plugin bundle (npm @cmx666/dsh-niu-bundle@0.2.1-rc.1)",
         "lang": "bash",
-        "code": "dsh plugin --profile web add @cmx666/dsh-niu-bundle@0.2.1-rc.1",
-        "label_en": "Command line"
+        "code": "dsh plugin --profile web add @cmx666/dsh-niu-bundle@0.2.1-rc.1"
       },
       "steps": [
         "执行上面的插件安装命令，DSH 的设置卡里会出现 niubash 选项"

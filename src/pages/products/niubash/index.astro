@@ -26,6 +26,7 @@ interface News {
   summary: string;
 }
 
+const installWinget = 'winget install --id Unixwin.Niubash --source winget';
 const installWin = 'irm https://unixwin.dev/install.ps1 | iex';
 const installLinux = 'tar -xzf niubash-v*-linux-x86_64.tar.gz && niubash-v*-linux-x86_64/niu';
 const installSource = 'git clone https://github.com/unixwin/niubash.git && cd niubash && cargo build --release';

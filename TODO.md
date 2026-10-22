@@ -113,3 +113,7 @@ npm run build              # 出 dist/
 - **ZhOnlyBanner 审计**：保留于正文确含中文折叠区块的 10 页（/en/docs/{compatibility,performance-model,execution-model,paths-and-msys}/ + /en/products/ ×6）；移除误挂 3 处——/en/agents/<slug>/（16 页均有完整英文正文）、/en/agents/universal/（纯英文）、/en/docs/cli/（页头自注"fully translated"）
 - **首页 demo 双栏对照**（zh+en）：左卡 Git Bash (MSYS) 实录 gif，右卡 niubash (niu) 终端风占位三行（$ cd D:\repo → $ git grep -n pattern src/main.rs → exit 0，argv 逐字节原样）；配文改对照式；注「双联实录视频制作中（生成脚本参考 GITBASH-KILLER 面1 探针）」
 - facts.json：+familySize ≈16 MB、+aiAgents 24；−oneShot、−binarySize（漂移/错冠，已无消费者）
+
+## 10. 双联实录视频（真实素材待录制）
+
+首页 argv 对照区右卡目前是终端风演示块（三条命令+exit 0，真实可复现）。待在 Windows 真机录一段与左侧 GIF 对等的 niu 成功实录（同一组命令：cd D:\repo / git grep -n / cmd /c），替换右卡为 <video>/gif。生成探针参照 GITBASH-KILLER.md 面1（内部文档，不上页面）。

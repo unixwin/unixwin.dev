@@ -16,7 +16,8 @@ Updates: fast-moving project — performance & compatibility improve daily; for 
 ## Quick Start
 
 \`\`\`
-irm https://unixwin.dev/install.ps1 | iex
+winget install --id Unixwin.Niubash --source winget
+# or: irm https://unixwin.dev/install.ps1 | iex
 \`\`\`
 
 ## Products

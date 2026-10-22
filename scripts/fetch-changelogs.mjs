@@ -34,10 +34,10 @@ const FETCH_TIMEOUT_MS = 15_000;
 const RAW_BASE = 'https://raw.githubusercontent.com/unixwin';
 const MIRROR_BASE = 'https://gh.caomengxuan666.com/ghraw/unixwin';
 
-async function fetchText(url) {
+async function fetchText(url, extraHeaders = {}) {
   const res = await fetch(url, {
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    headers: { 'user-agent': 'unixwin.dev-portal/1.0' },
+    headers: { 'user-agent': 'unixwin.dev-portal/1.0', ...extraHeaders },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.text();
@@ -57,6 +57,17 @@ async function fetchChangelog(repo) {
     } catch (err) {
       console.warn(`  [net] ${repo}: miss ${url} (${err.message})`);
     }
+  }
+  // raw CDN 抽风时的兜底：GitHub contents API（Accept raw）
+  try {
+    const url = `https://api.github.com/repos/unixwin/${repo}/contents/CHANGELOG.md?ref=master`;
+    const text = await fetchText(url, {
+      headers: { Accept: 'application/vnd.github.raw' },
+    });
+    console.log(`  [net] ${repo}: ok (contents API)`);
+    return { text, source: url };
+  } catch (err) {
+    console.warn(`  [net] ${repo}: miss contents API (${err.message})`);
   }
   // 离线兜底：本地已有克隆
   const local = join(homedir(), 'unixwin-repos', repo, 'CHANGELOG.md');

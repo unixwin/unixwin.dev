@@ -13,7 +13,7 @@ const installPrompt = [
   '请把这台 Windows 机器上你（AI agent）执行命令所用的 shell 换成 niubash——Windows 原生的 bash 实现，无 WSL、无 MSYS。按顺序执行并汇报：',
   '',
   '1. 安装 niubash：在 PowerShell 中执行',
-  '   irm https://unixwin.dev/install.ps1 | iex',
+  '   winget install --id Unixwin.Niubash --source winget  (or: irm https://unixwin.dev/install.ps1 | iex)',
   '2. 把你自己的执行 shell 指到 niu：读 https://unixwin.github.io/niubash/agents.html 的',
   '   「The four mechanisms」一节，判断你属于哪种探测机制（1 = $SHELL 环境变量；',
   '   2 = agent 自身的显式配置；3 = Git for Windows 探针 C:\\Program Files\\Git\\bin\\bash.exe；',

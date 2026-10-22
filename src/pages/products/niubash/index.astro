@@ -119,6 +119,18 @@ const bench: Row[] = [
 
 const news: News[] = [
   {
+    version: '1.4.3',
+    date: '2026-10-21',
+    summary:
+      'winget 官方源上架（Unixwin.Niubash）；交互多行组不再楔死 REPL；vendored bash 升至 patch 20；-EncodedCommand 全拼写；安装面加固。',
+  },
+  {
+    version: '1.4.2',
+    date: '2026-10-20',
+    summary:
+      '无窗父进程闪控制台窗根治（WinuxCmd shim v1.1.18 + 引擎侧抑制）；x64 预装腿 fail-closed；gawk 预装 404 根修。',
+  },
+  {
     version: '1.4.0',
     date: '2026-10-10',
     summary:
@@ -166,12 +178,12 @@ const productJsonLd = {
     <div class="badges">
       <span class="p-badge">Rust</span>
       <span class="p-badge">Windows · Linux · macOS</span>
-      <span class="p-badge">stable v1.4.0</span>
+      <span class="p-badge">stable v1.4.3</span>
     </div>
     <p class="meta-line">
       <a href="https://github.com/unixwin/niubash" target="_blank" rel="noopener noreferrer">github.com/unixwin/niubash ↗</a>
       <span class="dot">·</span> Star 178
-      <span class="dot">·</span> 最新版本 v1.4.0（repo-meta 2026-10-19 实测）
+      <span class="dot">·</span> 最新版本 v1.4.3（repo-meta 实测）
     </p>
   </header>
 
@@ -220,7 +232,12 @@ const productJsonLd = {
 
   <section>
     <h2 id="install">安装与快速上手</h2>
-    <p>Windows 一行命令（安装器免管理员权限，布好 PATH 与 Windows Terminal profile）：</p>
+    <p>Windows 首选 winget（微软官方源，清单自带 InstallerSha256 校验）：</p>
+    <div class="cmd">
+      <pre><code>{installWinget}</code></pre>
+      <CopyButton copy={installWinget} />
+    </div>
+    <p>或一行 PowerShell 脚本（安装器免管理员权限，布好 PATH 与 Windows Terminal profile；脚本内置 SHA256 校验）：</p>
     <div class="cmd">
       <pre><code>{installWin}</code></pre>
       <CopyButton copy={installWin} />

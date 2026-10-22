@@ -14,6 +14,22 @@
 function Install-Niubash {
     $ErrorActionPreference = 'Stop'
 
+    # Preferred: winget (official manifest carries its own InstallerSha256 pin).
+    # Falls through to the direct download below when winget is unavailable.
+    try {
+        $Winget = Get-Command winget -ErrorAction Stop
+        Write-Host '  Installing via winget (Unixwin.Niubash)...' -ForegroundColor DarkGray
+        & $Winget.Source install --id Unixwin.Niubash --source winget --accept-package-agreements --accept-source-agreements
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host ''
+            Write-Host '  Done. Open a new terminal and run: niu' -ForegroundColor Green
+            return
+        }
+        Write-Host "  winget exited with $LASTEXITCODE - falling back to direct download." -ForegroundColor DarkGray
+    } catch {
+        Write-Host '  winget not available - using direct download.' -ForegroundColor DarkGray
+    }
+
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     } catch {

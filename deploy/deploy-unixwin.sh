@@ -108,8 +108,8 @@ fi
 # CDN 侧任何故障都不影响本次发布。
 
 say "Purging Cloudflare edge cache (best effort)"
-export CF_API_TOKEN="${CF_API_TOKEN:-cfut_O3PTqog8R6FCQMqXLBoYzVcxD7P8M4sEWPbeusHAcc6ba48e}"
-export ZONE_ID="${ZONE_ID:-fc8109ccdb7ef9787569e8cd0fe6f74b}"
+export CF_API_TOKEN="${CF_API_TOKEN:-}"  # real value lives only in the server copy /home/cmx/deploy-unixwin.sh
+export ZONE_ID="${ZONE_ID:-}"
 bash /home/cmx/unixwin-portal/deploy/purge-cf-cache.sh || true
 
 printf '\n\033[1;32mDeployed.\033[0m unixwin.dev goes live as soon as the zone is Active:\n'

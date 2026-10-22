@@ -9,9 +9,10 @@
  * 行为：
  *   - 仅当 <html data-theme> 为 day/night 时可用：点击互相切换并写
  *     localStorage('unixwin-theme')（BaseLayout 的防 FOUC 脚本下次进站读取）。
- *   - 其它主题（terminal/clean/neon 候选回看页）隐藏自身且点击无效——
- *     按运行时实际 data-theme 判断（组件随 SiteHeader 共享渲染，脚本自检）。
- *   - 默认 hidden，脚本确认 day/night 后再显示：候选页不闪现、无 JS 不出现死按钮。
+ *   - 其它 data-theme 值（历史上 theme/clean、theme/neon 候选回看页，已删除）
+ *     隐藏自身且点击无效——按运行时实际 data-theme 判断（组件随 SiteHeader
+ *     共享渲染，脚本自检，防御性保留）。
+ *   - 默认 hidden，脚本确认 day/night 后再显示：异常页不闪现、无 JS 不出现死按钮。
  *   - day 显示月亮（邀请切到暗色），night 显示太阳，与 astrowind 语义一致。
  *
  * 事件挂 document 委托（Astro 打包去重；SiteHeader 全站渲染也只跑一份）。
@@ -58,7 +59,7 @@ const label = '切换亮色 / 暗色主题（Toggle light / dark theme）';
     transition: color 0.15s, border-color 0.15s;
   }
 
-  /* scoped 的 display 会盖掉 UA 的 [hidden]，必须显式补回（防候选页闪现失效） */
+  /* scoped 的 display 会盖掉 UA 的 [hidden]，必须显式补回（防异常页闪现失效） */
   .toggle-theme[hidden] {
     display: none;
   }
@@ -94,7 +95,7 @@ const label = '切换亮色 / 暗色主题（Toggle light / dark theme）';
 <script>
   const isDayNight = (t: string | null | undefined): t is 'day' | 'night' => t === 'day' || t === 'night';
 
-  // 运行时自检：当前页不是 day/night（theme/clean、theme/neon 候选回看页）则保持隐藏
+  // 运行时自检：当前页不是 day/night 则保持隐藏（历史候选页已删除，防御性保留）
   function syncToggleVisibility() {
     const btn = document.querySelector<HTMLElement>('[data-theme-toggle]');
     if (!btn) return;

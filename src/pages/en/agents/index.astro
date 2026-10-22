@@ -15,9 +15,13 @@ import Badge from '../../../components/Badge.astro';
 import CopyButton from '../../../components/CopyButton.astro';
 import agentsData from '../../../data/agents.json';
 
+// Hero numbers are derived from the data, never hardcoded: covered = array length; ready = status === 'ready'
+const allAgents = agentsData.agents as any[];
+const readyCount = allAgents.filter((a) => a.status === 'ready').length;
+
 const groups = [
   { key: 'ready', title: 'Works out of the box (terminal)', tone: 'accent', desc: 'Wire the agent to niubash today using the methods below' },
-  { key: 'vscode', title: 'VSCode family', tone: 'info', desc: 'One shared probe for VS Code and its forks / extensions — fix it once, the whole family follows' },
+  { key: 'vscode', title: 'VSCode family', tone: 'info', desc: 'One shared probe, one entry each for all nine: VS Code and its forks / extensions — fix it once, the whole family follows' },
   { key: 'partial', title: 'Workarounds', tone: 'warn', desc: 'Doable in some scenarios; waiting on upstream' },
   { key: 'blocked', title: 'Not supported yet', tone: 'muted', desc: 'Upstream exposes no mechanism; issues are being tracked' },
   { key: 'unverified', title: 'Not yet verified', tone: 'muted', desc: 'No per-machine test or code read yet — wire via the universal guide and report back' },
@@ -86,10 +90,7 @@ const mechanismEn: Record<string, string> = {
   '显式配置 terminal.shell.program': 'Explicit terminal.shell.program',
   'GOOSE_SHELL 环境变量': 'GOOSE_SHELL env var',
   '插件 profile': 'Plugin profile',
-  'Git 探针 / automationProfile': 'Git probe / automationProfile',
-  'Git 探针 / automationProfile（VS Code 家族）': 'Git probe / automationProfile (VS Code family)',
-  'Git 探针 / automationProfile（家族共享）': 'Git probe / automationProfile (shared by the family)',
-  '编辑器终端 / automationProfile（扩展）': 'Editor terminal / automationProfile (extension)',
+  'VS Code 家族探针 / automationProfile': 'VS Code family probe / automationProfile',
   '探测链当前对 bash 不友好': 'Detection chain unfriendly to bash',
   '无原生集成 · niu 会话内可启动': 'No native integration · launches from a niu session',
   '无原生集成（TUI 受 niubash#455 阻塞）': 'No native integration (TUI blocked by niubash#455)',
@@ -134,7 +135,7 @@ const verifyTableEn = [
       </p>
       <div class="hero-cta">
         <a class="cta-main" href="/en/agents/universal/">Wire up your AI agent →</a>
-        <p class="cta-note"><strong>24</strong> AI agents covered — <strong>15</strong> work out of the box</p>
+        <p class="cta-note"><strong>{allAgents.length}</strong> AI agents catalogued — <strong>{readyCount}</strong> work out of the box</p>
       </div>
     </section>
 
@@ -171,12 +172,15 @@ const verifyTableEn = [
               <a class="agent-card" href={`/en/agents/${a.slug}/`}>
                 <div class="card-top">
                   <span class="card-id">
-                    <img class="card-icon" src={a.icon} alt="" width="28" height="28" loading="lazy" />
+                    <img class="card-icon" src={a.icon} alt="" width="20" height="20" loading="lazy" />
                     <span class="card-name">{a.name}</span>
                   </span>
                   <Badge tone={statusTone(a.status)}>
                     {statusLabel[a.status] ?? a.status}
                   </Badge>
+                </div>
+                <div class="card-variants">
+                  {((a.variants as string[]) ?? []).map((v) => <span class="variant-chip">{v}</span>)}
                 </div>
                 <p class="card-line">{a.oneLiner_en ?? oneLinerEn[a.slug] ?? a.oneLiner}</p>
                 <div class="card-foot">
@@ -253,7 +257,7 @@ const verifyTableEn = [
   .sub { color: var(--muted); max-width: 46rem; margin: 0.8rem 0 0; line-height: 1.75; }
   .sub strong { color: var(--text); }
 
-  /* Hero-level CTA: big button + real numbers (24/15 hardcoded, matches the agents.md roster) */
+  /* Hero-level CTA: big button + real numbers (derived from agents.json: catalogued / ready counts) */
   .hero-cta { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; margin: 1.3rem 0 0; }
   .cta-main {
     display: inline-flex; align-items: center; min-height: 48px;
@@ -326,16 +330,24 @@ const verifyTableEn = [
   .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
   .card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
   .card-id { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
-  /* White chip behind every icon so dark brand logos stay legible on the night theme */
+  /* 20px rounded icon on a white chip so dark brand logos stay legible on the night theme */
   .card-icon {
     flex: none;
-    width: 28px; height: 28px; object-fit: contain;
+    width: 20px; height: 20px; object-fit: contain;
     background: #ffffff;
     border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 3px;
+    border-radius: 5px;
+    padding: 2px;
   }
   .card-name { font-weight: 700; font-size: 1.02rem; }
+  /* Product-form badges (IDE / CLI / Editor extension…), from the variants field in agents.json */
+  .card-variants { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+  .variant-chip {
+    font-size: 0.72rem; font-family: var(--font-mono);
+    color: var(--muted); background: var(--bg-code);
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 0.05rem 0.5rem;
+  }
   .card-line { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.6; flex: 1; }
   .card-foot { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; font-size: 0.8rem; }
   .has-script { color: var(--accent); font-weight: 600; }

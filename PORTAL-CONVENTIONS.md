@@ -3,7 +3,7 @@
 > 面向所有后续贡献者（人或 agent）。v1 描述的三主题候选时代已结束；本文反映**当前事实**。
 > 违反硬约束会破坏 i18n、双主题或事实审计链。
 
-## 1. 页面清单（51 页，构建期实际产物）
+## 1. 页面清单（87 页，2026-10-22 构建期实际产物）
 
 | 路由 | 文件 | 语言 | 布局 |
 |---|---|---|---|
@@ -17,15 +17,20 @@
 | `/changelog/`、`/en/changelog/` | 更新日志聚合 | zh+en | 时间线 |
 | `/docs/` + 4 篇差异 + `/docs/cli/` | 文档区 | zh | DocsLayout 三栏 |
 | `/products/<id>/` ×6 | 产品文档页 | zh | DocsLayout |
-| `/theme/clean/`、`/theme/neon/` | 历史候选（仅回看） | zh | 各自旧主题 |
 | `/404`、`/install.ps1`、`/robots.txt`、`/og-image.png` | public/ | — | — |
+
+> 历史记述：曾列于本表的 `/theme/clean/`、`/theme/neon/` 主题候选回看页已于
+> 2026-10-22 删除（连同 ThemeSwitcher 组件与 terminal/clean/neon 三组旧 tokens），
+> 历史候选已删除；全站仅 day/night 双主题。
 
 ## 2. 主题体系（重要变更）
 
 - **默认 = day（亮色专业）/ night（暗色）**，tokens 在 `src/styles/tokens.css` 的 `[data-theme='day'|'night']`（改编自 astrowind，MIT，见 THIRD_PARTY_NOTICES.md）。
 - BaseLayout 默认 `theme="day"`；`<head>` 内联脚本按 `localStorage.unixwin-theme`（无则 prefers-color-scheme）把 day 换 night，防 FOUC。
-- SiteHeader 内 ToggleTheme 按钮仅 day↔night 生效；terminal/clean/neon 页自动隐藏。
-- 旧三主题 tokens 保留（terminal 仍被 404 使用；clean/neon 供 /theme/* 回看）。**新页面禁止用旧主题**。
+- SiteHeader 内 ToggleTheme 按钮仅 day↔night 生效。
+- 旧三主题（terminal/clean/neon）tokens 已于 2026-10-22 删除（历史候选已删除，
+  连同 /theme/* 候选页与 ThemeSwitcher）。**全站仅 day/night 两主题**，
+  BaseLayout 的 theme prop 类型也收窄为 `'day' | 'night'`。
 - 颜色仍只出自 tokens；`color-mix(in srgb, var(--x) N%, transparent)` 与数据注入的 `--card-accent` 除外。
 
 ## 3. i18n 规则
@@ -53,7 +58,8 @@
 
 ## 6. 组件速查
 
-BaseLayout（props: title/description/theme/path/lang/enPath/keywords/jsonLdExtra）· SiteHeader（含 LangSwitch+ToggleTheme）· SiteFooter · DocsLayout（三栏+面包屑+prev/next）· Sidebar（含搜索占位）· TocRight（On this page，客户端生成）· ThemeSwitcher（仅 /theme/*）· LangSwitch · CopyButton · InstallTabs · Badge · Section · StatsBand · ProductCard。
+BaseLayout（props: title/description/theme/path/lang/enPath/keywords/jsonLdExtra）· SiteHeader（含 LangSwitch+ToggleTheme）· SiteFooter · DocsLayout（三栏+面包屑+prev/next）· Sidebar（含搜索占位）· TocRight（On this page，客户端生成）· LangSwitch · CopyButton · InstallTabs · Badge · Section · StatsBand · ProductCard · ZhOnlyBanner（en 页「正文暂为中文」提示条）。
+（历史记述：ThemeSwitcher 组件随 2026-10-22 主题候选删除一并移除。）
 DocsLayout 内样式经 `.docs-main` 前缀的 `is:global` 提供（表格/代码/标题基线）；页面自有 scoped 样式优先。
 
 ## 7. 工作流
@@ -61,7 +67,7 @@ DocsLayout 内样式经 `.docs-main` 前缀的 `is:global` 提供（表格/代�
 ```bash
 npm install && npm run fetch:github   # 刷新 changelogs/repo-meta
 npm run dev                           # localhost:4321
-npm run build                         # → dist/（36 页）
+npm run build                         # → dist/（87 页，2026-10-22 实测）
 # 内链扫描（python 片段见仓库历史）断链必须为 0
 sudo bash /home/cmx/deploy-unixwin.sh # 服务器 8889 部署（staging=~/unixwin-site-staging）
 git push origin main                  # CI 自动构建

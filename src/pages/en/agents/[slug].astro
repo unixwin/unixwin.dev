@@ -3,15 +3,16 @@
  * /en/agents/[slug] — English edition of the agent onboarding detail page.
  * Data source: src/data/agents.json — English sibling fields (*_en) with
  * fallback to the Chinese originals, so the page never renders empty.
- * Body copy, badges, section headings and the banner are English; the
- * top banner notes that the Chinese edition is the source of truth.
+ * Body copy, badges and section headings are English. No ZhOnlyBanner:
+ * every agent carries full English *_en content (audited 2026-10-22), so
+ * the "Chinese only" notice would be wrong here; the Chinese edition is
+ * linked at the bottom instead.
  */
 import BaseLayout from '../../../components/BaseLayout.astro';
 import SiteHeader from '../../../components/SiteHeader.astro';
 import SiteFooter from '../../../components/SiteFooter.astro';
 import Badge from '../../../components/Badge.astro';
 import CopyButton from '../../../components/CopyButton.astro';
-import ZhOnlyBanner from '../../../components/ZhOnlyBanner.astro';
 import agentsData from '../../../data/agents.json';
 
 export function getStaticPaths() {
@@ -48,8 +49,6 @@ const difficultyLabel = difficulty === '—' ? 'Difficulty —' : `Difficulty ${
   <SiteHeader />
 
   <main class="container narrow">
-    <ZhOnlyBanner zhPath={`/agents/${agent.slug}/`} />
-
     <p class="crumb"><a href="/en/agents/">← Agent directory</a></p>
 
     <header class="head">

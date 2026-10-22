@@ -12,8 +12,8 @@ npm run dev                # 本地 http://localhost:4321
 npm run build              # 出 dist/
 ```
 
-- **必读 `PORTAL-CONVENTIONS.md`**（项目根）：架构硬约束全在里面。最重要的一条：**颜色只能出自 `src/styles/tokens.css` 的 token 变量，组件里禁止硬编码色值**；新增颜色必须三组主题（terminal/clean/neon）都给值。
-- 三个候选首页在线上：`/`（A 终端）、`/theme/clean/`（B 亮色）、`/theme/neon/`（C 霓虹），右下角有 A/B/C 悬浮切换按钮。**基调尚未拍板**——你精修时三套都要照顾，或者推动先定一套。
+- **必读 `PORTAL-CONVENTIONS.md`**（项目根）：架构硬约束全在里面。最重要的一条：**颜色只能出自 `src/styles/tokens.css` 的 token 变量，组件里禁止硬编码色值**。（历史记述：曾要求"新增颜色三组候选主题都给值"——terminal/clean/neon 候选已删除，现全站仅 day/night。）
+- ~~三个候选首页在线上~~ **历史候选已删除**（2026-10-22 治理）：A 终端候选早已被 day/night 取代，B 亮色（/theme/clean/）与 C 霓虹（/theme/neon/）候选页、ThemeSwitcher 悬浮按钮、旧 tokens 已一并移除；现全站仅 day/night 双主题。
 - 数据管线：`npm run fetch:github` 从 GitHub 拉各仓库 CHANGELOG 与 star/版本号，生成 `src/data/changelogs.json` / `repo-meta.json`（**生成物，勿手改**）。`products.json` / `facts.json` 手工维护。
 - 部署：构建产物进服务器 staging 后 `sudo bash /home/cmx/deploy-unixwin.sh`（nginx 8889 → Cloudflare Tunnel → unixwin.dev）。改完 push 到 main，GitHub Actions 会自动构建验证。
 
@@ -46,17 +46,12 @@ npm run build              # 出 dist/
 - [ ] hero 靠文字排版撑场，boot log 是静态的——可做真打字机效果（原生 JS，注意 SEO 保留静态文本）
 - [ ] `niubash-banner.svg` 是仓库原始资产（ASCII 风格 103KB），与页面气质是否统一存疑，考虑重绘或替换为真实终端录屏
 - [ ] CRT 扫描线太淡几乎不可见——要么加强要么去掉
-- [ ] "主题候选"区块（页尾三瓦片）与右下悬浮按钮重复，定调后一起摘
+- [x] ~~"主题候选"区块（页尾三瓦片）与右下悬浮按钮重复，定调后一起摘~~（已完成：2026-10-22 主题候选治理中删除）
 
-**B 亮色（/theme/clean/）**
-- [ ] "通用 SaaS 模板感"最强：白底+蓝无品牌识别度，缺一处让人记住的视觉（品牌绿点缀？终端元素以亮色形式回归？）
-- [ ] 六张产品卡完全同构，无主次——建议 niubash 大卡（旗舰）+ 其余小卡的层级
-- [ ] FAQ 的 `<details>` 无展开动效，"+"指示器弱
-
-**C 霓虹（/theme/neon/）**
-- [ ] 玻璃+渐变容易显"模板感"，需要独特元素救场（如 ASCII art 大字、glitch 效果的产品名）
-- [ ] 深底上的 muted 文字对比度需按 WCAG AA 复核
-- [ ] 光斑动画 8s 偏慢偏弱，入场无动画
+**B 亮色（/theme/clean/）与 C 霓虹（/theme/neon/）——历史候选已删除**
+（2026-10-22 治理：两个候选页连同 tokens 已移除，以下两条精修清单仅存档，不再执行）
+- [ ] ~~"通用 SaaS 模板感"最强：白底+蓝无品牌识别度……~~
+- [ ] ~~玻璃+渐变容易显"模板感"……~~
 
 **可用现成素材**
 - niubash 品牌资产：`~/unixwin-repos/niubash/assets/`（banner.svg / icon 256 / social-preview.png）；服务器旧站 `~/niubash-site-dist/`（demo*.gif 录屏、promo*.mp4、promo-poster.jpg——gif 已用 demo-gitbash.gif，其余未用）
@@ -64,7 +59,7 @@ npm run build              # 出 dist/
 
 ## 3. P1 功能（定调后启动，设计可先行出稿）
 
-- [ ] **主题烘焙**：定 A/B/C（或混搭）后——中标主题设为全站默认 `data-theme`、摘除 `ThemeSwitcher` 与"主题候选"区块、其余两套路由删除或 302
+- [x] ~~**主题烘焙**：定 A/B/C（或混搭）后——中标主题设为全站默认 `data-theme`、摘除 `ThemeSwitcher` 与"主题候选"区块、其余两套路由删除或 302~~（已完成：day/night 双主题定调上线；2026-10-22 治理删除 ThemeSwitcher 与 /theme/* 候选路由）
 - [ ] **六产品页** `/products/<id>/`：统一模板（Hero / Why / 特性 / 安装 / 高级特性 / AI 集成 / 性能证据 / changelog），素材直接取自 `~/unixwin-repos/<repo>/` 各 README 与 DOCS
 - [ ] **/ai/ 集成中心**：蓝本 = niubash `docs/src/agents.md`（四机制表 + per-agent 配置卡 + Known traps 诚实呈现 + "从 niu 会话启动"首屏演示）；配套官网 `/agents.md`
 - [ ] **/download/**：平台 tab + 版本号构建期注入 + 中国镜像（gh.caomengxuan666.com）写进命令 + sha256 折叠表
@@ -100,7 +95,7 @@ npm run build              # 出 dist/
 
 ## 7. 2026-10-19 主题重做 + i18n（用户否决三套自研主题后）
 
-- 新默认：**day 亮色专业 / night 暗色**（tokens 改编自 astrowind MIT，见 THIRD_PARTY_NOTICES.md），防 FOUC 内联脚本 + SiteHeader 日/月切换钮（localStorage.unixwin-theme + prefers-color-scheme）；旧候选仅存 /theme/clean/ 与 /theme/neon/ 供回看
+- 新默认：**day 亮色专业 / night 暗色**（tokens 改编自 astrowind MIT，见 THIRD_PARTY_NOTICES.md），防 FOUC 内联脚本 + SiteHeader 日/月切换钮（localStorage.unixwin-theme + prefers-color-scheme）；旧候选曾仅存 /theme/clean/ 与 /theme/neon/ 供回看——**2026-10-22 已删除**（历史候选已删除，见 §9）
 - i18n：zh 根路径 + /en/ 五页（index/agents/benchmarks/ai/docs 首页），LangSwitch + 每会话一次 navigator.language 自动跳转（sessionStorage.niu-lang-override 优先），BaseLayout hreflang 三条已按配对页互链
 - 待办：en 深页（agent 详情/docs 四篇/agents.md 英文化）；PORTAL-CONVENTIONS.md 主题章节过时待修订；品牌字体自托管（JetBrains Mono+思源黑体子集）未做
 
@@ -110,3 +105,11 @@ npm run build              # 出 dist/
 - 撤：winget 推荐（PR 未合）、`niu --version` 错用 print_usage 文案、neon 页 gzip 假命令（改 sha256sum）、dsh 回滚编造命令、rubash CI 腿错抄 niubash 面、Android"挂入发布档"错述、wpm 索引 288→281、oh-my-niu 主题 28→27、WinuxCmd"最新 v1.1.16"→v1.1.15、Windows 10+ 下限（无据，改"免管理员"）
 - ~~待 owner 裁决~~ **已裁决（2026-10-19）：ARM64 同样安装 niugit**（arm64 pin 生效，preinstall notes 过时）——门户全站已改为「仅 gawk 为 x64-only，niugit/rg/fd 双架构」；上游 preinstall notes 与 niu-git README 的 x64 表述待仓库侧修
 - 仅存 portal-dump 无一手产物的数字（440MB/16MB、13-62x 等）保留但来源标 GITBASH-KILLER/FACTS，待产物入库复核
+
+## 9. 2026-10-22 治理：主题候选删除 + 首页 stats 换血 + banner 审计 + demo 双栏
+
+- **主题候选删除**：`/theme/clean/`、`/theme/neon/` 候选页、`ThemeSwitcher.astro`、tokens.css 的 terminal/clean/neon 三组（`:root` 默认并入 day）与 global.css 的 neon 背景块一并移除；BaseLayout theme prop 收窄为 `'day' | 'night'`；页脚「主题」列、llms.txt Optional 两条、README/CONVENTIONS/TODO 改为「历史候选已删除」记述
+- **首页 stats 六卡换血**（zh+en）：删「82 套逐字节一致」（与 83/83 重复）→ 换 `24 已适配 AI agent`（facts.aiAgents）；删「26.3 ms 一次性执行」（随平台/版本漂移）→ 换 `5 平台原生构建`（facts.platforms）；删「3.79 MB 单文件」（WinuxCmd 体积张冠李戴）→ 换 `≈16 MB 安装后全家族`（facts.familySize）；83/83、176+、~14 ms git 保留；首页 meta description 同步去 3.79MB
+- **ZhOnlyBanner 审计**：保留于正文确含中文折叠区块的 10 页（/en/docs/{compatibility,performance-model,execution-model,paths-and-msys}/ + /en/products/ ×6）；移除误挂 3 处——/en/agents/<slug>/（16 页均有完整英文正文）、/en/agents/universal/（纯英文）、/en/docs/cli/（页头自注"fully translated"）
+- **首页 demo 双栏对照**（zh+en）：左卡 Git Bash (MSYS) 实录 gif，右卡 niubash (niu) 终端风占位三行（$ cd D:\repo → $ git grep -n pattern src/main.rs → exit 0，argv 逐字节原样）；配文改对照式；注「双联实录视频制作中（生成脚本参考 GITBASH-KILLER 面1 探针）」
+- facts.json：+familySize ≈16 MB、+aiAgents 24；−oneShot、−binarySize（漂移/错冠，已无消费者）

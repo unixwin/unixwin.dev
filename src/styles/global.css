@@ -51,15 +51,6 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* neon 主题：背景渐变点缀（颜色全部来自 tokens） */
-[data-theme='neon'] body {
-  background:
-    radial-gradient(60rem 32rem at 85% -10%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
-    radial-gradient(50rem 30rem at -10% 110%, color-mix(in srgb, var(--accent-2) 12%, transparent), transparent 70%),
-    var(--bg);
-  background-attachment: fixed;
-}
-
 h1,
 h2,
 h3,

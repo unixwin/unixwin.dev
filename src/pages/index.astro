@@ -22,15 +22,18 @@ import changelogs from '../data/changelogs.json';
 
 const ordered = [...products].sort((a, b) => a.order - b.order);
 
-// ---- 实测数字六格：全部来自 facts.json（byteIdentical 拆成 数字 + 文案） ----
-const [identicalCount, ...identicalRest] = String(facts.byteIdentical).trim().split(/\s+/);
+// ---- 实测数字六格：全部来自 facts.json。
+// 本轮治理：删「82 套逐字节一致」卡（与 83/83 重复）→ 换已适配 AI agent 数；
+// 删「26.3 ms 一次性执行」（数字随平台/版本漂移）→ 换平台原生构建数；
+// 删「3.79 MB 单文件体积」（那是 WinuxCmd 的体积，张冠李戴）→ 换 niubash
+// 安装后全家族体积。83/83、176+、~14 ms git 三张保留。 ----
 const stats = [
   { label: 'GNU bash 套件', value: facts.bashSuites },
-  { label: identicalRest.join('') || '逐字节一致', value: identicalCount },
   { label: 'Unix 命令', value: facts.commands },
   { label: 'git 启动', value: facts.gitStartup },
-  { label: '一次性执行 niu -c', value: facts.oneShot },
-  { label: '单文件体积', value: facts.binarySize },
+  { label: '已适配 AI agent', value: facts.aiAgents },
+  { label: '平台原生构建', value: facts.platforms },
+  { label: '安装后全家族', value: facts.familySize },
 ];
 
 // ---- Install：PowerShell 主线 / wpm / 其他平台（Releases） ----
@@ -127,7 +130,7 @@ const softwareAppJsonLd = {
 
 <BaseLayout
   title="UNIXWIN — Niubash、WinuxCmd、Rubash：AI-native 的真·Bash 家族"
-  description="UNIXWIN：AI-native 的真·Bash 家族——niubash、WinuxCmd、rubash、niu-git、wpm。真 bash 语法、真 Unix 命令、原生 Windows / Linux / macOS，无 WSL、无 MSYS。83/83 GNU 套件全过、82 套逐字节一致、~14ms git 启动、3.79MB 单文件。"
+  description="UNIXWIN：AI-native 的真·Bash 家族——niubash、WinuxCmd、rubash、niu-git、wpm。真 bash 语法、真 Unix 命令、原生 Windows / Linux / macOS，无 WSL、无 MSYS。83/83 GNU 套件全过、82 套逐字节一致、~14ms git 启动、5 平台原生构建、安装后全家族约 16 MB。"
   keywords="niubash,winuxcmd,rubash,niu-git,wpm,bash for windows,git bash alternative,ai-native bash"
   jsonLdExtra={softwareAppJsonLd}
   theme="day"
@@ -356,19 +359,47 @@ const softwareAppJsonLd = {
         </article>
       </div>
 
+      <!-- 双栏对照：左 Git Bash 实录 gif / 右 niu 终端占位（双联实录视频制作中） -->
       <figure class="demo-fig">
-        <img
-          src="/assets/demo-gitbash.gif"
-          alt="实录：Git Bash 的 MSYS 运行时改写参数，cd、cmd /c、git grep -n 三条命令接连失败"
-          width="692"
-          height="334"
-          loading="lazy"
-          decoding="async"
-        />
+        <div class="demo-grid">
+          <div class="demo-col">
+            <p class="demo-head is-bad">
+              <span class="demo-dot" aria-hidden="true"></span>
+              Git Bash (MSYS)
+            </p>
+            <img
+              src="/assets/demo-gitbash.gif"
+              alt="实录：Git Bash 的 MSYS 运行时改写参数，cd、cmd /c、git grep -n 三条命令接连失败"
+              width="692"
+              height="334"
+              loading="lazy"
+              decoding="async"
+            />
+            <p class="demo-verdict is-bad">argv 被运行时改写 → 三连败</p>
+          </div>
+          <div class="demo-col">
+            <p class="demo-head is-ok">
+              <span class="demo-dot" aria-hidden="true"></span>
+              niubash (niu)
+            </p>
+            <div
+              class="demo-term"
+              role="img"
+              aria-label="niu 会话实录占位：cd D:\repo 与 git grep -n pattern src/main.rs 按键原样执行，exit 0"
+            >
+              <p class="dl"><span class="dl-p">$</span> cd D:\repo</p>
+              <p class="dl"><span class="dl-p">$</span> git grep -n pattern src/main.rs</p>
+              <p class="dl dl-ok">exit 0</p>
+            </div>
+            <p class="demo-verdict is-ok">argv 逐字节原样 → 一次通过</p>
+          </div>
+        </div>
         <figcaption>
-          Git Bash 实录：<code>cd</code>、<code>cmd /c</code>、<code>git grep -n</code>
-          被 MSYS 运行时改写参数后接连失败——niu 没有 MSYS 层，argv 逐字节原样，这类问题不存在（见「无 MSYS 咒语」）。
+          同三条命令，两种运行时：Git Bash 的 MSYS 层在 spawn 前改写参数，<code>cd</code>、<code>cmd
+          /c</code>、<code>git grep -n</code> 接连失败；niu 没有 MSYS 层，argv
+          <strong>逐字节原样抵达</strong>，同样的命令一次通过（见「无 MSYS 咒语」）。
         </figcaption>
+        <p class="demo-note">双联实录视频制作中（生成脚本参考 GITBASH-KILLER 面1 探针）。</p>
       </figure>
     </Section>
 
@@ -1162,6 +1193,7 @@ const softwareAppJsonLd = {
     text-overflow: ellipsis;
   }
 
+  /* ---------- Why 区尾：demo 双栏对照（左 Git Bash 实录 / 右 niu 终端占位） ---------- */
   .demo-fig {
     margin: 2rem 0 0;
     background: var(--bg-elev);
@@ -1172,18 +1204,129 @@ const softwareAppJsonLd = {
     box-shadow: var(--shadow);
   }
 
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .demo-col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .demo-head {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .demo-dot {
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .demo-head.is-bad .demo-dot {
+    background: var(--danger);
+  }
+
+  .demo-head.is-ok .demo-dot {
+    background: var(--accent-2); /* teal：与 hero 终端「绿」点同源 */
+  }
+
   .demo-fig img {
-    display: inline-block;
+    display: block;
     width: 100%;
-    max-width: 692px;
     height: auto;
+    border: 1px solid var(--border);
     border-radius: calc(var(--radius) * 0.8);
   }
 
+  /* 右卡终端风占位：与 gif 同比例（692×334），行文左对齐 */
+  .demo-term {
+    aspect-ratio: 692 / 334;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.45rem;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.8);
+    padding: 1rem 1.2rem;
+    text-align: left;
+  }
+
+  .dl {
+    margin: 0;
+    font-size: 0.92rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dl-p {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .dl-ok {
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+
+  .demo-verdict {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+  }
+
+  .demo-verdict.is-bad {
+    color: var(--danger);
+  }
+
+  .demo-verdict.is-ok {
+    color: var(--accent-2);
+  }
+
   .demo-fig figcaption {
-    margin-top: 0.7rem;
+    margin-top: 0.9rem;
     color: var(--muted);
     font-size: 0.85rem;
+    line-height: 1.65;
+  }
+
+  .demo-fig figcaption strong {
+    color: var(--text);
+  }
+
+  .demo-note {
+    margin: 0.45rem 0 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 760px) {
+    .demo-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .demo-term {
+      aspect-ratio: auto;
+      padding: 0.9rem 1rem;
+    }
   }
 
   /* ---------- Install ---------- */

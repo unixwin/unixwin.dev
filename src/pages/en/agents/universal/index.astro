@@ -7,13 +7,14 @@
  * Structure: breadcrumb+H1 → four-mechanism table → three-step wiring flow
  * (with three copy blocks) → self-check for uncatalogued agents → four known
  * traps → sources & back link. Chinese edition: /agents/universal/.
+ * No ZhOnlyBanner: this edition is fully translated English (audited
+ * 2026-10-22); the Chinese edition is linked in Sources instead.
  */
 import BaseLayout from '../../../../components/BaseLayout.astro';
 import SiteHeader from '../../../../components/SiteHeader.astro';
 import SiteFooter from '../../../../components/SiteFooter.astro';
 import Badge from '../../../../components/Badge.astro';
 import CopyButton from '../../../../components/CopyButton.astro';
-import ZhOnlyBanner from '../../../../components/ZhOnlyBanner.astro';
 
 const VERIFY_CMD = 'echo "SHELL=$SHELL"; uname -s; uname -a';
 
@@ -67,8 +68,6 @@ Test-Path 'C:\Program Files\Git\bin\bash.exe'
   <SiteHeader />
 
   <main class="container narrow">
-    <ZhOnlyBanner zhPath="/agents/universal/" />
-
     <p class="crumb"><a href="/en/agents/">← Agent directory</a><span> / Universal guide</span></p>
 
     <header class="head">

@@ -24,15 +24,19 @@ import changelogs from '../../data/changelogs.json';
 
 const ordered = [...products].sort((a, b) => a.order - b.order);
 
-// ---- Stats: same facts.json numbers, English labels ----
-const [identicalCount, ...identicalRest] = String(facts.byteIdentical).trim().split(/\s+/);
+// ---- Stats: same facts.json numbers, English labels.
+//      This round: dropped "82 suites byte-identical" (duplicates 83/83) for
+//      AI agents covered; dropped "one-shot niu -c" (26.3 ms drifts per
+//      platform/version) for native platforms; dropped "3.79 MB single
+//      binary" (WinuxCmd's size, mislabeled) for the installed family size.
+//      83/83, 176+ and ~14 ms git stay. ----
 const stats = [
   { label: 'GNU bash suites', value: facts.bashSuites },
-  { label: identicalRest.join('') ? 'suites byte-identical' : 'byte-identical', value: identicalCount },
   { label: 'Unix commands', value: facts.commands },
   { label: 'git startup', value: facts.gitStartup },
-  { label: 'one-shot niu -c', value: facts.oneShot },
-  { label: 'single binary', value: facts.binarySize },
+  { label: 'AI agents covered', value: facts.aiAgents },
+  { label: 'native platforms', value: facts.platforms },
+  { label: 'installed family', value: facts.familySize },
 ];
 
 // ---- Install: PowerShell primary / wpm / other platforms (Releases) ----
@@ -131,7 +135,7 @@ const softwareAppJsonLd = {
 
 <BaseLayout
   title="UNIXWIN — Niubash, WinuxCmd, Rubash: the AI-native bash family"
-  description="UNIXWIN: the AI-native bash family — niubash, WinuxCmd, rubash, niu-git and wpm. Real bash syntax, real Unix commands, native on Windows / Linux / macOS. No WSL, no MSYS. 83/83 GNU suites passing, 82 byte-identical, ~14 ms git startup, a 3.79 MB single binary."
+  description="UNIXWIN: the AI-native bash family — niubash, WinuxCmd, rubash, niu-git and wpm. Real bash syntax, real Unix commands, native on Windows / Linux / macOS. No WSL, no MSYS. 83/83 GNU suites passing, 82 byte-identical, ~14 ms git startup, 5 native platforms, ≈16 MB installed family."
   keywords="niubash,winuxcmd,rubash,niu-git,wpm,bash for windows,git bash alternative,ai-native bash"
   jsonLdExtra={softwareAppJsonLd}
   theme="day"
@@ -384,21 +388,51 @@ const softwareAppJsonLd = {
         </article>
       </div>
 
+      <!-- Side-by-side comparison: left Git Bash recording gif / right niu terminal placeholder -->
       <figure class="demo-fig">
-        <img
-          src="/assets/demo-gitbash.gif"
-          alt="Recorded run: Git Bash's MSYS runtime rewrites arguments and breaks cd, cmd /c and git grep -n in turn"
-          width="692"
-          height="334"
-          loading="lazy"
-          decoding="async"
-        />
+        <div class="demo-grid">
+          <div class="demo-col">
+            <p class="demo-head is-bad">
+              <span class="demo-dot" aria-hidden="true"></span>
+              Git Bash (MSYS)
+            </p>
+            <img
+              src="/assets/demo-gitbash.gif"
+              alt="Recorded run: Git Bash's MSYS runtime rewrites arguments and breaks cd, cmd /c and git grep -n in turn"
+              width="692"
+              height="334"
+              loading="lazy"
+              decoding="async"
+            />
+            <p class="demo-verdict is-bad">runtime rewrites argv → three straight failures</p>
+          </div>
+          <div class="demo-col">
+            <p class="demo-head is-ok">
+              <span class="demo-dot" aria-hidden="true"></span>
+              niubash (niu)
+            </p>
+            <div
+              class="demo-term"
+              role="img"
+              aria-label="niu session placeholder: cd D:\repo and git grep -n pattern src/main.rs run with the keys verbatim, exit 0"
+            >
+              <p class="dl"><span class="dl-p">$</span> cd D:\repo</p>
+              <p class="dl"><span class="dl-p">$</span> git grep -n pattern src/main.rs</p>
+              <p class="dl dl-ok">exit 0</p>
+            </div>
+            <p class="demo-verdict is-ok">argv byte-for-byte → passes first try</p>
+          </div>
+        </div>
         <figcaption>
-          Recorded in Git Bash: <code>cd</code>, <code>cmd /c</code> and <code>git grep -n</code>
-          break one after another as the MSYS runtime rewrites their arguments — niu has no MSYS
-          layer; argv arrives byte-for-byte, so this class of failure does not exist (see the
-          "no MSYS incantations" card).
+          The same three commands, two runtimes: Git Bash's MSYS layer rewrites arguments before
+          spawn, breaking <code>cd</code>, <code>cmd /c</code> and <code>git grep -n</code> one after
+          another; niu ships no MSYS layer — argv <strong>arrives byte-for-byte as typed</strong>,
+          and the same commands pass on the first try (see the "no MSYS incantations" card).
         </figcaption>
+        <p class="demo-note">
+          Side-by-side recording video in the works (generation script follows the GITBASH-KILLER
+          part-1 probes).
+        </p>
       </figure>
     </Section>
 
@@ -1234,6 +1268,7 @@ const softwareAppJsonLd = {
     text-overflow: ellipsis;
   }
 
+  /* ---------- Why tail: two-column demo comparison (Git Bash gif / niu terminal) ---------- */
   .demo-fig {
     margin: 2rem 0 0;
     background: var(--bg-elev);
@@ -1244,18 +1279,129 @@ const softwareAppJsonLd = {
     box-shadow: var(--shadow);
   }
 
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .demo-col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .demo-head {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .demo-dot {
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .demo-head.is-bad .demo-dot {
+    background: var(--danger);
+  }
+
+  .demo-head.is-ok .demo-dot {
+    background: var(--accent-2); /* teal: same source as the hero terminal "green" dot */
+  }
+
   .demo-fig img {
-    display: inline-block;
+    display: block;
     width: 100%;
-    max-width: 692px;
     height: auto;
+    border: 1px solid var(--border);
     border-radius: calc(var(--radius) * 0.8);
   }
 
+  /* Right card terminal-style placeholder: same aspect as the gif (692×334), left-aligned text */
+  .demo-term {
+    aspect-ratio: 692 / 334;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.45rem;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 0.8);
+    padding: 1rem 1.2rem;
+    text-align: left;
+  }
+
+  .dl {
+    margin: 0;
+    font-size: 0.92rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dl-p {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .dl-ok {
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+
+  .demo-verdict {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+  }
+
+  .demo-verdict.is-bad {
+    color: var(--danger);
+  }
+
+  .demo-verdict.is-ok {
+    color: var(--accent-2);
+  }
+
   .demo-fig figcaption {
-    margin-top: 0.7rem;
+    margin-top: 0.9rem;
     color: var(--muted);
     font-size: 0.85rem;
+    line-height: 1.65;
+  }
+
+  .demo-fig figcaption strong {
+    color: var(--text);
+  }
+
+  .demo-note {
+    margin: 0.45rem 0 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 760px) {
+    .demo-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .demo-term {
+      aspect-ratio: auto;
+      padding: 0.9rem 1rem;
+    }
   }
 
   /* ---------- Install ---------- */

@@ -1,11 +1,14 @@
 ---
 /**
- * SiteFooter — 页脚：组织信息 + 产品矩阵 + 资源链接 + 主题候选回看入口。
+ * SiteFooter — 页脚：组织信息 + 产品矩阵 + 资源链接。
  * 数据源：src/data/products.json、src/data/nav.json（github/docs 字段）。
  *
  * i18n：about 列追加一行语言切换（复用 LangSwitch，目标由 src/i18n/lang.ts
  * 的 resolveSwitchPair 决定——精确配对互指、无配对回退同区段 en/zh 页，
- * 仅 /404、/theme/** 等无对页不渲染；en 页产品/资源等站内链接改指 /en/ 版本）。
+ * 仅 /404 等无对页不渲染；en 页产品/资源等站内链接改指 /en/ 版本）。
+ *
+ * 历史：曾有的「主题」列（B·亮色 /theme/clean/、C·霓虹 /theme/neon/）
+ * 随主题候选页一并删除（2026-10-22 治理）。
  */
 import products from '../data/products.json';
 import nav from '../data/nav.json';
@@ -46,11 +49,6 @@ const productHref = (id: string) => (isEn ? `/en/#${id}` : `/#${id}`);
       <a href="/llms.txt">llms.txt</a>
       <a href={isEn ? '/en/privacy/' : '/privacy/'}>{isEn ? 'Privacy Policy' : '隐私政策'}</a>
     </nav>
-    <nav class="footer-col" aria-label="主题">
-      <h3>主题</h3>
-      <a href="/theme/clean/">B · 亮色</a>
-      <a href="/theme/neon/">C · 霓虹</a>
-    </nav>
   </div>
   <div class="container footer-bottom">
     <span>© {year} UNIXWIN · MIT License</span>
@@ -68,11 +66,11 @@ const productHref = (id: string) => (isEn ? `/en/#${id}` : `/#${id}`);
     font-size: 0.9rem;
   }
 
-  .footer-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 2rem;
-  }
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 2rem;
+}
 
   @media (max-width: 760px) {
     .footer-grid {

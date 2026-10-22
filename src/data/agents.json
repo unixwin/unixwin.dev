@@ -2,11 +2,12 @@
   "_meta": {
     "note": "AI agent 接入目录。事实唯一来源：niubash 仓库 docs/src/agents.md（线上 unixwin.github.io/niubash/agents.html）。改这里之前先核对那篇文档；状态必须诚实：ready=当前版本可配置生效；partial=有变通/部分场景；blocked=上游机制暂不支持；unverified=无逐台实测或读码条目。读码核实（非实测）的条目必须在 notes 里写明「源码核实」与仓库路径。图标来源与许可见 THIRD_PARTY_NOTICES.md「Agent 图标」一节。",
     "updatedAt": "2026-10-22",
-    "verifiedAgainst": "niu 1.4.0 / niu-git 2.55.0.5 / Git for Windows 2.50.1 / WSL2 已装环境，2026-10-16（见 agents.md 首节）；行为陈述对齐 agents.md 2026-10-21 版（24 agent 名单，v1.4.3 口径）；2026-10-22 门户口径：VS Code 家族九家并入 vs-code 一条，安装命令经 npm 实测（@unixwin/codex@0.1.1、@cmx666/dsh-niu-bundle@0.2.1-rc.1）",
+    "verifiedAgainst": "niu 1.4.0 / niu-git 2.55.0.5 / Git for Windows 2.50.1 / WSL2 已装环境，2026-10-16（见 agents.md 首节）；行为陈述对齐 agents.md 2026-10-21 版（24 agent 名单，v1.4.3 口径）；2026-10-22 目录重构：VS Code 家族拆为九条独立条目（vs-code/windsurf/trae/kiro/zcode/cline/roo-code/kilo-code/continue），每条带 icon 与 variants；安装命令经 npm 实测（@unixwin/codex@0.1.1、@cmx666/dsh-niu-bundle@0.2.1-rc.1）",
     "schema": {
-      "group": "显示分组：ready=终端系开箱可换；vscode=VSCode 家族（独立分组，九家成员并入 vs-code 一条代表）；partial/blocked/unverified 同状态",
+      "group": "显示分组：ready=终端系开箱可换；vscode=VSCode 家族（九家各一条独立条目）；partial/blocked/unverified 同状态",
       "status": "徽章与详情页状态：ready/partial/blocked/unverified",
-      "icon": "/assets/agents/ 下的本地化图标（勿热链）；来源见 THIRD_PARTY_NOTICES.md"
+      "icon": "/assets/agents/ 下的本地化图标（勿热链）；来源见 THIRD_PARTY_NOTICES.md",
+      "variants": "产品形态徽章（字符串数组，目录卡片直接渲染）：IDE / CLI / TUI / Web / Editor extension / IDE plugin"
     }
   },
   "universal": {
@@ -38,6 +39,9 @@
       "status": "ready",
       "group": "ready",
       "icon": "/assets/agents/opencode.svg",
+      "variants": [
+        "CLI"
+      ],
       "mechanism": "$SHELL 环境变量",
       "platforms": [
         "Windows",
@@ -86,6 +90,9 @@
       "status": "ready",
       "group": "ready",
       "icon": "/assets/agents/claude-code.svg",
+      "variants": [
+        "CLI"
+      ],
       "mechanism": "Git 探针 / CLAUDE_CODE_GIT_BASH_PATH",
       "platforms": [
         "Windows"
@@ -138,6 +145,9 @@
       "status": "ready",
       "group": "ready",
       "icon": "/assets/agents/codex.svg",
+      "variants": [
+        "CLI"
+      ],
       "mechanism": "原生 Niu 探测（unixwin fork）",
       "platforms": [
         "Windows"
@@ -184,12 +194,15 @@
       "status": "ready",
       "group": "vscode",
       "icon": "/assets/agents/vs-code.png",
-      "mechanism": "Git 探针 / automationProfile（家族共享）",
+      "variants": [
+        "IDE"
+      ],
+      "mechanism": "VS Code 家族探针 / automationProfile",
       "platforms": [
         "Windows"
       ],
       "difficulty": "初",
-      "oneLiner": "家族锚点，一条代表九家：VS Code(Copilot)、Windsurf、Trae、Kiro、ZCode、Cline、Roo Code、Kilo Code、Continue 共用同一探针，修一处全家生效。",
+      "oneLiner": "家族锚点：GitHub Copilot agent 经编辑器自动化终端跑命令，安装器布下的启动器默认命中家族共享探针，无需配置。",
       "script": {
         "label": "settings.json · 显式 automationProfile（探针默认已命中，此为精确控制）",
         "lang": "json",
@@ -198,31 +211,403 @@
       },
       "steps": [
         "默认：安装器占位的 C:\\Program Files\\Git\\bin\\bash.exe 命中家族共享探针，无需配置",
-        "要精确控制：设置 automationProfile 指向 niu.exe，经自动化终端跑命令的 agent 全部继承"
+        "要精确控制：设置 automationProfile 指向 niu.exe，Copilot agent 经自动化终端跑的命令全部继承"
       ],
       "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
       "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
       "notes": [
-        "家族九家同一探针：VS Code（Copilot agent）、Windsurf、Trae、Kiro、ZCode 为编辑器本体，Cline、Roo Code、Kilo Code、Continue 为扩展——扩展自身不选 shell，命令经宿主编辑器终端或 automationProfile 跑，随家族探针接入",
-        "家族共享同一份硬编码探针序列（Program Files 两级 Git 路径 → PATH 上 git 的相对 bin/bash.exe），修一处全家生效",
-        "探针序列读自 ZCode app.asar（本地核实），ZCode 是家族里唯一逐台核验过的成员；Kiro 按 Code OSS 血统推定（agents.md 标注 inferred），其余按同源家族推定，未逐台核验",
+        "家族九家（本条与 Windsurf、Trae、Kiro、ZCode、Cline、Roo Code、Kilo Code、Continue）共用同一份硬编码探针序列（Program Files 两级 Git 路径 → PATH 上 git 的相对 bin/bash.exe），修一处全家生效",
+        "探针序列读自 ZCode app.asar（本地核实）；Program Files 两级候选被安装器刻意不占位（niubash#398 裁定），命中靠 PATH 上 git 的相对路径那一臂",
         "遇回落 PowerShell/cmd 时设 automationProfile 即可"
       ],
       "sources": [
         "agents.md#vs-code（家族名单 + ZCode app.asar 本地核实）"
       ],
-      "oneLiner_en": "The family anchor: one shared probe rules the whole VS Code lineage — the Copilot agent runs commands through the editor's automation terminal and hits it by default.",
-      "mechanism_en": "Git probe / automationProfile",
+      "oneLiner_en": "The family anchor: the GitHub Copilot agent runs commands through the editor's automation terminal and hits the family-shared probe by default — no configuration needed.",
+      "mechanism_en": "VS Code family probe / automationProfile",
       "difficulty_en": "Easy",
       "steps_en": [
         "Default: the installer-placed C:\\Program Files\\Git\\bin\\bash.exe hits the family-shared probe — no configuration needed",
-        "For precise control: point automationProfile at niu.exe and every agent running through the automation terminal inherits it"
+        "For precise control: point automationProfile at niu.exe; every command the Copilot agent runs through the automation terminal inherits it"
       ],
       "verify_en": "echo \"SHELL=$SHELL\"; uname -s — expect uname -s to start with MSYS_NT-",
       "rollback_en": "Delete the terminal.integrated.automationProfile.windows setting",
       "notes_en": [
-        "The family shares one hard-coded probe sequence (the two Program Files Git paths → bin/bash.exe next to git on PATH); fix it once and the whole family follows",
-        "The probe sequence was read from a ZCode app.asar (verified locally); same-lineage products behave the same way"
+        "All nine family entries (this one plus Windsurf, Trae, Kiro, ZCode, Cline, Roo Code, Kilo Code, Continue) share one hard-coded probe sequence (the two Program Files Git paths → bin/bash.exe next to git on PATH); fix it once and the whole family follows",
+        "The probe sequence was read from a ZCode app.asar (verified locally); the two Program Files candidates stay deliberately unclaimed (niubash#398 ruling) — the which(git) arm is what lands on niu",
+        "On a PowerShell/cmd fallback, set automationProfile and done"
+      ]
+    },
+    {
+      "slug": "windsurf",
+      "name": "Windsurf",
+      "status": "ready",
+      "group": "vscode",
+      "icon": "/assets/agents/windsurf.svg",
+      "variants": [
+        "IDE"
+      ],
+      "mechanism": "VS Code 家族探针 / automationProfile",
+      "platforms": [
+        "Windows"
+      ],
+      "difficulty": "初",
+      "oneLiner": "Code OSS 血统 fork：自动化终端继承家族共享探针——装好 niubash 即命中启动器，无需配置。",
+      "script": {
+        "label": "settings.json · 显式 automationProfile（探针默认已命中，此为精确控制）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.automationProfile.windows\": {\n    \"path\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\",\n    \"args\": []\n  }\n}",
+        "label_en": "settings.json · explicit automationProfile (the probe hits by default; this is for precise control)"
+      },
+      "steps": [
+        "默认：家族共享探针命中安装器布下的启动器，无需配置",
+        "要精确控制：在 Windsurf 设置里把 automationProfile 指向 niu.exe"
+      ],
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
+      "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
+      "notes": [
+        "与 VS Code 共享同一份探针序列；未逐台实测，按同源家族推定（ZCode app.asar 为核实锚点）"
+      ],
+      "sources": [
+        "agents.md#vs-code（VS Code 家族）"
+      ],
+      "oneLiner_en": "A Code OSS lineage fork: the automation terminal inherits the family-shared probe — it hits the launcher once niubash is installed, no configuration needed.",
+      "mechanism_en": "VS Code family probe / automationProfile",
+      "difficulty_en": "Easy",
+      "steps_en": [
+        "Default: the family-shared probe hits the installer-placed launcher — no configuration needed",
+        "For precise control: point automationProfile at niu.exe in Windsurf's settings"
+      ],
+      "verify_en": "echo \"SHELL=$SHELL\"; uname -s — expect uname -s to start with MSYS_NT-",
+      "rollback_en": "Delete the terminal.integrated.automationProfile.windows setting",
+      "notes_en": [
+        "Shares the same probe sequence as VS Code; not machine-tested — inferred from the shared lineage (the ZCode app.asar is the verified anchor)"
+      ]
+    },
+    {
+      "slug": "trae",
+      "name": "Trae",
+      "status": "ready",
+      "group": "vscode",
+      "icon": "/assets/agents/trae.svg",
+      "variants": [
+        "IDE"
+      ],
+      "mechanism": "VS Code 家族探针 / automationProfile",
+      "platforms": [
+        "Windows"
+      ],
+      "difficulty": "初",
+      "oneLiner": "VS Code 血统 fork：自动化终端继承家族共享探针——装好 niubash 即命中启动器，无需配置。",
+      "script": {
+        "label": "settings.json · 显式 automationProfile（探针默认已命中，此为精确控制）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.automationProfile.windows\": {\n    \"path\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\",\n    \"args\": []\n  }\n}",
+        "label_en": "settings.json · explicit automationProfile (the probe hits by default; this is for precise control)"
+      },
+      "steps": [
+        "默认：家族共享探针命中安装器布下的启动器，无需配置",
+        "要精确控制：在 Trae 设置里把 automationProfile 指向 niu.exe"
+      ],
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
+      "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
+      "notes": [
+        "与 VS Code 共享同一份探针序列；未逐台实测，按同源家族推定（ZCode app.asar 为核实锚点）"
+      ],
+      "sources": [
+        "agents.md#vs-code（VS Code 家族）"
+      ],
+      "oneLiner_en": "A VS Code lineage fork: the automation terminal inherits the family-shared probe — it hits the launcher once niubash is installed, no configuration needed.",
+      "mechanism_en": "VS Code family probe / automationProfile",
+      "difficulty_en": "Easy",
+      "steps_en": [
+        "Default: the family-shared probe hits the installer-placed launcher — no configuration needed",
+        "For precise control: point automationProfile at niu.exe in Trae's settings"
+      ],
+      "verify_en": "echo \"SHELL=$SHELL\"; uname -s — expect uname -s to start with MSYS_NT-",
+      "rollback_en": "Delete the terminal.integrated.automationProfile.windows setting",
+      "notes_en": [
+        "Shares the same probe sequence as VS Code; not machine-tested — inferred from the shared lineage (the ZCode app.asar is the verified anchor)"
+      ]
+    },
+    {
+      "slug": "kiro",
+      "name": "Kiro",
+      "status": "ready",
+      "group": "vscode",
+      "icon": "/assets/agents/kiro.ico",
+      "variants": [
+        "IDE"
+      ],
+      "mechanism": "VS Code 家族探针 / automationProfile",
+      "platforms": [
+        "Windows"
+      ],
+      "difficulty": "初",
+      "oneLiner": "AWS 的 agentic IDE（Code OSS 血统）：按家族共享探针推定接入——agents.md 标注 inferred，未逐台实测，装好 niubash 即应命中。",
+      "script": {
+        "label": "settings.json · 显式 automationProfile（探针默认已命中，此为精确控制）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.automationProfile.windows\": {\n    \"path\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\",\n    \"args\": []\n  }\n}",
+        "label_en": "settings.json · explicit automationProfile (the probe hits by default; this is for precise control)"
+      },
+      "steps": [
+        "默认：家族共享探针应命中安装器布下的启动器（inferred 推定，未逐台实测）",
+        "要精确控制：在 Kiro 设置里把 automationProfile 指向 niu.exe"
+      ],
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
+      "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
+      "notes": [
+        "家族里唯一未被原始探针名单点名的成员：按 Code OSS 血统归入家族（agents.md 标注 inferred），逐台确认结果欢迎回填",
+        "与 VS Code 共享同一份探针序列；验证方法同家族通用命令"
+      ],
+      "sources": [
+        "agents.md#vs-code（Kiro 为 inferred 成员）"
+      ],
+      "oneLiner_en": "AWS's agentic IDE (Code OSS lineage): wired per the family-shared probe on an inferred basis — agents.md marks it inferred, not machine-tested; it should hit the launcher once niubash is installed.",
+      "mechanism_en": "VS Code family probe / automationProfile",
+      "difficulty_en": "Easy",
+      "steps_en": [
+        "Default: the family-shared probe should hit the installer-placed launcher (inferred, not machine-tested)",
+        "For precise control: point automationProfile at niu.exe in Kiro's settings"
+      ],
+      "verify_en": "echo \"SHELL=$SHELL\"; uname -s — expect uname -s to start with MSYS_NT-",
+      "rollback_en": "Delete the terminal.integrated.automationProfile.windows setting",
+      "notes_en": [
+        "The one member the original probe list did not name: grouped into the family on Code OSS lineage (agents.md marks it inferred) — per-machine confirmation is welcome",
+        "Shares the same probe sequence as VS Code; verify with the family-wide command"
+      ]
+    },
+    {
+      "slug": "zcode",
+      "name": "ZCode",
+      "status": "ready",
+      "group": "vscode",
+      "icon": "/assets/agents/zcode.svg",
+      "variants": [
+        "IDE"
+      ],
+      "mechanism": "VS Code 家族探针 / automationProfile",
+      "platforms": [
+        "Windows"
+      ],
+      "difficulty": "初",
+      "oneLiner": "家族里唯一逐台核验过的成员：agents.md 的探针序列读自 ZCode 的 app.asar（本地核实）——默认命中，无需配置。",
+      "script": {
+        "label": "settings.json · 显式 automationProfile（探针默认已命中，此为精确控制）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.automationProfile.windows\": {\n    \"path\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\",\n    \"args\": []\n  }\n}",
+        "label_en": "settings.json · explicit automationProfile (the probe hits by default; this is for precise control)"
+      },
+      "steps": [
+        "默认：家族共享探针命中安装器布下的启动器，无需配置",
+        "要精确控制：在 ZCode 设置里把 automationProfile 指向 niu.exe"
+      ],
+      "verify": "echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
+      "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
+      "notes": [
+        "家族探针序列的核实锚点：硬编码候选与 PATH 相对路径均读自 ZCode 的 app.asar（本地核实）",
+        "其余家族成员按同源血统推定——本条是全家族证据链的起点"
+      ],
+      "sources": [
+        "agents.md#vs-code（探针序列读自 ZCode app.asar）"
+      ],
+      "oneLiner_en": "The family's only machine-verified member: the probe sequence in agents.md was read out of a ZCode app.asar (verified locally) — hits by default, no configuration.",
+      "mechanism_en": "VS Code family probe / automationProfile",
+      "difficulty_en": "Easy",
+      "steps_en": [
+        "Default: the family-shared probe hits the installer-placed launcher — no configuration needed",
+        "For precise control: point automationProfile at niu.exe in ZCode's settings"
+      ],
+      "verify_en": "echo \"SHELL=$SHELL\"; uname -s — expect uname -s to start with MSYS_NT-",
+      "rollback_en": "Delete the terminal.integrated.automationProfile.windows setting",
+      "notes_en": [
+        "The verification anchor of the family probe: the hard-coded candidates and the PATH-relative arm were both read out of a ZCode app.asar (verified locally)",
+        "The other family members are inferred from the shared lineage — this entry is where the family's evidence chain starts"
+      ]
+    },
+    {
+      "slug": "cline",
+      "name": "Cline",
+      "status": "ready",
+      "group": "vscode",
+      "icon": "/assets/agents/cline.svg",
+      "variants": [
+        "Editor extension"
+      ],
+      "mechanism": "VS Code 家族探针 / automationProfile",
+      "platforms": [
+        "Windows"
+      ],
+      "difficulty": "初",
+      "oneLiner": "编辑器扩展而非独立 IDE：自身不选 shell，命令经宿主编辑器终端 / automationProfile 跑——随家族探针接入。",
+      "script": {
+        "label": "宿主编辑器 settings.json · 显式 automationProfile（扩展自身不选 shell，随宿主走）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.automationProfile.windows\": {\n    \"path\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\",\n    \"args\": []\n  }\n}",
+        "label_en": "host editor settings.json · explicit automationProfile (the extension never picks a shell; it follows the host)"
+      },
+      "steps": [
+        "默认：命令经宿主编辑器终端跑，家族共享探针命中安装器布下的启动器，无需配置",
+        "要精确控制：在宿主编辑器（VS Code 等）设 automationProfile 指向 niu.exe——扩展随宿主继承"
+      ],
+      "verify": "在宿主编辑器集成终端里跑 echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
+      "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
+      "notes": [
+        "Cline 自身不选 shell：命令一律经宿主编辑器终端或 automationProfile 跑，随家族探针接入——宿主编辑器接上，扩展即接上"
+      ],
+      "sources": [
+        "agents.md#vs-code（编辑器扩展节）"
+      ],
+      "oneLiner_en": "An editor extension, not a standalone IDE: it never picks a shell itself — commands run through the host editor's terminal or automation profile and inherit the family probe.",
+      "mechanism_en": "VS Code family probe / automationProfile",
+      "difficulty_en": "Easy",
+      "steps_en": [
+        "Default: commands run through the host editor's terminal and the family-shared probe hits the installer-placed launcher — no configuration needed",
+        "For precise control: point automationProfile at niu.exe in the host editor (VS Code etc.) — the extension inherits it with the host"
+      ],
+      "verify_en": "Run echo \"SHELL=$SHELL\"; uname -s in the host editor's integrated terminal — expect uname -s to start with MSYS_NT-",
+      "rollback_en": "Delete the terminal.integrated.automationProfile.windows setting",
+      "notes_en": [
+        "Cline never picks a shell itself: commands always run through the host editor's terminal or automation profile and inherit the family probe — wire the host editor and the extension follows"
+      ]
+    },
+    {
+      "slug": "roo-code",
+      "name": "Roo Code",
+      "status": "ready",
+      "group": "vscode",
+      "icon": "/assets/agents/roo-code.svg",
+      "variants": [
+        "Editor extension"
+      ],
+      "mechanism": "VS Code 家族探针 / automationProfile",
+      "platforms": [
+        "Windows"
+      ],
+      "difficulty": "初",
+      "oneLiner": "Cline 系编辑器扩展：自身不选 shell，命令经宿主编辑器终端 / automationProfile 跑——随家族探针接入。",
+      "script": {
+        "label": "宿主编辑器 settings.json · 显式 automationProfile（扩展自身不选 shell，随宿主走）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.automationProfile.windows\": {\n    \"path\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\",\n    \"args\": []\n  }\n}",
+        "label_en": "host editor settings.json · explicit automationProfile (the extension never picks a shell; it follows the host)"
+      },
+      "steps": [
+        "默认：命令经宿主编辑器终端跑，家族共享探针命中安装器布下的启动器，无需配置",
+        "要精确控制：在宿主编辑器（VS Code 等）设 automationProfile 指向 niu.exe——扩展随宿主继承"
+      ],
+      "verify": "在宿主编辑器集成终端里跑 echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
+      "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
+      "notes": [
+        "Roo Code 系出 Cline，同为编辑器扩展：自身不选 shell，命令经宿主编辑器终端或 automationProfile 跑，随家族探针接入"
+      ],
+      "sources": [
+        "agents.md#vs-code（编辑器扩展节）"
+      ],
+      "oneLiner_en": "A Cline-lineage editor extension: it never picks a shell itself — commands run through the host editor's terminal or automation profile and inherit the family probe.",
+      "mechanism_en": "VS Code family probe / automationProfile",
+      "difficulty_en": "Easy",
+      "steps_en": [
+        "Default: commands run through the host editor's terminal and the family-shared probe hits the installer-placed launcher — no configuration needed",
+        "For precise control: point automationProfile at niu.exe in the host editor (VS Code etc.) — the extension inherits it with the host"
+      ],
+      "verify_en": "Run echo \"SHELL=$SHELL\"; uname -s in the host editor's integrated terminal — expect uname -s to start with MSYS_NT-",
+      "rollback_en": "Delete the terminal.integrated.automationProfile.windows setting",
+      "notes_en": [
+        "Roo Code descends from Cline and is likewise an editor extension: it never picks a shell itself — commands run through the host editor's terminal or automation profile and inherit the family probe"
+      ]
+    },
+    {
+      "slug": "kilo-code",
+      "name": "Kilo Code",
+      "status": "ready",
+      "group": "vscode",
+      "icon": "/assets/agents/kilo-code.svg",
+      "variants": [
+        "Editor extension"
+      ],
+      "mechanism": "VS Code 家族探针 / automationProfile",
+      "platforms": [
+        "Windows"
+      ],
+      "difficulty": "初",
+      "oneLiner": "编辑器扩展（Cline/Roo 系）：自身不选 shell，命令经宿主编辑器终端 / automationProfile 跑——随家族探针接入。",
+      "script": {
+        "label": "宿主编辑器 settings.json · 显式 automationProfile（扩展自身不选 shell，随宿主走）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.automationProfile.windows\": {\n    \"path\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\",\n    \"args\": []\n  }\n}",
+        "label_en": "host editor settings.json · explicit automationProfile (the extension never picks a shell; it follows the host)"
+      },
+      "steps": [
+        "默认：命令经宿主编辑器终端跑，家族共享探针命中安装器布下的启动器，无需配置",
+        "要精确控制：在宿主编辑器（VS Code 等）设 automationProfile 指向 niu.exe——扩展随宿主继承"
+      ],
+      "verify": "在宿主编辑器集成终端里跑 echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
+      "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
+      "notes": [
+        "Kilo Code 系出 Cline/Roo，同为编辑器扩展：自身不选 shell，命令经宿主编辑器终端或 automationProfile 跑，随家族探针接入"
+      ],
+      "sources": [
+        "agents.md#vs-code（编辑器扩展节）"
+      ],
+      "oneLiner_en": "An editor extension (Cline/Roo lineage): it never picks a shell itself — commands run through the host editor's terminal or automation profile and inherit the family probe.",
+      "mechanism_en": "VS Code family probe / automationProfile",
+      "difficulty_en": "Easy",
+      "steps_en": [
+        "Default: commands run through the host editor's terminal and the family-shared probe hits the installer-placed launcher — no configuration needed",
+        "For precise control: point automationProfile at niu.exe in the host editor (VS Code etc.) — the extension inherits it with the host"
+      ],
+      "verify_en": "Run echo \"SHELL=$SHELL\"; uname -s in the host editor's integrated terminal — expect uname -s to start with MSYS_NT-",
+      "rollback_en": "Delete the terminal.integrated.automationProfile.windows setting",
+      "notes_en": [
+        "Kilo Code descends from Cline/Roo and is likewise an editor extension: it never picks a shell itself — commands run through the host editor's terminal or automation profile and inherit the family probe"
+      ]
+    },
+    {
+      "slug": "continue",
+      "name": "Continue",
+      "status": "ready",
+      "group": "vscode",
+      "icon": "/assets/agents/continue.svg",
+      "variants": [
+        "Editor extension"
+      ],
+      "mechanism": "VS Code 家族探针 / automationProfile",
+      "platforms": [
+        "Windows"
+      ],
+      "difficulty": "初",
+      "oneLiner": "编辑器扩展：自身不选 shell，命令经宿主编辑器终端 / automationProfile 跑——随家族探针接入。",
+      "script": {
+        "label": "宿主编辑器 settings.json · 显式 automationProfile（扩展自身不选 shell，随宿主走）",
+        "lang": "json",
+        "code": "{\n  \"terminal.integrated.automationProfile.windows\": {\n    \"path\": \"C:\\\\Users\\\\<你>\\\\AppData\\\\Local\\\\Programs\\\\Niubash\\\\niu.exe\",\n    \"args\": []\n  }\n}",
+        "label_en": "host editor settings.json · explicit automationProfile (the extension never picks a shell; it follows the host)"
+      },
+      "steps": [
+        "默认：命令经宿主编辑器终端跑，家族共享探针命中安装器布下的启动器，无需配置",
+        "要精确控制：在宿主编辑器（VS Code 等）设 automationProfile 指向 niu.exe——扩展随宿主继承"
+      ],
+      "verify": "在宿主编辑器集成终端里跑 echo \"SHELL=$SHELL\"; uname -s ——期望 uname -s 以 MSYS_NT- 开头",
+      "rollback": "删除 terminal.integrated.automationProfile.windows 配置项",
+      "notes": [
+        "Continue 为编辑器扩展：自身不选 shell，命令经宿主编辑器终端或 automationProfile 跑，随家族探针接入"
+      ],
+      "sources": [
+        "agents.md#vs-code（编辑器扩展节）"
+      ],
+      "oneLiner_en": "An editor extension: it never picks a shell itself — commands run through the host editor's terminal or automation profile and inherit the family probe.",
+      "mechanism_en": "VS Code family probe / automationProfile",
+      "difficulty_en": "Easy",
+      "steps_en": [
+        "Default: commands run through the host editor's terminal and the family-shared probe hits the installer-placed launcher — no configuration needed",
+        "For precise control: point automationProfile at niu.exe in the host editor (VS Code etc.) — the extension inherits it with the host"
+      ],
+      "verify_en": "Run echo \"SHELL=$SHELL\"; uname -s in the host editor's integrated terminal — expect uname -s to start with MSYS_NT-",
+      "rollback_en": "Delete the terminal.integrated.automationProfile.windows setting",
+      "notes_en": [
+        "Continue is an editor extension: it never picks a shell itself — commands run through the host editor's terminal or automation profile and inherit the family probe"
       ]
     },
     {
@@ -231,6 +616,9 @@
       "status": "ready",
       "group": "ready",
       "icon": "/assets/agents/zed.png",
+      "variants": [
+        "IDE"
+      ],
       "mechanism": "显式配置 terminal.shell.program",
       "platforms": [
         "Windows",
@@ -270,6 +658,9 @@
       "status": "ready",
       "group": "ready",
       "icon": "/assets/agents/goose.svg",
+      "variants": [
+        "CLI"
+      ],
       "mechanism": "GOOSE_SHELL 环境变量",
       "platforms": [
         "Windows",
@@ -320,6 +711,9 @@
       "status": "ready",
       "group": "ready",
       "icon": "/assets/agents/dsh.svg",
+      "variants": [
+        "CLI"
+      ],
       "mechanism": "插件 profile",
       "platforms": [
         "Windows"
@@ -366,6 +760,10 @@
       "status": "partial",
       "group": "partial",
       "icon": "/assets/agents/cursor.svg",
+      "variants": [
+        "IDE",
+        "CLI"
+      ],
       "mechanism": "探测链当前对 bash 不友好",
       "platforms": [
         "Windows"
@@ -411,6 +809,11 @@
       "status": "partial",
       "group": "partial",
       "icon": "/assets/agents/devin.svg",
+      "variants": [
+        "CLI",
+        "TUI",
+        "Web"
+      ],
       "mechanism": "无原生集成（TUI 受 niubash#455 阻塞）",
       "platforms": [
         "Windows"
@@ -458,6 +861,9 @@
       "status": "partial",
       "group": "partial",
       "icon": "/assets/agents/qwen-code.svg",
+      "variants": [
+        "CLI"
+      ],
       "mechanism": "MSYSTEM/TERM 嗅探 → Git Bash 查找",
       "platforms": [
         "Windows",
@@ -511,6 +917,9 @@
       "status": "blocked",
       "group": "blocked",
       "icon": "/assets/agents/gemini-cli.svg",
+      "variants": [
+        "CLI"
+      ],
       "mechanism": "无条件 PowerShell",
       "platforms": [
         "Windows"
@@ -549,6 +958,10 @@
       "status": "blocked",
       "group": "blocked",
       "icon": "/assets/agents/aider.svg",
+      "variants": [
+        "CLI",
+        "IDE plugin"
+      ],
       "mechanism": "无 shell 选项",
       "platforms": [
         "Windows"
@@ -585,6 +998,9 @@
       "status": "unverified",
       "group": "unverified",
       "icon": "/assets/agents/amazon-q.svg",
+      "variants": [
+        "CLI"
+      ],
       "mechanism": "未核验",
       "platforms": [
         "Windows",
@@ -629,6 +1045,10 @@
       "status": "unverified",
       "group": "unverified",
       "icon": "/assets/agents/amp.svg",
+      "variants": [
+        "CLI",
+        "Editor extension"
+      ],
       "mechanism": "未核验",
       "platforms": [
         "Windows",
@@ -671,6 +1091,10 @@
       "status": "unverified",
       "group": "unverified",
       "icon": "/assets/agents/openhands.svg",
+      "variants": [
+        "CLI",
+        "Web"
+      ],
       "mechanism": "未核验",
       "platforms": [
         "Windows",
@@ -713,6 +1137,9 @@
       "status": "unverified",
       "group": "unverified",
       "icon": "/assets/agents/junie.svg",
+      "variants": [
+        "IDE plugin"
+      ],
       "mechanism": "未核验",
       "platforms": [
         "Windows",

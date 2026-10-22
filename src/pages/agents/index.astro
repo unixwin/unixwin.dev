@@ -13,9 +13,13 @@ import Badge from '../../components/Badge.astro';
 import CopyButton from '../../components/CopyButton.astro';
 import agentsData from '../../data/agents.json';
 
+// hero 数字从数据派生，不写死：收录数 = agents 数组长度；开箱即用数 = status === 'ready'
+const allAgents = agentsData.agents as any[];
+const readyCount = allAgents.filter((a) => a.status === 'ready').length;
+
 const groups = [
   { key: 'ready', title: '开箱可换（终端系）', tone: 'accent', desc: '当前版本按下面方法即可让 agent 用上 niubash' },
-  { key: 'vscode', title: 'VSCode 家族', tone: 'info', desc: '同一份共享探针：VS Code 及其血统 fork / 扩展——修一处全家生效，与终端系分开看' },
+  { key: 'vscode', title: 'VSCode 家族', tone: 'info', desc: '同一份共享探针，九家各一条：VS Code 及其血统 fork / 扩展——修一处全家生效' },
   { key: 'partial', title: '有变通', tone: 'warn', desc: '部分场景可行，等待上游完善' },
   { key: 'blocked', title: '暂不支持', tone: 'muted', desc: '上游机制未开放，已跟进 issue' },
   { key: 'unverified', title: '尚未核验', tone: 'muted', desc: '无逐台实测或读码条目——按通用指南接线，欢迎回填实测' },
@@ -44,7 +48,7 @@ const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 
       </p>
       <div class="hero-cta">
         <a class="cta-main" href="/agents/universal/">让 AI 接入 niubash →</a>
-        <p class="cta-note">已适配 <strong>24</strong> 个 AI agent——<strong>15</strong> 个开箱即用</p>
+        <p class="cta-note">已收录 <strong>{allAgents.length}</strong> 家 AI agent——<strong>{readyCount}</strong> 家开箱即用</p>
       </div>
     </section>
 
@@ -81,12 +85,15 @@ const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 
               <a class="agent-card" href={`/agents/${a.slug}/`}>
                 <div class="card-top">
                   <span class="card-id">
-                    <img class="card-icon" src={a.icon} alt="" width="28" height="28" loading="lazy" />
+                    <img class="card-icon" src={a.icon} alt="" width="20" height="20" loading="lazy" />
                     <span class="card-name">{a.name}</span>
                   </span>
                   <Badge tone={statusTone(a.status)}>
                     {statusLabel[a.status] ?? a.status}
                   </Badge>
+                </div>
+                <div class="card-variants">
+                  {((a.variants as string[]) ?? []).map((v) => <span class="variant-chip">{v}</span>)}
                 </div>
                 <p class="card-line">{a.oneLiner}</p>
                 <div class="card-foot">
@@ -157,7 +164,7 @@ const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 
   .sub { color: var(--muted); max-width: 46rem; margin: 0.8rem 0 0; line-height: 1.75; }
   .sub strong { color: var(--text); }
 
-  /* hero 级 CTA：大按钮 + 实数副文案（24/15 为写死口径，与 agents.md 名单一致） */
+  /* hero 级 CTA：大按钮 + 实数副文案（数字由 agents.json 派生：收录数 / ready 数） */
   .hero-cta { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; margin: 1.3rem 0 0; }
   .cta-main {
     display: inline-flex; align-items: center; min-height: 48px;
@@ -230,16 +237,24 @@ const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 
   .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
   .card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
   .card-id { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
-  /* 图标垫白底小圆角——品牌深色 logo 在暗色主题下也保持可读 */
+  /* 图标 20px 圆角，垫白底——品牌深色 logo 在暗色主题下也保持可读 */
   .card-icon {
     flex: none;
-    width: 28px; height: 28px; object-fit: contain;
+    width: 20px; height: 20px; object-fit: contain;
     background: #ffffff;
     border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 3px;
+    border-radius: 5px;
+    padding: 2px;
   }
   .card-name { font-weight: 700; font-size: 1.02rem; }
+  /* 产品形态徽章（IDE / CLI / Editor extension…），来自 agents.json 的 variants */
+  .card-variants { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+  .variant-chip {
+    font-size: 0.72rem; font-family: var(--font-mono);
+    color: var(--muted); background: var(--bg-code);
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 0.05rem 0.5rem;
+  }
   .card-line { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.6; flex: 1; }
   .card-foot { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; font-size: 0.8rem; }
   .has-script { color: var(--accent); font-weight: 600; }

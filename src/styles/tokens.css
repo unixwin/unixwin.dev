@@ -3,7 +3,7 @@
    多套主题，仅通过 <html data-theme="..."> 切换，变量名完全统一。
    组件与页面 CSS 只允许引用这里的变量，禁止硬编码颜色。
 
-   公共变量（16 个核心 + 扩展，day/night 必须全量定义，候选主题沿用默认）：
+   公共变量（16 个核心 + 扩展，day/night 必须全量定义）：
      --bg --bg-elev --bg-code --text --muted --accent --accent-2 --link
      --border --danger --warn --radius --shadow --font-sans --font-mono
      扩展：--font-body（正文）--font-display（衬线展示字体）
@@ -15,94 +15,16 @@
    单一橙红 accent + 黑底白字主按钮 + inset 描边阴影 + 墨色 H1 渐变 +
    Fraunces 衬线展示字体）；原 astrowind（MIT, © 2023 onWidget）取色自
    2026-10 起替换，防 FOUC 脚本的 astrowind 出处见 THIRD_PARTY_NOTICES.md。
-   terminal / clean / neon 为早期候选页保留（仅 /theme/clean/、/theme/neon/ 使用）。
+   历史：早期候选主题 terminal/clean/neon 及 /theme/* 回看页、ThemeSwitcher
+   已于 2026-10-22 删除；全站仅 day/night 两主题，:root 默认即 day。
    ========================================================================== */
 
-:root,
-[data-theme='terminal'] {
-  color-scheme: dark;
-  --bg: #0b1020;
-  --bg-elev: #111832;
-  --bg-code: #0d1428;
-  --text: #d7e0ee;
-  --muted: #8b98b8;
-  --accent: #38e07b;
-  --accent-2: #6fb7ff;
-  --link: #6fb7ff;
-  --border: #223052;
-  --danger: #ff5c6c;
-  --warn: #f5b83d;
-  --radius: 8px;
-  --shadow: 0 8px 24px rgba(3, 8, 20, 0.55);
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
-  /* terminal 候选：整站等宽 */
-  --font-body: var(--font-mono);
-  --glass-bg: rgba(17, 24, 50, 0.72);
-  --glass-blur: 8px;
-  /* ---- archify 基因扩展的候选主题默认值（day/night 各自覆盖）：
-     主按钮 accent 底、H1 accent 渐变、浮起阴影、display 回落正文 sans ---- */
-  --btn-bg: var(--accent);
-  --btn-fg: var(--bg);
-  --btn-hover: color-mix(in srgb, var(--accent) 88%, var(--text));
-  --shadow-float: 0 30px 80px -40px color-mix(in srgb, var(--accent) 30%, transparent);
-  --h1-grad-a: var(--accent);
-  --h1-grad-b: var(--accent-2);
-  --font-display: var(--font-sans);
-}
-
-[data-theme='clean'] {
-  color-scheme: light;
-  --bg: #ffffff;
-  --bg-elev: #f6f8fb;
-  --bg-code: #eef2f7;
-  --text: #1a2233;
-  --muted: #5b6779;
-  --accent: #2563eb;
-  --accent-2: #0ea5e9;
-  --link: #2563eb;
-  --border: #dde4ee;
-  --danger: #dc2626;
-  --warn: #d97706;
-  --radius: 12px;
-  --shadow: 0 2px 10px rgba(26, 34, 51, 0.08);
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
-  /* clean 候选：系统无衬线为主 */
-  --font-body: var(--font-sans);
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-blur: 0px;
-}
-
-[data-theme='neon'] {
-  color-scheme: dark;
-  --bg: #0a0a16;
-  --bg-elev: #131328;
-  --bg-code: #0f0f22;
-  --text: #e8e6ff;
-  --muted: #9a95c9;
-  --accent: #a78bfa;
-  --accent-2: #22d3ee;
-  --link: #22d3ee;
-  --border: #2b2b55;
-  --danger: #fb7185;
-  --warn: #fbbf24;
-  --radius: 16px;
-  --shadow: 0 10px 36px rgba(122, 92, 255, 0.28);
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'SF Mono', Menlo, monospace;
-  /* neon 候选：无衬线正文 + 等宽代码 */
-  --font-body: var(--font-sans);
-  /* 玻璃卡：backdrop-filter + 半透明提升层 */
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-blur: 14px;
-}
-
 /* --------------------------------------------------------------------------
-   day — 暖纸白（全站默认）。设计基因量化移植自 archify.si：
+   day — 暖纸白（全站默认，:root 兜底同值）。设计基因量化移植自 archify.si：
    暖灰白纸底 + 墨色文字 + 单一橙红 accent（teal 作次色），阴影收敛为
    inset 描边、浮起才给大阴影；主按钮黑底白字；H1 用墨色渐变。
    -------------------------------------------------------------------------- */
+:root,
 [data-theme='day'] {
   color-scheme: light;
   --bg: #f5f6f3;                            /* 暖纸白（archify --bg） */

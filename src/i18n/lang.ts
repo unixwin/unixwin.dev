@@ -99,7 +99,7 @@ export interface SwitchPair {
  *   2. zh 深页回退：/docs/** → /en/docs/；/agents/**（含 /agents/<slug>/、
  *      /agents/universal/）→ /en/agents/；/products/** → /en/；
  *      /changelog/ → /en/；
- *      其余未配对（/404、/theme/**、/llms.txt、/agents.md、/install.ps1 等）
+ *      其余未配对（/404、/llms.txt、/agents.md、/install.ps1 等）
  *      → null（不渲染切换按钮）；
  *   3. en 深页回退：/en/docs/** → /docs/；其余未配对 /en/** → /。
  *

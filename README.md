@@ -1,16 +1,15 @@
 # unixwin.dev — UNIXWIN 官网
 
-[UNIXWIN](https://github.com/unixwin) 的官网与主题候选工程，开源地址：
+[UNIXWIN](https://github.com/unixwin) 的官网工程，开源地址：
 <https://github.com/unixwin/unixwin.dev>，线上地址 <https://unixwin.dev>。
 
 纯 [Astro 5](https://astro.build) 静态站：无 UI 框架、无 Tailwind，仅 scoped CSS +
-全局 design tokens；三套主题候选通过 `<html data-theme="...">` 切换。
+全局 design tokens；day/night 双主题通过 `<html data-theme="...">` 切换。
 
 ## 项目简介
 
 展示 UNIXWIN 的 AI-native bash 家族六个产品（niubash / WinuxCmd / rubash /
-niu-git / wpm / oh-my-niu），聚合各仓库 CHANGELOG，并公开三套官网主题候选
-（A 终端 / B 亮色 / C 霓虹）供社区选择。
+niu-git / wpm / oh-my-niu），聚合各仓库 CHANGELOG。
 
 ## 目录结构
 
@@ -24,18 +23,17 @@ unixwin.dev/
 ├── public/                   # robots.txt / og-image.png / favicon.svg
 ├── .github/workflows/build.yml
 └── src/
-    ├── styles/tokens.css     # 三主题 tokens（唯一颜色来源）
+    ├── styles/tokens.css     # day/night 双主题 tokens（唯一颜色来源）
     ├── styles/global.css     # 全局基础样式（只用 tokens）
     ├── components/           # BaseLayout / SiteHeader / SiteFooter /
     │                         # CopyButton / InstallTabs / StatsBand /
-    │                         # ProductCard / Section / Badge / ThemeSwitcher
+    │                         # ProductCard / Section / Badge
     ├── data/                 # products / facts / nav / changelogs / repo-meta
     └── pages/
-        ├── index.astro               # 主题 A（terminal）
+        ├── index.astro               # 首页（day/night）
         ├── 404.astro
         ├── llms.txt.ts               # 构建期生成 /llms.txt
-        ├── changelog/index.astro     # 聚合更新日志
-        └── theme/{clean,neon}/index.astro  # 主题 B / C 预览
+        └── changelog/index.astro     # 聚合更新日志
 ```
 
 组件 props、数据 schema、tokens 对照表与代码风格约束见
@@ -77,16 +75,13 @@ sudo bash /home/cmx/deploy-unixwin.sh        # 服务器上的部署脚本
 rsync -av --delete dist/ <user>@<host>:/var/www/unixwin.dev/
 ```
 
-## 三主题候选
+## 主题（历史记述）
 
-| 候选 | URL | 风格 |
-| ---- | --- | ---- |
-| A · 终端 terminal | <https://unixwin.dev/> | 深空底色、整站等宽、终端绿 |
-| B · 亮色 clean | <https://unixwin.dev/theme/clean/> | 白底无衬线、12px 圆角、轻阴影 |
-| C · 霓虹 neon | <https://unixwin.dev/theme/neon/> | 紫青双色、玻璃卡渐变、16px 圆角 |
-
-任意页面右下角悬浮胶囊可切换 A / B / C；选定后我们会移除其余两套并将
-胜出主题合并为唯一 `<html data-theme>`。
+早期曾有 A·终端 terminal / B·亮色 clean / C·霓虹 neon 三套候选主题
+（A 长期服务首页，B/C 曾在 `/theme/clean/`、`/theme/neon/` 回看）。
+**2026-10-22 治理：三套历史候选连同候选页、ThemeSwitcher 组件与旧 tokens
+一并删除，历史候选已删除**；现全站仅 day（亮色专业，默认）/ night（暗色）
+两主题，顶栏日/月按钮切换，`localStorage.unixwin-theme` 记忆。
 
 ## 推送到 github.com/unixwin/unixwin.dev
 

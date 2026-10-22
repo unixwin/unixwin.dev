@@ -5,8 +5,7 @@
  * Props:
  *   title       string  页面 <title>（会自动拼接 " · UNIXWIN"）
  *   description string  页面 meta description
- *   theme       'day' | 'night' | 'terminal' | 'clean' | 'neon'   写入 <html data-theme>
- *                       （默认 day；terminal/clean/neon 仅 /theme/* 候选回看页使用）
+ *   theme       'day' | 'night'   写入 <html data-theme>（默认 day）
  *   path        string  规范化路径（如 '/'、'/changelog/'），用于 canonical/hreflang
  *   lang        'zh' | 'en'  页面语言（默认 zh；写 <html lang> 与 og:locale）
  *   enPath      string  另一语言页路径：zh 页传对应 en 路径、en 页传回 zh 路径，
@@ -18,7 +17,7 @@
  *                       <script type="application/ld+json"> 与现有 Organization
  *                       JSON-LD 并列输出。（可选；缺省只输出 Organization。）
  *
- * 亮/暗（day/night）：仅这两种主题的页面在 <head> 顶部跑一段 is:inline 防 FOUC
+ * 亮/暗（day/night）：<head> 顶部跑一段 is:inline 防 FOUC
  * 脚本（改编自 astrowind ApplyColorMode，MIT，见 THIRD_PARTY_NOTICES.md）——
  * localStorage('unixwin-theme') 优先，其次 prefers-color-scheme，把 SSR 输出的
  * data-theme 纠正为用户实际选择的亮/暗后再首绘。静态站全页刷新，无需监听。
@@ -41,7 +40,7 @@ import AutoRedirect from '../i18n/auto-redirect.astro';
 interface Props {
   title: string;
   description: string;
-  theme?: 'day' | 'night' | 'terminal' | 'clean' | 'neon';
+  theme?: 'day' | 'night';
   path?: string;
   lang?: 'zh' | 'en';
   enPath?: string;
@@ -82,8 +81,8 @@ const jsonLd = {
   <head>
     {/* 防 FOUC：改编自 astrowind ApplyColorMode.astro（MIT, © 2023 onWidget，见 THIRD_PARTY_NOTICES.md）。
         必须 is:inline 且置于 head 首位——首绘前把 day/night 页的 data-theme 纠正为
-        用户选择（localStorage 优先，其次 prefers-color-scheme）。terminal/clean/neon
-        候选页不受影响。静态站无客户端路由，无需 after-swap 监听。 */}
+        用户选择（localStorage 优先，其次 prefers-color-scheme）。静态站无客户端路由，
+        无需 after-swap 监听。 */}
     <script is:inline>
       (function () {
         var root = document.documentElement;
@@ -111,6 +110,19 @@ const jsonLd = {
     {keywords && <meta name="keywords" content={keywords} />}
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {/* Preload 主展示字体（Fraunces latin wght，67KB）：global.css 的 @font-face
+        带 font-display: swap，浏览器要等 CSS 解析完才会发起字体请求——preload
+        让字体请求与 CSS 并行，消除 swap 前的衬线回落闪烁（FOUT）。
+        crossorigin 必须带（字体即使同源也走 CORS 模式，缺了会二次下载）。
+        Astro 会把 tokens.css/global.css 打包后的 <link rel=stylesheet> 注入在
+        显式 head 内容之后，因此本行天然位于样式表 link 之前。 */}
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href="/fonts/fraunces-latin-wght-normal.woff2"
+    />
     <link rel="canonical" href={canonical} />
 
     <link rel="alternate" hreflang="zh-CN" href={zhUrl} />

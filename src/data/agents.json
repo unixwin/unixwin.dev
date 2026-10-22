@@ -7,7 +7,13 @@
       "group": "显示分组：ready=终端系开箱可换；vscode=VSCode 家族（九家各一条独立条目）；partial/blocked/unverified 同状态",
       "status": "徽章与详情页状态：ready/partial/blocked/unverified",
       "icon": "/assets/agents/ 下的本地化图标（勿热链）；来源见 THIRD_PARTY_NOTICES.md",
-      "variants": "产品形态徽章（字符串数组，目录卡片直接渲染）：IDE / CLI / TUI / Web / Editor extension / IDE plugin"
+      "variants": "产品形态徽章（字符串数组，目录卡片直接渲染）：IDE / CLI / TUI / Web / Editor extension / IDE plugin",
+      "roadmap": "调研候选条目（roadmap 数组）：name/form/vendor/stars/tier/outlook/note/source——未核验，不计入 agents 收录数"
+    },
+    "roadmap": {
+      "note": "生态调研候选清单（roadmap 数组）：38 个尚未核验的候选 agent，只录「名称/形态/厂商/展望/一句话/出处」，不计入 agents 收录数。outlook 口径：ready-candidate=机制明确（可配 shell / 取 $SHELL），待实测即可定级；needs-config=大概率可配置，待读码/实测；likely-blocked=机制性受阻（云端执行 / 沙箱 / 写死 shell）；unverifiable=闭源或无稳定可核验面。接入优先级：CLI/TUI 且执行本地 shell 的。",
+      "surveyDate": "2026-10-22",
+      "count": 38
     }
   },
   "universal": {
@@ -1177,6 +1183,366 @@
         "agents.md lists \"editor agents outside the VS Code lineage\" as unverified",
         "The card uses a JetBrains vendor mark; a standalone Junie brand asset is not localized"
       ]
+    }
+  ],
+  "roadmap": [
+    {
+      "name": "Warp",
+      "form": "GUI",
+      "vendor": "Warp",
+      "tier": "top10",
+      "outlook": "likely-blocked",
+      "note": "GUI 终端内建 agent（Agent Mode / Autopilot），命令跑在自家 UI 托管的终端里而非外部探测——接入可能性低。",
+      "source": "https://www.warp.dev/"
+    },
+    {
+      "name": "Copilot CLI",
+      "form": "CLI",
+      "vendor": "GitHub",
+      "tier": "top10",
+      "outlook": "needs-config",
+      "note": "独立版 GitHub Copilot CLI（2025 年推出，区别于 VS Code 内的 Copilot agent）——POSIX 风格 CLI，$SHELL / 配置接入待核验。",
+      "source": "https://github.com/github/copilot-cli"
+    },
+    {
+      "name": "Crush",
+      "form": "TUI",
+      "vendor": "Charm",
+      "stars": "28.7k",
+      "tier": "top10",
+      "outlook": "needs-config",
+      "note": "charmbracelet 出品的 28.7k★ 多模型 TUI agent，Go 生态、跨平台——shell 探测机制待读码。",
+      "source": "https://github.com/charmbracelet/crush"
+    },
+    {
+      "name": "Droid",
+      "form": "CLI",
+      "vendor": "Factory",
+      "tier": "top10",
+      "outlook": "needs-config",
+      "note": "Factory 的终端 coding agent（droid CLI），主打多模型与 CI 集成——shell 选择待读码核实。",
+      "source": "https://docs.factory.ai/"
+    },
+    {
+      "name": "Kimi Code CLI",
+      "form": "CLI",
+      "vendor": "月之暗面",
+      "stars": "7.9k",
+      "tier": "top10",
+      "outlook": "needs-config",
+      "note": "月之暗面 Kimi 的 7.9k★ CLI coding agent——待读码核实。",
+      "source": "https://github.com/MoonshotAI/kimi-cli"
+    },
+    {
+      "name": "CodeBuddy Code",
+      "form": "CLI",
+      "vendor": "腾讯",
+      "tier": "top10",
+      "outlook": "needs-config",
+      "note": "腾讯 CodeBuddy 的终端版（CLI coding agent，含免费额度）——待读码核实。",
+      "source": "https://www.codebuddy.ai/"
+    },
+    {
+      "name": "iFlow CLI",
+      "form": "CLI",
+      "vendor": "心流 iFlow（阿里系）",
+      "stars": "5.1k",
+      "tier": "top10",
+      "outlook": "needs-config",
+      "note": "阿里系 5.1k★ 免费多模型 CLI agent——待读码核实。",
+      "source": "https://github.com/iflow-ai/iflow-cli"
+    },
+    {
+      "name": "Plandex",
+      "form": "CLI",
+      "vendor": "Plandex AI",
+      "stars": "15.8k",
+      "tier": "top10",
+      "outlook": "likely-blocked",
+      "note": "15.8k★，命令跑在自建 Docker 沙箱内——宿主 shell 接线点存疑。",
+      "source": "https://github.com/plandex-ai/plandex"
+    },
+    {
+      "name": "SWE-agent",
+      "form": "CLI",
+      "vendor": "Princeton NLP",
+      "stars": "20.6k",
+      "tier": "top10",
+      "outlook": "needs-config",
+      "note": "20.6k★ 研究系 autonomous agent，执行以容器为主——宿主直跑模式待核。",
+      "source": "https://github.com/SWE-agent/SWE-agent"
+    },
+    {
+      "name": "Jules",
+      "form": "Web",
+      "vendor": "Google",
+      "tier": "top10",
+      "outlook": "likely-blocked",
+      "note": "Google 云端执行的异步编码 agent——命令不在本地 shell 跑，机制性受阻。",
+      "source": "https://jules.google/"
+    },
+    {
+      "name": "Open Interpreter",
+      "form": "CLI",
+      "vendor": "Open Interpreter",
+      "stars": "59k",
+      "tier": "watch",
+      "outlook": "needs-config",
+      "note": "59k★ 让 LLM 在本机跑代码 / 命令的元老项目——宿主 shell 调用点待读码核实。",
+      "source": "https://github.com/openinterpreter/open-interpreter"
+    },
+    {
+      "name": "Auggie",
+      "form": "CLI",
+      "vendor": "Augment Code",
+      "tier": "watch",
+      "outlook": "needs-config",
+      "note": "Augment Code 的终端 agent（Auggie CLI，闭源）——待核验。",
+      "source": "https://docs.augmentcode.com/cli/overview"
+    },
+    {
+      "name": "Codebuff",
+      "form": "CLI",
+      "vendor": "Codebuff",
+      "tier": "watch",
+      "outlook": "needs-config",
+      "note": "多 agent 并行的终端 coding agent——待核验。",
+      "source": "https://www.codebuff.com/"
+    },
+    {
+      "name": "Grok Build",
+      "form": "Web",
+      "vendor": "xAI",
+      "tier": "watch",
+      "outlook": "unverifiable",
+      "note": "xAI 的编码 agent 产品，闭源且执行环境未公开——可核验面不足。",
+      "source": "https://grok.com/"
+    },
+    {
+      "name": "grok-cli",
+      "form": "CLI",
+      "vendor": "superagent-ai",
+      "stars": "3.5k",
+      "tier": "watch",
+      "outlook": "needs-config",
+      "note": "社区 3.5k★ 的 Grok 终端 agent——待读码核实。",
+      "source": "https://github.com/superagent-ai/grok-cli"
+    },
+    {
+      "name": "Vibe CLI",
+      "form": "CLI",
+      "vendor": "Mistral AI",
+      "tier": "watch",
+      "outlook": "needs-config",
+      "note": "Mistral 的 agentic coding CLI——待读码核实。",
+      "source": "https://github.com/mistralai/vibe-cli"
+    },
+    {
+      "name": "ShellGPT",
+      "form": "CLI",
+      "vendor": "TheR1D",
+      "stars": "8k",
+      "tier": "watch",
+      "outlook": "needs-config",
+      "note": "8k★ 自然语言→shell 命令生成器，本地执行——接入点明确，参数风格待读码核实。",
+      "source": "https://github.com/TheR1D/shell_gpt"
+    },
+    {
+      "name": "aichat",
+      "form": "CLI",
+      "vendor": "sigoden",
+      "stars": "9k",
+      "tier": "watch",
+      "outlook": "ready-candidate",
+      "note": "sigoden 的 9k★ all-in-one CLI：shell 执行取 $SHELL——niu 会话内启动即应生效，机制明确、待实测确认。",
+      "source": "https://github.com/sigoden/aichat"
+    },
+    {
+      "name": "Forge",
+      "form": "CLI",
+      "vendor": "Antinomy",
+      "stars": "3k",
+      "tier": "watch",
+      "outlook": "needs-config",
+      "note": "3k★ Rust 开源 agent CLI——待读码核实。",
+      "source": "https://github.com/antinomyhq/forge"
+    },
+    {
+      "name": "Tabnine Agent",
+      "form": "IDE plugin",
+      "vendor": "Tabnine",
+      "tier": "ide",
+      "outlook": "needs-config",
+      "note": "IDE 内 agent 模式，命令经宿主编辑器终端——随 automationProfile 类配置走。",
+      "source": "https://www.tabnine.com/"
+    },
+    {
+      "name": "Sourcegraph Cody",
+      "form": "Editor extension",
+      "vendor": "Sourcegraph",
+      "tier": "ide",
+      "outlook": "needs-config",
+      "note": "编辑器扩展，命令经宿主终端执行——随 VS Code 家族探针 / automationProfile 走。",
+      "source": "https://github.com/sourcegraph/cody"
+    },
+    {
+      "name": "JetBrains AI Assistant",
+      "form": "IDE plugin",
+      "vendor": "JetBrains",
+      "tier": "ide",
+      "outlook": "needs-config",
+      "note": "JetBrains 全家 IDE 插件——内置终端 shell 可指向 niu.exe，是否影响 agent 执行待实测。",
+      "source": "https://www.jetbrains.com/ai/"
+    },
+    {
+      "name": "Gemini Code Assist",
+      "form": "Editor extension",
+      "vendor": "Google",
+      "tier": "ide",
+      "outlook": "needs-config",
+      "note": "VS Code / JetBrains 扩展的 agent 模式——与已被暂不支持（无条件 PowerShell）的 Gemini CLI 状态互不适用，待实测。",
+      "source": "https://developers.google.com/gemini-code-assist"
+    },
+    {
+      "name": "avante.nvim",
+      "form": "Editor extension",
+      "vendor": "yetone",
+      "stars": "15k",
+      "tier": "ide",
+      "outlook": "ready-candidate",
+      "note": "15k★ Neovim 插件：Neovim 的 'shell' 选项（&shell）可指到 niu.exe——机制明确，待实测确认。",
+      "source": "https://github.com/yetone/avante.nvim"
+    },
+    {
+      "name": "codecompanion.nvim",
+      "form": "Editor extension",
+      "vendor": "olimorris",
+      "stars": "6.9k",
+      "tier": "ide",
+      "outlook": "ready-candidate",
+      "note": "6.9k★ Neovim 插件：agent 命令经 Neovim 的 'shell' 选项跑——机制明确，待实测确认。",
+      "source": "https://github.com/olimorris/codecompanion.nvim"
+    },
+    {
+      "name": "gptel",
+      "form": "Editor extension",
+      "vendor": "karthink",
+      "tier": "ide",
+      "outlook": "needs-config",
+      "note": "Emacs 的 LLM 客户端：工具执行经 Emacs 子进程调系统 shell——待核。",
+      "source": "https://github.com/karthink/gptel"
+    },
+    {
+      "name": "通义灵码 Lingma",
+      "form": "IDE plugin",
+      "vendor": "阿里云",
+      "tier": "cn",
+      "outlook": "needs-config",
+      "note": "阿里云 AI 编程助手（VS Code / JetBrains 插件）——命令经宿主编辑器终端。",
+      "source": "https://tongyi.aliyun.com/lingma/"
+    },
+    {
+      "name": "Qoder",
+      "form": "GUI",
+      "vendor": "阿里",
+      "tier": "cn",
+      "outlook": "needs-config",
+      "note": "阿里的 agentic IDE（独立产品）——终端探测机制待读码 / 实测。",
+      "source": "https://qoder.com/"
+    },
+    {
+      "name": "文心快码 Comate",
+      "form": "IDE plugin",
+      "vendor": "百度",
+      "tier": "cn",
+      "outlook": "needs-config",
+      "note": "百度 AI 编程助手（VS Code / JetBrains 插件）——命令经宿主编辑器终端。",
+      "source": "https://comate.baidu.com/"
+    },
+    {
+      "name": "CodeGeeX",
+      "form": "IDE plugin",
+      "vendor": "智谱 AI",
+      "tier": "cn",
+      "outlook": "needs-config",
+      "note": "智谱的 AI 编程插件（多编辑器）——命令经宿主编辑器终端。",
+      "source": "https://codegeex.cn/"
+    },
+    {
+      "name": "iFlyCode",
+      "form": "IDE plugin",
+      "vendor": "科大讯飞",
+      "tier": "cn",
+      "outlook": "needs-config",
+      "note": "讯飞 AI 编程助手（VS Code / JetBrains 插件）——命令经宿主编辑器终端。",
+      "source": "https://iflycode.xfyun.cn/"
+    },
+    {
+      "name": "Fitten Code",
+      "form": "IDE plugin",
+      "vendor": "非十科技",
+      "tier": "cn",
+      "outlook": "needs-config",
+      "note": "非十科技的 AI 编程插件（多编辑器）——命令经宿主编辑器终端。",
+      "source": "https://code.fittentech.com/"
+    },
+    {
+      "name": "AutoGPT",
+      "form": "Framework",
+      "vendor": "Significant Gravitas",
+      "stars": "187k",
+      "tier": "framework",
+      "outlook": "unverifiable",
+      "note": "187k★ 元老级自主 agent 框架——执行器由用户代码装配，无单一接线点。",
+      "source": "https://github.com/Significant-Gravitas/AutoGPT"
+    },
+    {
+      "name": "gpt-engineer",
+      "form": "Framework",
+      "vendor": "Anton Osika",
+      "stars": "55k",
+      "tier": "framework",
+      "outlook": "unverifiable",
+      "note": "55k★ 代码生成流水线框架——shell 由用户代码决定。",
+      "source": "https://github.com/AntonOsika/gpt-engineer"
+    },
+    {
+      "name": "MetaGPT",
+      "form": "Framework",
+      "vendor": "FoundationAgents",
+      "stars": "50k",
+      "tier": "framework",
+      "outlook": "unverifiable",
+      "note": "50k★ 多角色「软件公司」框架——shell 由执行环境决定。",
+      "source": "https://github.com/FoundationAgents/MetaGPT"
+    },
+    {
+      "name": "CrewAI",
+      "form": "Framework",
+      "vendor": "CrewAI",
+      "stars": "60k",
+      "tier": "framework",
+      "outlook": "unverifiable",
+      "note": "60k★ 多 agent 编排框架——工具执行由用户装配。",
+      "source": "https://github.com/crewAIInc/crewAI"
+    },
+    {
+      "name": "smol developer",
+      "form": "Framework",
+      "vendor": "smol-ai",
+      "tier": "framework",
+      "outlook": "unverifiable",
+      "note": "极简 human-in-the-loop 代码生成原型——库形态，无固定接线点。",
+      "source": "https://github.com/smol-ai/developer"
+    },
+    {
+      "name": "AutoCodeRover",
+      "form": "CLI",
+      "vendor": "nus-apr",
+      "tier": "framework",
+      "outlook": "unverifiable",
+      "note": "研究系（SWE-bench 谱系）自主修 bug agent，常见容器化运行——待核。",
+      "source": "https://github.com/nus-apr/auto-code-rover"
     }
   ]
 }

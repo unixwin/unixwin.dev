@@ -3,7 +3,8 @@
  * /agents/ — AI Agent 接入目录（卡片式）。
  * 数据源：src/data/agents.json（事实来源 = niubash docs/src/agents.md）。
  * 分组：ready（终端系开箱可换）/ vscode（VSCode 家族，独立分组）/
- *       partial（有变通）/ blocked（上游暂不支持）/ unverified（尚未核验）。
+ *       partial（有变通）/ blocked（上游暂不支持）/ unverified（尚未核验）；
+ *       另有 roadmap 调研管道区（agents.json roadmap 数组，未核验候选）。
  * 图标全部本地化在 /assets/agents/（来源与许可见 THIRD_PARTY_NOTICES.md）。
  */
 import BaseLayout from '../../components/BaseLayout.astro';
@@ -16,6 +17,24 @@ import agentsData from '../../data/agents.json';
 // hero 数字从数据派生，不写死：收录数 = agents 数组长度；开箱即用数 = status === 'ready'
 const allAgents = agentsData.agents as any[];
 const readyCount = allAgents.filter((a) => a.status === 'ready').length;
+
+// 调研管道（roadmap 数组，agents.json _meta.roadmap 说明口径）：未核验候选，不计入收录数
+const roadmap = (agentsData.roadmap ?? []) as any[];
+const roadmapTop10 = roadmap.filter((r) => r.tier === 'top10');
+const roadmapTierGroups = [
+  { key: 'watch', title: '其它 CLI 与产品', desc: '终端系之外的候选产品' },
+  { key: 'framework', title: '框架与引擎', desc: '接线点在用户代码，无单一核验面' },
+  { key: 'ide', title: 'IDE 与编辑器扩展', desc: '命令多经宿主编辑器终端' },
+  { key: 'cn', title: '国内产品', desc: '含独立 IDE 与编辑器插件' },
+] as const;
+const outlookLabel: Record<string, string> = {
+  'ready-candidate': '可接',
+  'needs-config': '待配置',
+  'likely-blocked': '恐受阻',
+  unverifiable: '难核验',
+};
+// 徽章色口径：ready-candidate=accent、needs-config=info、likely-blocked=muted、unverifiable=muted
+const outlookTone = (o: string) => (o === 'ready-candidate' ? 'accent' : o === 'needs-config' ? 'info' : 'muted');
 
 const groups = [
   { key: 'ready', title: '开箱可换（终端系）', tone: 'accent', desc: '当前版本按下面方法即可让 agent 用上 niubash' },
@@ -48,7 +67,10 @@ const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 
       </p>
       <div class="hero-cta">
         <a class="cta-main" href="/agents/universal/">让 AI 接入 niubash →</a>
-        <p class="cta-note">已收录 <strong>{allAgents.length}</strong> 家 AI agent——<strong>{readyCount}</strong> 家开箱即用</p>
+        <p class="cta-note">
+          已收录 <strong>{allAgents.length}</strong> 家 AI agent——<strong>{readyCount}</strong> 家开箱即用
+          <span class="cta-extra"> · 另有 <a href="#roadmap">{roadmap.length} 家</a>在调研管道</span>
+        </p>
       </div>
     </section>
 
@@ -107,6 +129,72 @@ const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 
         </section>
       );
     })}
+
+    {/* 调研管道：未核验候选（roadmap 数组），置于「尚未核验」分组之后、原理区之前 */}
+    {roadmap.length > 0 && (
+      <section class="group roadmap" id="roadmap">
+        <div class="group-head">
+          <h2>调研中 · Research pipeline</h2>
+          <Badge tone="warn">{roadmap.length}</Badge>
+          <span class="group-desc">生态调研出的候选名单，尚未核验——核验一台、收录一台</span>
+        </div>
+        <p class="rm-scope">
+          已收录 <strong>{allAgents.length}</strong> 家（<strong>{readyCount}</strong> 开箱即用）；另有{' '}
+          <strong>{roadmap.length}</strong> 个候选在调研管道——优先接入 CLI/TUI 且执行本地 shell 的。
+        </p>
+        <div class="top10">
+          <Badge tone="accent">Top 10 · 优先接入</Badge>
+          <ul class="top10-list">
+            {roadmapTop10.map((r) => (
+              <li>
+                <a href={r.source} target="_blank" rel="noopener noreferrer">{r.name}</a>
+                {r.stars && <span class="rm-stars">{r.stars}★</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+        {roadmapTierGroups.map((g) => {
+          const list = roadmap.filter((r) => r.tier === g.key);
+          if (!list.length) return null;
+          return (
+            <div class="rm-tier">
+              <h3>
+                {g.title} <Badge tone="muted">{list.length}</Badge>
+                <span class="rm-tier-desc">{g.desc}</span>
+              </h3>
+              <div class="table-wrap">
+                <table class="rm-table">
+                  <thead>
+                    <tr><th>名称</th><th>形态</th><th>厂商</th><th>展望</th><th>一句话</th></tr>
+                  </thead>
+                  <tbody>
+                    {list.map((r) => (
+                      <tr>
+                        <td class="rm-name">
+                          <a href={r.source} target="_blank" rel="noopener noreferrer">{r.name} ↗</a>
+                          {r.stars && <span class="rm-stars">{r.stars}★</span>}
+                        </td>
+                        <td class="rm-form">{r.form}</td>
+                        <td class="rm-vendor">{r.vendor}</td>
+                        <td><Badge tone={outlookTone(r.outlook)}>{outlookLabel[r.outlook] ?? r.outlook}</Badge></td>
+                        <td class="rm-note">{r.note}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })}
+        <p class="rm-legend">
+          展望口径：<strong>可接</strong>=机制明确（可配 shell / 取 $SHELL），待实测定级 ·
+          <strong>待配置</strong>=大概率可配置，待读码/实测 ·
+          <strong>恐受阻</strong>=机制性受阻（云端执行 / 沙箱 / 写死 shell）·
+          <strong>难核验</strong>=闭源或无稳定可核验面；
+          出处见各条外链，名单出自 {agentsData._meta.roadmap.surveyDate} 生态调研。
+        </p>
+      </section>
+    )}
 
     <details class="principle">
       <summary>原理：它怎么选 shell（$SHELL 通则 + uname 签名表）</summary>
@@ -265,4 +353,41 @@ const statusTone = (s: string) => (s === 'ready' ? 'accent' : s === 'partial' ? 
   .unverified p { margin: 0.3rem 0; line-height: 1.7; }
   .unverified strong { color: var(--text); }
   .src a { color: var(--link); }
+
+  /* 调研管道（roadmap）：Top10 横排 + 其余按 tier 紧凑表格 */
+  .rm-scope { margin: 0 0 1rem; color: var(--muted); font-size: 0.92rem; line-height: 1.7; }
+  .rm-scope strong { color: var(--text); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .top10 {
+    display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+    background: var(--bg-elev); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 0.75rem 1rem; margin: 0 0 1.3rem;
+  }
+  .top10-list { display: flex; align-items: center; gap: 0.35rem 1.1rem; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+  .top10-list li { display: inline-flex; align-items: baseline; gap: 0.3rem; font-weight: 600; font-size: 0.92rem; }
+  .top10-list a { color: var(--text); text-decoration: none; }
+  .top10-list a:hover { color: var(--link); text-decoration: underline; }
+  .rm-stars { color: var(--muted); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 400; }
+  .rm-tier { margin: 0 0 1.3rem; }
+  .rm-tier h3 { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 0 0 0.55rem; font-size: 0.98rem; }
+  .rm-tier-desc { color: var(--muted); font-size: 0.8rem; font-weight: 400; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+  .rm-table { width: 100%; border-collapse: collapse; min-width: 680px; font-size: 0.85rem; }
+  .rm-table th {
+    text-align: left; font-size: 0.74rem; letter-spacing: 0.05em; color: var(--muted);
+    background: var(--bg-elev); padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .rm-table td { border-top: 1px solid var(--border); padding: 0.45rem 0.7rem; vertical-align: top; color: var(--muted); line-height: 1.6; }
+  .rm-table tbody tr:first-child td { border-top: 0; }
+  .rm-name { white-space: nowrap; }
+  .rm-name a { color: var(--text); font-weight: 600; text-decoration: none; }
+  .rm-name a:hover { color: var(--link); text-decoration: underline; }
+  .rm-name .rm-stars { margin-left: 0.3rem; }
+  .rm-form, .rm-vendor { white-space: nowrap; font-family: var(--font-mono); font-size: 0.78rem; }
+  .rm-note { min-width: 18rem; }
+  .rm-legend { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
+  .rm-legend strong { color: var(--text); }
+
+  .cta-extra { color: var(--muted); font-size: 0.82rem; }
+  .cta-extra a { color: var(--link); }
 </style>

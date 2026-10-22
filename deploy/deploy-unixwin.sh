@@ -9,6 +9,8 @@
 #   * nginx -t and `cloudflared tunnel ingress validate` run BEFORE anything restarts.
 #   * /etc/cloudflared/config.yml is backed up with a timestamp suffix.
 #   * The tunnel restart blips all hostnames for ~5s.
+#   * The Cloudflare edge-cache purge at the end is best-effort: it never fails
+#     the deploy (missing credentials or API errors just print and exit 0).
 
 set -euo pipefail
 
@@ -96,6 +98,17 @@ else
     printf '    %-28s %s\n' "$h" "${c:-timeout}"
   done
 fi
+
+# ---------- Phase 3: purge Cloudflare edge cache (best effort - never blocks) ----------
+#
+# unixwin-portal/deploy/edge-cache.md 给 HTML 配了 5 分钟 Edge TTL；不 purge 的话，
+# 发布后全网最长 5 分钟仍可能看到旧 HTML。这里调 CF API purge_everything 立即
+# 失效整个 zone 的边缘缓存，把「≤5 分钟」收紧为「发布即见」。
+# purge-cf-cache.sh 在缺 token / API 失败时都 exit 0，`|| true` 再加一层保险，
+# CDN 侧任何故障都不影响本次发布。
+
+say "Purging Cloudflare edge cache (best effort)"
+bash /home/cmx/unixwin-portal/deploy/purge-cf-cache.sh || true
 
 printf '\n\033[1;32mDeployed.\033[0m unixwin.dev goes live as soon as the zone is Active:\n'
 printf '    curl -sI https://unixwin.dev/\n'

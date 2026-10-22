@@ -134,6 +134,7 @@ curl -sI https://unixwin.dev/ | grep -i cf-cache-status
 补充（可选加固）：发布脚本（`deploy-unixwin.sh` / `deploy-niubash.sh`）末尾追加一次
 purge（`POST /client/v4/zones/$ZONE_ID/purge_cache`，`{"purge_everything":true}` 或按
 URL 列表），即可把「≤5 分钟」收紧为「发布即见」，同时不影响边缘缓存收益。
+（`deploy-unixwin.sh` 已按此落地：见 §7「发布即见」。）
 
 ## 6. 附：资产快速收益排查（未改动，仅记录）
 
@@ -143,3 +144,51 @@ URL 列表），即可把「≤5 分钟」收紧为「发布即见」，同时�
 | `public/assets/niubash-banner.svg` | **104KB**（103,135 B） | 内联样式/路径冗余可再省 30–60%：`svgo --multipass` 后可到 ~40KB；只在 banner 页引用，非首屏瓶颈，低优先 |
 | `public/assets/demo-gitbash.gif` | 366KB | 首页/EN 首页均 `loading="lazy"`（src/pages/index.astro:365、en/index.astro:393），不阻塞首屏；如想再省，转 WebM/MP4 可到 <100KB，可选 |
 | `public/fonts/fraunces-latin-wght-normal.woff2` | 67KB | 已加 preload（BaseLayout），与 CSS 并行加载 |
+
+## 7. 发布即见：部署钩子自动 purge（已集成）
+
+§5 的「补充」已落地：`deploy-unixwin.sh` 在站点文件上线（rsync + nginx reload；
+tunnel ingress 未变更时按既有逻辑跳过重启）之后、打印 `Deployed.` 之前，
+best-effort 调用仓库里的 purge 脚本：
+
+```bash
+bash /home/cmx/unixwin-portal/deploy/purge-cf-cache.sh || true
+```
+
+脚本调 CF API v4 `POST /client/v4/zones/{zone}/purge_cache`，body 为
+`{"purge_everything":true}`（host 级精准 purge 需 Enterprise，不用它）。
+设计上**绝不阻塞发布**，三种情形的行为：
+
+| 情形 | 行为 |
+| --- | --- |
+| `CF_API_TOKEN` / `ZONE_ID` 未设置 | 打印友好提示并 exit 0（缓存按 5 分钟 TTL 自然过期） |
+| API 调用成功 | 打印 purge 结果摘要，随后正常输出 `Deployed.` |
+| API / 网络失败 | 仅打 WARN 并 exit 0，发布照常完成 |
+
+### 配置凭据（一次性）
+
+- **CF_API_TOKEN**：Dashboard 右上角头像 → **My Profile → API Tokens → Create Token**，
+  选 **Edit zone Cache Purge** 权限模板即可（等价权限：`Zone → Cache Purge → Purge`）；
+  Zone Resources 限定 `unixwin.dev`。创建后复制 Token（只显示一次）。
+- **ZONE_ID**：Dashboard → 选中 unixwin.dev → 域名 **Overview** 页右栏的 **Zone ID**。
+
+### 注入环境变量（部署以 sudo 运行，注意 sudo 默认 env_reset）
+
+```bash
+# 方式 A（推荐）：部署时内联，写在 sudo 之后，sudo 会原样传给目标命令
+sudo CF_API_TOKEN=xxxx ZONE_ID=yyyy bash /home/cmx/deploy-unixwin.sh
+
+# 方式 B（持久化）：~/.bashrc export + sudoers env_keep
+#   （不配 env_keep 的话，sudo 的 env_reset 会把 cmx shell 里的变量剥掉）
+echo 'Defaults env_keep += "CF_API_TOKEN ZONE_ID"' | sudo tee /etc/sudoers.d/cf-purge
+# 之后在 ~/.bashrc 中 export CF_API_TOKEN=... / ZONE_ID=... 即可穿透 sudo 生效
+```
+
+### 效果与验证
+
+发布完成后边缘缓存立即失效：下一次请求 `cf-cache-status: MISS`（回源一次拿到新
+HTML），其后恢复 HIT——「发布后全网新鲜度」从 ≤5 分钟收紧为**即时**，
+§5 的边缘缓存收益（TTFB <100ms）不受影响。
+
+验证脚本本身（不碰真 API）：不带 token 跑 `bash deploy/purge-cf-cache.sh`
+应打印跳过提示并以退出码 0 结束。

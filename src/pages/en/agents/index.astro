@@ -3,7 +3,8 @@
  * /en/agents/ — English edition of the AI agent directory (card grid).
  * Data source: the same src/data/agents.json as the zh page
  * (source of truth = niubash docs/src/agents.md).
- * Grouping: ready (terminal) / vscode family / partial / blocked / unverified.
+ * Grouping: ready (terminal) / vscode family / partial / blocked / unverified,
+ * plus a research-pipeline section (agents.json roadmap array, unverified candidates).
  * oneLiners, mechanism labels and the universal block are hand-translated here;
  * statuses and counts come from data. Detail pages remain Chinese (noted below).
  * Icons are localized under /assets/agents/ (see THIRD_PARTY_NOTICES.md).
@@ -18,6 +19,76 @@ import agentsData from '../../../data/agents.json';
 // Hero numbers are derived from the data, never hardcoded: covered = array length; ready = status === 'ready'
 const allAgents = agentsData.agents as any[];
 const readyCount = allAgents.filter((a) => a.status === 'ready').length;
+
+// Research pipeline (roadmap array, see agents.json _meta.roadmap): unverified candidates, not counted in the catalogue.
+// Notes and Chinese vendor names are hand-translated here, keyed by name / zh string (data itself stays zh).
+const roadmap = (agentsData.roadmap ?? []) as any[];
+const roadmapTop10 = roadmap.filter((r) => r.tier === 'top10');
+const roadmapTierGroups = [
+  { key: 'watch', title: 'Other CLIs & products', desc: 'Candidate products beyond the terminal-first set' },
+  { key: 'framework', title: 'Frameworks & engines', desc: 'The wiring point lives in user code; no single verifiable surface' },
+  { key: 'ide', title: 'IDE & editor extensions', desc: 'Commands mostly run through the host editor terminal' },
+  { key: 'cn', title: 'Chinese products', desc: 'Standalone IDEs and editor plugins' },
+] as const;
+const outlookLabel: Record<string, string> = {
+  'ready-candidate': 'Ready-candidate',
+  'needs-config': 'Needs config',
+  'likely-blocked': 'Likely blocked',
+  unverifiable: 'Hard to verify',
+};
+// Badge tone rule: ready-candidate=accent, needs-config=info, likely-blocked=muted, unverifiable=muted
+const outlookTone = (o: string) => (o === 'ready-candidate' ? 'accent' : o === 'needs-config' ? 'info' : 'muted');
+const vendorEn: Record<string, string> = {
+  '月之暗面': 'Moonshot AI',
+  '腾讯': 'Tencent',
+  '心流 iFlow（阿里系）': 'iFlow (Alibaba-backed)',
+  '阿里云': 'Alibaba Cloud',
+  '阿里': 'Alibaba',
+  '百度': 'Baidu',
+  '智谱 AI': 'Zhipu AI',
+  '科大讯飞': 'iFlytek',
+  '非十科技': 'FittenTech',
+};
+const noteEn: Record<string, string> = {
+  'Warp': 'A GUI terminal with a built-in agent (Agent Mode / Autopilot) — commands run in its own UI-hosted terminal, not an external shell; unlikely to be wireable.',
+  'Copilot CLI': 'The standalone GitHub Copilot CLI (shipped 2025, distinct from the in-editor Copilot agent) — a POSIX-style CLI; $SHELL/config wiring unverified.',
+  'Crush': "charmbracelet's multi-model TUI agent at 28.7k★ — Go, cross-platform; shell detection awaits a code read.",
+  'Droid': "Factory's terminal coding agent (droid CLI), aimed at multi-model and CI use — the shell choice awaits a code read.",
+  'Kimi Code CLI': "Moonshot AI's Kimi CLI coding agent at 7.9k★ — awaits a code read.",
+  'CodeBuddy Code': "Tencent CodeBuddy's terminal edition (CLI coding agent with a free tier) — awaits a code read.",
+  'iFlow CLI': 'Alibaba-backed free multi-model CLI agent at 5.1k★ — awaits a code read.',
+  'Plandex': '15.8k★; commands run inside its own Docker sandbox — the host-shell wiring point is doubtful.',
+  'SWE-agent': '20.6k★ research-grade autonomous agent, container-first execution — the host-direct mode awaits verification.',
+  'Jules': "Google's cloud-executed async coding agent — commands never touch a local shell; blocked by design.",
+  'Open Interpreter': '59k★ veteran project that lets LLMs run code/commands locally — the host-shell call point awaits a code read.',
+  'Auggie': "Augment Code's terminal agent (Auggie CLI, closed source) — awaits verification.",
+  'Codebuff': 'A terminal coding agent with parallel multi-agent runs — awaits verification.',
+  'Grok Build': "xAI's coding agent product, closed source with an undisclosed execution environment — too little verifiable surface.",
+  'grok-cli': 'Community Grok terminal agent at 3.5k★ — awaits a code read.',
+  'Vibe CLI': "Mistral's agentic coding CLI — awaits a code read.",
+  'ShellGPT': '8k★ natural-language-to-shell generator running locally — the wiring point is clear; the argument style awaits a code read.',
+  'aichat': "sigoden's 9k★ all-in-one CLI: shell execution takes $SHELL — should work from a niu session; mechanism clear, machine test pending.",
+  'Forge': '3k★ open-source agent CLI in Rust — awaits a code read.',
+  'Tabnine Agent': 'In-IDE agent mode; commands run through the host editor terminal — follows automationProfile-style settings.',
+  'Sourcegraph Cody': 'Editor extension; commands execute through the host terminal — follows the VS Code family probe / automationProfile.',
+  'JetBrains AI Assistant': 'Plugin across the JetBrains IDE family — the built-in terminal shell can point at niu.exe; whether that reaches the agent awaits testing.',
+  'Gemini Code Assist': 'Agent mode of the VS Code/JetBrains extension — its state does not transfer to the blocked Gemini CLI (unconditional PowerShell); awaits testing.',
+  'avante.nvim': "15k★ Neovim plugin: Neovim's 'shell' option (&shell) can point at niu.exe — mechanism clear, machine test pending.",
+  'codecompanion.nvim': "6.9k★ Neovim plugin: agent commands run through Neovim's 'shell' option — mechanism clear, machine test pending.",
+  'gptel': 'An Emacs LLM client: tool execution spawns system shells through Emacs subprocesses — awaits verification.',
+  '通义灵码 Lingma': "Alibaba Cloud's AI coding assistant (VS Code/JetBrains plugin) — commands run through the host editor terminal.",
+  'Qoder': "Alibaba's agentic IDE (standalone product) — terminal detection awaits a code read / testing.",
+  '文心快码 Comate': "Baidu's AI coding assistant (VS Code/JetBrains plugin) — commands run through the host editor terminal.",
+  'CodeGeeX': "Zhipu AI's coding plugin (many editors) — commands run through the host editor terminal.",
+  'iFlyCode': "iFlytek's AI coding assistant (VS Code/JetBrains plugin) — commands run through the host editor terminal.",
+  'Fitten Code': "FittenTech's AI coding plugin (many editors) — commands run through the host editor terminal.",
+  'AutoGPT': '187k★ elder of the autonomous agent frameworks — executors are assembled by user code; no single wiring point.',
+  'gpt-engineer': '55k★ codegen pipeline framework — the shell is decided by user code.',
+  'MetaGPT': "50k★ multi-role 'software company' framework — the shell is decided by the execution environment.",
+  'CrewAI': '60k★ multi-agent orchestration framework — tool execution is assembled by the user.',
+  'smol developer': 'A minimal human-in-the-loop codegen prototype — library-shaped, no fixed wiring point.',
+  'AutoCodeRover': 'Research-grade autonomous bug-fixing agent (SWE-bench lineage), usually containerized — awaits verification.',
+};
 
 const groups = [
   { key: 'ready', title: 'Works out of the box (terminal)', tone: 'accent', desc: 'Wire the agent to niubash today using the methods below' },
@@ -135,7 +206,8 @@ const verifyTableEn = [
       </p>
       <div class="hero-cta">
         <a class="cta-main" href="/en/agents/universal/">Wire up your AI agent →</a>
-        <p class="cta-note"><strong>{allAgents.length}</strong> AI agents catalogued — <strong>{readyCount}</strong> work out of the box</p>
+        <p class="cta-note"><strong>{allAgents.length}</strong> AI agents catalogued — <strong>{readyCount}</strong> work out of the box
+          <span class="cta-extra"> · <a href="#roadmap">{roadmap.length} more</a> in the research pipeline</span></p>
       </div>
     </section>
 
@@ -194,6 +266,72 @@ const verifyTableEn = [
         </section>
       );
     })}
+
+    {/* Research pipeline: unverified candidates (roadmap array), placed after the "Not yet verified" group, before the principle details */}
+    {roadmap.length > 0 && (
+      <section class="group roadmap" id="roadmap">
+        <div class="group-head">
+          <h2>Research pipeline · 调研中</h2>
+          <Badge tone="warn">{roadmap.length}</Badge>
+          <span class="group-desc">Candidates from the ecosystem survey, none verified yet — one gets catalogued each time one is verified</span>
+        </div>
+        <p class="rm-scope">
+          <strong>{allAgents.length}</strong> agents catalogued (<strong>{readyCount}</strong> work out of the box); another{' '}
+          <strong>{roadmap.length}</strong> candidates are in the research pipeline — priority goes to CLI/TUI agents that execute a local shell.
+        </p>
+        <div class="top10">
+          <Badge tone="accent">Top 10 · Priority</Badge>
+          <ul class="top10-list">
+            {roadmapTop10.map((r) => (
+              <li>
+                <a href={r.source} target="_blank" rel="noopener noreferrer">{r.name}</a>
+                {r.stars && <span class="rm-stars">{r.stars}★</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+        {roadmapTierGroups.map((g) => {
+          const list = roadmap.filter((r) => r.tier === g.key);
+          if (!list.length) return null;
+          return (
+            <div class="rm-tier">
+              <h3>
+                {g.title} <Badge tone="muted">{list.length}</Badge>
+                <span class="rm-tier-desc">{g.desc}</span>
+              </h3>
+              <div class="table-wrap">
+                <table class="rm-table">
+                  <thead>
+                    <tr><th>Name</th><th>Form</th><th>Vendor</th><th>Outlook</th><th>One-liner</th></tr>
+                  </thead>
+                  <tbody>
+                    {list.map((r) => (
+                      <tr>
+                        <td class="rm-name">
+                          <a href={r.source} target="_blank" rel="noopener noreferrer">{r.name} ↗</a>
+                          {r.stars && <span class="rm-stars">{r.stars}★</span>}
+                        </td>
+                        <td class="rm-form">{r.form}</td>
+                        <td class="rm-vendor">{vendorEn[r.vendor] ?? r.vendor}</td>
+                        <td><Badge tone={outlookTone(r.outlook)}>{outlookLabel[r.outlook] ?? r.outlook}</Badge></td>
+                        <td class="rm-note">{noteEn[r.name] ?? r.note}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })}
+        <p class="rm-legend">
+          Outlook legend: <strong>Ready-candidate</strong> = mechanism known (configurable shell / takes $SHELL), awaiting a machine test ·
+          <strong>Needs config</strong> = probably configurable, awaiting a code read or test ·
+          <strong>Likely blocked</strong> = blocked by design (cloud execution / sandbox / hard-coded shell) ·
+          <strong>Hard to verify</strong> = closed source or no stable verifiable surface;
+          sources are the outbound links on each row. Survey date: {agentsData._meta.roadmap.surveyDate}.
+        </p>
+      </section>
+    )}
 
     <details class="principle">
       <summary>The principle: how it picks a shell ($SHELL rule + uname signature table)</summary>
@@ -358,4 +496,41 @@ const verifyTableEn = [
   .unverified p { margin: 0.3rem 0; line-height: 1.7; }
   .unverified strong { color: var(--text); }
   .src a { color: var(--link); }
+
+  /* Research pipeline (roadmap): Top10 in one row + the rest as compact tier tables */
+  .rm-scope { margin: 0 0 1rem; color: var(--muted); font-size: 0.92rem; line-height: 1.7; }
+  .rm-scope strong { color: var(--text); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .top10 {
+    display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+    background: var(--bg-elev); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius); padding: 0.75rem 1rem; margin: 0 0 1.3rem;
+  }
+  .top10-list { display: flex; align-items: center; gap: 0.35rem 1.1rem; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+  .top10-list li { display: inline-flex; align-items: baseline; gap: 0.3rem; font-weight: 600; font-size: 0.92rem; }
+  .top10-list a { color: var(--text); text-decoration: none; }
+  .top10-list a:hover { color: var(--link); text-decoration: underline; }
+  .rm-stars { color: var(--muted); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 400; }
+  .rm-tier { margin: 0 0 1.3rem; }
+  .rm-tier h3 { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 0 0 0.55rem; font-size: 0.98rem; }
+  .rm-tier-desc { color: var(--muted); font-size: 0.8rem; font-weight: 400; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+  .rm-table { width: 100%; border-collapse: collapse; min-width: 680px; font-size: 0.85rem; }
+  .rm-table th {
+    text-align: left; font-size: 0.74rem; letter-spacing: 0.05em; color: var(--muted);
+    background: var(--bg-elev); padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .rm-table td { border-top: 1px solid var(--border); padding: 0.45rem 0.7rem; vertical-align: top; color: var(--muted); line-height: 1.6; }
+  .rm-table tbody tr:first-child td { border-top: 0; }
+  .rm-name { white-space: nowrap; }
+  .rm-name a { color: var(--text); font-weight: 600; text-decoration: none; }
+  .rm-name a:hover { color: var(--link); text-decoration: underline; }
+  .rm-name .rm-stars { margin-left: 0.3rem; }
+  .rm-form, .rm-vendor { white-space: nowrap; font-family: var(--font-mono); font-size: 0.78rem; }
+  .rm-note { min-width: 18rem; }
+  .rm-legend { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
+  .rm-legend strong { color: var(--text); }
+
+  .cta-extra { color: var(--muted); font-size: 0.82rem; }
+  .cta-extra a { color: var(--link); }
 </style>

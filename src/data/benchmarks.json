@@ -1,8 +1,8 @@
 {
   "_meta": {
     "principle": "每个上页的数字必须有可指认的产物或 PR/issue 锚；未实测不写；输赢都展示。",
-    "asOf": "2026-10-21",
-    "authority": "FACTS.json / HIGHLIGHTS.md / CARDS.md（unixwin.dev 仓库 portal-dump 分支，2026-10-19 总控审计）；2026-10-21 刷新：Android 基线（niubash#352/#349）与引擎热路径修复族（rubash#607-609 → 落地 PR、#884、#913、#958-#974），逐条核对过 merged/closed 状态",
+    "asOf": "2026-10-22",
+    "authority": "FACTS.json / HIGHLIGHTS.md / CARDS.md（unixwin.dev 仓库 portal-dump 分支，2026-10-19 总控审计）；2026-10-21 刷新：Android 基线（niubash#352/#349）与引擎热路径修复族（rubash#607-609 → 落地 PR、#884、#913、#958-#974），逐条核对过 merged/closed 状态；2026-10-22 增补：rubash#984/#985/#986/#987（均 merged，落地 0aeffe99）+ #990（OPEN 待合，pending 单列）。Windows 同场与 fork 专项仍为 2026-10-18 快照（基线 commit 见各自 provenance），修后复测前不转正",
     "benchArtifacts": "data/bench/（原样拷贝：results.tsv / startup.tsv / run_bench.sh / PERF-TABLE.md 等 15 份 + BENCH-README.md 环境与方法）",
     "env": "Intel Xeon w5-3435 · Windows 10 19045 · 同机 WSL2 Ubuntu（GNU Bash 5.3.0 对照）· Git Bash 5.3.0 (msys)；Android 节另有 Termux aarch64 口径",
     "forkSuite": {
@@ -103,6 +103,11 @@
     { "item": "procsub 元数据扫描白名单跳过", "detail": "1.56x → 1.39x（~11%）", "source": "rubash#974（merged 2026-10-21）" },
     { "item": "十进制下标数组写 fast lane", "detail": "交错 8k 3.65x → 3.16x；顺手修掉 a[$((i++))]=v 的真实双副作用", "source": "rubash#959（merged 2026-10-21）" },
     { "item": "case：$BASH_COMMAND 只渲染头臂", "detail": "20 臂 ×10k −10%，附真实分歧修复", "source": "rubash#958（merged 2026-10-21）" },
-    { "item": "export/unset 快车道家族", "detail": "单探针 mirror + 批量 unmark；残留 ~100x 面保持开放（诚实展示）", "source": "rubash#917/#918/#920 + #943 正确性返工（均 merged）· #916 开放" }
+    { "item": "export/unset 快车道家族", "detail": "单探针 mirror + 批量 unmark；残留 ~100x 面保持开放（诚实展示）", "source": "rubash#917/#918/#920 + #943 正确性返工（均 merged）· #916 开放" },
+    { "item": "静默内建短路", "detail": "零输出无重定向直接返回，shift ~1.5–4%（仍 ~2x bash，瓶颈在别处）；export/unset 走数不变", "source": "rubash#984（merged 2026-10-22）· 落地 0aeffe99" },
+    { "item": "关联数组下标快道", "detail": "plain-$name 下标快车道，交错 8k 3.5x → 2.6x（线性，渐近 ~3.1x）", "source": "rubash#985（merged 2026-10-22）· 落地 0aeffe99" },
+    { "item": "export/unset IFS 标记跳过", "detail": "quoteless 词跳过恒等 IFS 标记，export/unset 2k 2.14x → 1.97x（~3–4%）", "source": "rubash#986（merged 2026-10-22）· 落地 0aeffe99" },
+    { "item": "compound 字面量线性化", "detail": "下标跨度扫描 O(n²) → 线性，8k 填充 ~850ms → ~200ms、20k ~5.1s → 640ms（~8x）", "source": "rubash#987（merged 2026-10-22）· 落地 0aeffe99" },
+    { "item": "[ $VAR -op N ] 整数快扩（pending）", "detail": "loop-while 30k ~2.4x → ~1.8x vs bash；待合入，主表暂不计入", "source": "rubash#990（OPEN 待合）" }
   ]
 }

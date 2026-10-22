@@ -45,11 +45,11 @@ const installTabs = [
   { label: 'PowerShell', code: 'irm https://unixwin.dev/install.ps1 | iex' },
   {
     label: 'Linux',
-    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.0/niubash-v1.4.0-linux-x86_64.tar.gz && tar xzf niubash.tar.gz',
+    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.3/niubash-v1.4.3-linux-x86_64.tar.gz && tar xzf niubash.tar.gz',
   },
   {
     label: 'macOS',
-    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.0/niubash-v1.4.0-macos-x86_64.tar.gz && tar xzf niubash.tar.gz',
+    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.3/niubash-v1.4.3-macos-x86_64.tar.gz && tar xzf niubash.tar.gz',
   },
 ];
 
@@ -183,16 +183,16 @@ const softwareAppJsonLd = {
                     <p class="sl sl-cmt"># install · session 1/3</p>
                     <p class="sl"><span class="p-user">PS C:\&gt;</span> irm https://unixwin.dev/install.ps1 | iex</p>
                     <p class="sl"><span class="spin" aria-hidden="true">⠿</span> downloading niubash-win-x64-setup.exe …</p>
-                    <p class="sl"><span class="ok">✓</span> Niubash 1.4.0 installed</p>
+                    <p class="sl"><span class="ok">✓</span> Niubash 1.4.3 installed</p>
                     <p class="sl"><span class="p-user">PS C:\&gt;</span> niu --version</p>
-                    <p class="sl sl-out">Niubash 1.4.0 — bash-compatible shell for Windows</p>
+                    <p class="sl sl-out">Niubash 1.4.3 — bash-compatible shell for Windows</p>
                   </div>
                   <div class="session">
                     <p class="sl sl-cmt"># agent takeover · session 2/3</p>
                     <p class="sl"><span class="p-user">cmx@unixwin:~$</span> claude</p>
                     <p class="sl"><span class="ok">✓</span> shell: niubash (rubash engine) — $SHELL auto-detected</p>
                     <p class="sl"><span class="p-agent">agent&gt;</span> niu -c 'git log --oneline -1'</p>
-                    <p class="sl sl-out">f0c0ffe niubash 1.4.0 — real syntax, real commands, native on three platforms</p>
+                    <p class="sl sl-out">f0c0ffe niubash 1.4.3 — real syntax, real commands, native on three platforms</p>
                     <p class="sl"><span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span></p>
                   </div>
                   <div class="session">
@@ -474,7 +474,7 @@ const softwareAppJsonLd = {
         <p class="al">
           <span class="p-agent">agent&gt;</span> niu -c 'git log --oneline -1'
         </p>
-        <p class="al al-out">f0c0ffe niubash 1.4.0 — real syntax, real commands, native on three platforms</p>
+        <p class="al al-out">f0c0ffe niubash 1.4.3 — real syntax, real commands, native on three platforms</p>
         <p class="al">
           <span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span>
         </p>

@@ -30,7 +30,7 @@
 
 ## 3. i18n 规则
 
-- zh 在根、en 在 `/en/`，**精确配对清单 = `src/i18n/lang.ts` 的 PAIRED_ZH_ROUTES**（现 6 条：/、/agents/、/benchmarks/、/ai/、/docs/、/changelog/）。
+- zh 在根、en 在 `/en/`，**精确配对清单 = `src/i18n/lang.ts` 的 PAIRED_ZH_ROUTES**（现 7 条：/、/agents/、/benchmarks/、/ai/、/docs/、/changelog/、/privacy/）。
 - 新增 en 页五步：建 `src/pages/en/<path>` → 把 zh 路径加进 PAIRED_ZH_ROUTES → 两页 BaseLayout 分别传 `lang`/`enPath` → 复查 resolveSwitchPair 用例 → build 后跑内链扫描。
 - hreflang 与自动跳转**只认精确配对**；语言切换按钮用 `resolveSwitchPair()`（区段回退：/docs/**→/en/docs/、/agents/**→/en/agents/、/products/**→/en/ 等），回退不做 hreflang。
 - 自动跳转：仅 zh 精确配对页，每会话一次（`niu-lang-auto`），`niu-lang-override` 优先；en 页永不反向跳。

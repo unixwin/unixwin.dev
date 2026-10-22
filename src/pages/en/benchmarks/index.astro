@@ -126,6 +126,26 @@ const T: Record<string, string> = {
   'export/unset 快车道家族': 'export/unset fast-lane family',
   '单探针 mirror + 批量 unmark；残留 ~100x 面保持开放（诚实展示）':
     'single-probe mirror + bulk unmark; the residual ~100x face stays open (shown as-is)',
+  '静默内建短路': 'Silent-builtin short-circuit',
+  '零输出无重定向直接返回，shift ~1.5–4%（仍 ~2x bash，瓶颈在别处）；export/unset 走数不变':
+    'returns directly on empty output with no redirects; shift ~1.5–4% (still ~2x bash — the bottleneck is elsewhere); export/unset counts unchanged',
+  'rubash#984（merged 2026-10-22）· 落地 0aeffe99': 'rubash#984 (merged 2026-10-22) · landed in 0aeffe99',
+  '关联数组下标快道': 'Associative-subscript fast lane',
+  'plain-$name 下标快车道，交错 8k 3.5x → 2.6x（线性，渐近 ~3.1x）':
+    'plain-$name subscript fast lane, interleaved 8k 3.5x → 2.6x (linear, ~3.1x asymptote)',
+  'rubash#985（merged 2026-10-22）· 落地 0aeffe99': 'rubash#985 (merged 2026-10-22) · landed in 0aeffe99',
+  'export/unset IFS 标记跳过': 'export/unset IFS-marking skip',
+  'quoteless 词跳过恒等 IFS 标记，export/unset 2k 2.14x → 1.97x（~3–4%）':
+    'quoteless words skip identity IFS marking, export/unset 2k 2.14x → 1.97x (~3–4%)',
+  'rubash#986（merged 2026-10-22）· 落地 0aeffe99': 'rubash#986 (merged 2026-10-22) · landed in 0aeffe99',
+  'compound 字面量线性化': 'Compound-literal linearization',
+  '下标跨度扫描 O(n²) → 线性，8k 填充 ~850ms → ~200ms、20k ~5.1s → 640ms（~8x）':
+    'subscript-span scan O(n²) → linear, 8k fill ~850ms → ~200ms, 20k ~5.1s → 640ms (~8x)',
+  'rubash#987（merged 2026-10-22）· 落地 0aeffe99': 'rubash#987 (merged 2026-10-22) · landed in 0aeffe99',
+  '[ $VAR -op N ] 整数快扩（pending）': '[ $VAR -op N ] integer fast-expand (pending)',
+  'loop-while 30k ~2.4x → ~1.8x vs bash；待合入，主表暂不计入':
+    'loop-while 30k ~2.4x → ~1.8x vs bash; merge pending, not counted in the main table yet',
+  'rubash#990（OPEN 待合）': 'rubash#990 (OPEN, pending)',
   // android section
   'Android 基线（Termux aarch64）：实测、诚实、修后待复测':
     'Android baseline (Termux aarch64): measured, honest, post-fix re-run pending',

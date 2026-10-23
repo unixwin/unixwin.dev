@@ -80,6 +80,10 @@ const features: Feature[] = [
     body: '多行粘贴自动误执行 186 次 → 0，257 行载荷 300s 超时 → 4.6s；ConPTY 粘贴丢字符、typeahead 吃键、控制台 read 三面（-t 门饿死 / conhost 预煮劈半行 / ICRNL）逐项与 GNU 行为对齐，每项带双向差分证据。',
   },
   {
+    title: '控制台设备重定向：Git Bash 报错的地方 niu 照跑',
+    body: 'echo >/dev/tty、exec 3<>/dev/tty、test -e /dev/tty 在 niu 里与 GNU 行为一致；同一组命令在 Git Bash 的 MSYS 层直接报 Invalid argument。引擎把 /dev/tty 映射到控制台并把 CON 拆成 CONIN$/CONOUT$ 两端，绕开 Windows 对设备的 FILE_APPEND_DATA 与读写句柄拒绝——git/ssh 的 askpass 密码提示正依赖这条路。',
+  },
+  {
     title: '跨平台到 CI 腿：三个发布平台，六个发布目标',
     body: 'Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六个目标已发布且每次发布冒烟四查（--version、-c 执行、经原生 coreutils 的管道、离线插件栈）才允许上传；Android 双目标是 incubating 的 NDK 构建腿（zip 只随 CI workflow 产出、不入发布档、无运行时冒烟），OpenHarmony 仅 CI 编译检查。各平台的诚实状态矩阵见平台支持文档。',
   },

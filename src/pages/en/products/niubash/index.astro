@@ -157,11 +157,14 @@ const productJsonLd = {
     <p>
       Real plugins (oh-my-bash, bash-it, bash-completion run unmodified), agent-ready flags
       (<code>--encoded-command</code>, <code>--cwd-state</code>), $SHELL-based agent onboarding,
-      12 inlined file commands + 178 applet completions, built-in wpm, and a git-aware prompt that
-      never spawns git. The full nine-point list (Chinese):
+      12 inlined file commands + 178 applet completions, built-in wpm, a git-aware prompt that
+      never spawns git, and console device redirects that work where Git Bash fails outright
+      (<code>echo &gt;/dev/tty</code>, <code>exec 3&lt;&gt;/dev/tty</code>, <code>test -e /dev/tty</code>
+      — GNU-consistent, which is what keeps git/ssh askpass prompts working). The full ten-point
+      list (Chinese):
     </p>
     <details class="zh-fold">
-      <summary>中文原文 · Chinese original（九条特性全文）</summary>
+      <summary>中文原文 · Chinese original（十条特性全文）</summary>
       <div lang="zh-CN">
         <ul>
           <li><strong>真·插件生态：上游 BASH 插件直接跑</strong>——oh-my-bash、bash-it、bash-completion、bash-preexec 源码一行不改原生运行；bash-completion 3796 行完整 source rc=0 曾是发布阻塞，如今是端到端门禁的一环。</li>
@@ -171,6 +174,7 @@ const productJsonLd = {
           <li><strong>wpm 联动：命令即包</strong>——rg / fd / bat / jq / node 一条 wpm install 到位；Windows 发行包预装 gawk、niu-git、ripgrep、fd。</li>
           <li><strong>git 感知的快速提示符</strong>——默认提示符读 .git/HEAD 文件（微秒级）渲染分支与脏标记，不再每条提示符 spawn git 子进程（实测 113–362ms）。</li>
           <li><strong>输入管线做到字节级</strong>——多行粘贴自动误执行 186 次 → 0，257 行载荷 300s 超时 → 4.6s；ConPTY 粘贴丢字符、typeahead 吃键、控制台 read 三面逐项与 GNU 行为对齐。</li>
+          <li><strong>控制台设备重定向：Git Bash 报错的地方 niu 照跑</strong>——echo &gt;/dev/tty、exec 3&lt;&gt;/dev/tty、test -e /dev/tty 与 GNU 行为一致，同组命令在 Git Bash 的 MSYS 层报 Invalid argument；引擎把 CON 拆成 CONIN$/CONOUT$ 两端，git/ssh askpass 正依赖这条路。</li>
           <li><strong>跨平台到 CI 腿：三个发布平台，六个发布目标</strong>——Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六目标每次发布冒烟四查；Android 双目标 incubating，OpenHarmony 仅 CI 编译检查。</li>
         </ul>
       </div>

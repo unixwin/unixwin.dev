@@ -6,6 +6,8 @@
  */
 import DocsLayout from '../../../../components/DocsLayout.astro';
 import CopyButton from '../../../../components/CopyButton.astro';
+import FaqSection from '../../../../components/FaqSection.astro';
+import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../../data/faq';
 
 const cargoAdd = 'cargo add rubash';
 const buildFromSource = 'git clone https://github.com/unixwin/rubash.git && cd rubash && cargo build';
@@ -65,6 +67,8 @@ const news = [
   },
 ];
 
+const productFaq = faqByIds(PRODUCT_FAQ_IDS['rubash']);
+
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -83,7 +87,7 @@ const productJsonLd = {
   path="/en/products/rubash/"
   lang="en"
   enPath="/products/rubash/"
-  jsonLdExtra={productJsonLd}
+  jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'en')]}
   ogImage="/og/rubash.png"
   zhBanner
 >
@@ -253,6 +257,7 @@ const productJsonLd = {
       <li><a href="/products/rubash/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
     </ul>
   </section>
+  <FaqSection items={productFaq} lang="en" />
 </DocsLayout>
 
 <style>

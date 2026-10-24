@@ -8,6 +8,8 @@
 import DocsLayout from '../../../../components/DocsLayout.astro';
 import Badge from '../../../../components/Badge.astro';
 import CopyButton from '../../../../components/CopyButton.astro';
+import FaqSection from '../../../../components/FaqSection.astro';
+import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../../data/faq';
 import repoMeta from '../../../../data/repo-meta.json';
 
 const meta = repoMeta.repos['oh-my-niu'];
@@ -54,6 +56,8 @@ const factRows = [
   { metric: 'Alias packs / env packages', value: '5 TOML packs · 2 official envs (git / cicd)', src: 'in-repo aliases/ · envs/ counts' },
 ];
 
+const productFaq = faqByIds(PRODUCT_FAQ_IDS['oh-my-niu']);
+
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -72,7 +76,7 @@ const productJsonLd = {
   path="/en/products/oh-my-niu/"
   lang="en"
   enPath="/products/oh-my-niu/"
-  jsonLdExtra={productJsonLd}
+  jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'en')]}
   ogImage="/og/oh-my-niu.png"
   zhBanner
 >
@@ -317,6 +321,7 @@ const productJsonLd = {
       </div>
     </div>
   </section>
+  <FaqSection items={productFaq} lang="en" />
 </DocsLayout>
 
 <style>

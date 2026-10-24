@@ -9,6 +9,8 @@
 import DocsLayout from '../../../components/DocsLayout.astro';
 import Badge from '../../../components/Badge.astro';
 import CopyButton from '../../../components/CopyButton.astro';
+import FaqSection from '../../../components/FaqSection.astro';
+import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../data/faq';
 import repoMeta from '../../../data/repo-meta.json';
 
 const meta = repoMeta.repos.winuxcmd;
@@ -139,6 +141,8 @@ import changelogs from '../../../data/changelogs.json';
 const wcRepo = ((changelogs as { repos: ChangelogRepo[] }).repos ?? []).find((r) => r.repo === 'WinuxCmd');
 const wcVersions = (wcRepo?.versions ?? []).slice(0, 3);
 
+const productFaq = faqByIds(PRODUCT_FAQ_IDS['winuxcmd']);
+
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -155,7 +159,7 @@ const productJsonLd = {
   title="WinuxCmd — 原生 Windows 的 Unix 命令集"
   description="WinuxCmd 产品文档：单个原生 Win32 可执行文件携带 176 个 Unix 命令 / 1,924 个选项，3.79 MB、~19 ms 冷启、PGO 构建；对 GNU coreutils 9.7 差分 178 例 93% 通过；wpm 包管理器内建，与 niubash PATH 注入零胶水联动。"
   path="/products/winuxcmd/"
-  jsonLdExtra={productJsonLd}
+  jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'zh')]}
   ogImage="/og/winuxcmd.png"
 >
   <header class="doc-head">
@@ -403,6 +407,7 @@ const productJsonLd = {
       </div>
     </div>
   </section>
+  <FaqSection items={productFaq} lang="zh" />
 </DocsLayout>
 
 <style>

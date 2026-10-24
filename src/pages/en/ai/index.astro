@@ -188,7 +188,16 @@ const skillSummary = [
   path="/en/ai/"
   lang="en"
   enPath="/ai/"
-  jsonLdExtra={faqJsonLd(pageFaq, 'en')}
+  jsonLdExtra={[
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://unixwin.dev/' },
+        { '@type': 'ListItem', position: 2, name: 'Portal for AI agents', item: 'https://unixwin.dev/en/ai/' },
+      ],
+    },
+    faqJsonLd(pageFaq, 'en'),
+  ]}
 >
   <SiteHeader />
 

@@ -8,6 +8,8 @@
  */
 import DocsLayout from '../../../components/DocsLayout.astro';
 import CopyButton from '../../../components/CopyButton.astro';
+import FaqSection from '../../../components/FaqSection.astro';
+import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../data/faq';
 
 interface Row {
   a: string;
@@ -131,6 +133,8 @@ const news: News[] = [
   },
 ];
 
+const productFaq = faqByIds(PRODUCT_FAQ_IDS['rubash']);
+
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -147,7 +151,7 @@ const productJsonLd = {
   title="rubash — 可嵌入的 GNU Bash 5.3 兼容引擎"
   description="rubash 产品文档：从零用 Rust 写的可嵌入 bash 引擎。crates.io 1.4.0（cargo add rubash）、零 fork 三层执行、62 内建全覆盖、83/83 GNU 上游语料台账、vendored GNU 源码方法论与 1.5.0 嵌入 API 蓝图。"
   path="/products/rubash/"
-  jsonLdExtra={productJsonLd}
+  jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'zh')]}
   ogImage="/og/rubash.png"
 >
   <header class="doc-head">
@@ -324,6 +328,7 @@ const productJsonLd = {
       <li><a href="https://github.com/unixwin/rubash/blob/main/docs/design/1.5.0-workspace-and-engine-api.md" target="_blank" rel="noopener noreferrer">1.5.0 workspace 与嵌入 API 设计稿 ↗</a> · <a href="https://github.com/unixwin/rubash/blob/main/docs/builtins.md" target="_blank" rel="noopener noreferrer">内建清单（单一事实来源）↗</a> · <a href="https://github.com/unixwin/rubash/blob/main/docs/PROVENANCE.md" target="_blank" rel="noopener noreferrer">PROVENANCE ↗</a></li>
     </ul>
   </section>
+  <FaqSection items={productFaq} lang="zh" />
 </DocsLayout>
 
 <style>

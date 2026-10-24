@@ -164,7 +164,16 @@ const skillSummary = [
   keywords="install niubash for ai agents,niubash,winuxcmd,rubash,niu-git,wpm,ai agent shell,bash for windows,git bash alternative,claude code,codex,cursor,vs code,opencode,zed"
   theme="day"
   path="/ai/"
-  jsonLdExtra={faqJsonLd(pageFaq, 'zh')}
+  jsonLdExtra={[
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '首页', item: 'https://unixwin.dev/' },
+        { '@type': 'ListItem', position: 2, name: '给 AI 的门户', item: 'https://unixwin.dev/ai/' },
+      ],
+    },
+    faqJsonLd(pageFaq, 'zh'),
+  ]}
 >
   <SiteHeader />
 

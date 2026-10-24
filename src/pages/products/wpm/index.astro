@@ -10,6 +10,8 @@
 import DocsLayout from '../../../components/DocsLayout.astro';
 import Badge from '../../../components/Badge.astro';
 import CopyButton from '../../../components/CopyButton.astro';
+import FaqSection from '../../../components/FaqSection.astro';
+import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../data/faq';
 import repoMeta from '../../../data/repo-meta.json';
 import changelogs from '../../../data/changelogs.json';
 
@@ -137,6 +139,8 @@ interface ChangelogRepo {
 const wcRepo = ((changelogs as { repos: ChangelogRepo[] }).repos ?? []).find((r) => r.repo === 'WinuxCmd');
 const wcVersions = (wcRepo?.versions ?? []).slice(0, 3);
 
+const productFaq = faqByIds(PRODUCT_FAQ_IDS['wpm']);
+
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -153,7 +157,7 @@ const productJsonLd = {
   title="wpm — WinuxCmd 内建包管理器"
   description="wpm 产品文档：编译进 winuxcmd.exe 的 C++ 包管理器，零运行时依赖；官方索引 281 包、sha256/size/urls 三元组、flat/shim 双布局、schema:1 的 --json 契约、四源镜像（gh.caomengxuan666.com 中国区）与自更新回滚。"
   path="/products/wpm/"
-  jsonLdExtra={productJsonLd}
+  jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'zh')]}
   ogImage="/og/wpm.png"
 >
   <header class="doc-head">
@@ -405,6 +409,7 @@ const productJsonLd = {
       </div>
     </div>
   </section>
+  <FaqSection items={productFaq} lang="zh" />
 </DocsLayout>
 
 <style>

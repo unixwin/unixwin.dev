@@ -11,6 +11,8 @@
 import DocsLayout from '../../../components/DocsLayout.astro';
 import Badge from '../../../components/Badge.astro';
 import CopyButton from '../../../components/CopyButton.astro';
+import FaqSection from '../../../components/FaqSection.astro';
+import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../data/faq';
 import repoMeta from '../../../data/repo-meta.json';
 import changelogs from '../../../data/changelogs.json';
 
@@ -151,6 +153,8 @@ const omRepo = ((changelogs as { repos: ChangelogRepo[] }).repos ?? []).find((r)
 const omVersions = (omRepo?.versions ?? []).slice(0, 3);
 const omDate = (v?: ChangelogVersion) => (v?.date ? v.date : '日期未标');
 
+const productFaq = faqByIds(PRODUCT_FAQ_IDS['oh-my-niu']);
+
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -167,7 +171,7 @@ const productJsonLd = {
   title="Oh My Niu — Niubash 官方主题与插件框架"
   description="Oh My Niu 产品文档：niubash 的官方 Oh My 式插件框架与捆绑发行——27 款主题、51 个插件目录、175 个补全定义、环境包与 prompt-core；插件即目录、主题即插件，随 niubash 发行、独立更新，catalog 指向官方上游。"
   path="/products/oh-my-niu/"
-  jsonLdExtra={productJsonLd}
+  jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'zh')]}
   ogImage="/og/oh-my-niu.png"
 >
   <header class="doc-head">
@@ -417,6 +421,7 @@ const productJsonLd = {
       </div>
     </div>
   </section>
+  <FaqSection items={productFaq} lang="zh" />
 </DocsLayout>
 
 <style>

@@ -20,11 +20,16 @@ const rcBootstrap = [
   "NIU_THEME=minimal",
   'source "$NIUBASH/oh-my-niu.niu"',
 ].join('\n');
+// Day-to-day surface as measured on niubash 1.4.4 (`niu plugin themes/doctor`
+// are retired — niubash#145; theme selection IS NIU_THEME, diagnostics are the
+// top-level `niu doctor`, the bundled baseline moves with `niu self-update`)
 const pluginOps = [
-  'niu plugin themes            # theme overview',
-  'niu plugin doctor            # bundle health check',
-  'niu plugin update oh-my-niu  # update independently of the niubash-shipped offline baseline',
-  'niu plugin rollback oh-my-niu',
+  '# Switch themes: edit NIU_THEME, reopen the terminal, or hot-reload the session',
+  'source "$NIUBASH/oh-my-niu.niu" --reload',
+  '# The bundled baseline follows niubash releases',
+  'niu self-update',
+  '# Top-level health check (rc blocks, PATH consistency, ...)',
+  'niu doctor',
 ].join('\n');
 const mooCmd = 'niu_moo "Bash, native on Windows."   # a cowsay-style speech bubble';
 
@@ -111,7 +116,7 @@ const productJsonLd = {
         <ul>
           <li><strong>Oh My 的形状，bash 的身体</strong>——Oh My Zsh 真正好用的不是 zsh 语法，而是「插件即目录、按可预测顺序加载」的模型；用户零学习成本。</li>
           <li><strong>shell 出原语，框架出组合</strong>——niubash 拥有加载、生命周期钩子、权限审阅、更新回滚等原语；oh-my-niu 拥有框架库、插件目录、主题与默认组合。bundled 不等于 built in——与第三方插件走同一套系统。</li>
-          <li><strong>catalog 指向官方上游</strong>——niu plugin catalog 的三个 bash 生态源直指各自官方仓：上游插件一行不改即可原生运行，官方 bundle 只是选项之一。</li>
+          <li><strong>catalog 指向官方上游</strong>——niu plugin 的 bash 生态 catalog（niu plugin add oh-my-bash 即装）直指各自官方仓：上游插件一行不改即可原生运行，官方 bundle 只是选项之一。</li>
         </ul>
       </div>
     </details>
@@ -145,8 +150,10 @@ const productJsonLd = {
   <section>
     <h2>Install &amp; quick start</h2>
     <p>
-      The bundle ships with niubash (the offline baseline); enabling it takes three rc lines. You can
-      also install/update/roll back through the <code>niu plugin</code> command family. The entry file
+      The bundle ships with niubash (the offline baseline, which advances with
+      <code>niu self-update</code>); enabling it takes three rc lines. The <code>niu plugin</code>
+      command family manages the <strong>external ecosystem</strong> (oh-my-bash, bash-it and other
+      third-party sources) — a separate track from the bundled oh-my-niu. The entry file
       <code>oh-my-niu.niu</code> is re-entrant — sourcing twice is a no-op; add <code>--reload</code>
       for a full reload.
     </p>
@@ -154,7 +161,7 @@ const productJsonLd = {
       <pre class="cmd"><code>{rcBootstrap}</code></pre>
       <CopyButton copy={rcBootstrap} label="Copy" title="Copy to clipboard" />
     </div>
-    <h3>First-run orientation</h3>
+    <h3>Day-to-day surface</h3>
     <div class="codeblock">
       <pre class="cmd"><code>{pluginOps}</code></pre>
       <CopyButton copy={pluginOps} label="Copy" title="Copy to clipboard" />
@@ -195,15 +202,15 @@ const productJsonLd = {
     </table>
     <p class="src-line">
       Source: the oh-my-niu README "First-Party Plugins" table and the plugins/, themes/ directories
-      (measured 2026-10-19: 27 theme-* directories and 27 themes/*.toml, identical sets; the four
+      (measured 2026-10-24: 27 theme-* directories and 27 themes/*.toml, identical sets; the four
       groups above total 27).
     </p>
     <details class="zh-fold">
-      <summary>中文原文 · Chinese original（目录优先 / catalog / niu plugin 联动 三节全文）</summary>
+      <summary>中文原文 · Chinese original（目录优先 / catalog / 与 niu plugin 命令族的边界 三节全文）</summary>
       <div lang="zh-CN">
         <p><strong>目录优先模型</strong>——行为本体在 plugins/&lt;name&gt;/；packs/、aliases/、completions/、prompts/、keybindings/、themes/ 是过渡期的 manifest 兼容与审阅元数据面。新行为先进插件目录，再暴露 TOML 元数据供审阅、托管安装、更新与回滚——设计全文见仓内 docs/design.md（framework-first）。</p>
         <p><strong>catalog 指向官方上游</strong>——niu plugin 的三个内置 bash 生态源不绑 oh-my-niu——origin 直指官方上游仓，上游资产一行不改原生运行（兼容性是被 rubash 引擎测出来的事实）。</p>
-        <p><strong>与 niu plugin 命令联动</strong>——bundle 契约：api = "niubash:plugin-bundle@0.1.0"、min_niubash = "1.0.0"（2.0 线自旧 winuxsh: 前缀迁至 niubash:）。发布档附 .sha256，经 niu plugin update oh-my-niu 升级、niu plugin rollback 回滚；niu plugin review/search/themes/doctor 是审阅与诊断面（CLI 全录见 <a href="/en/docs/cli/">CLI 参考</a>）。</p>
+        <p><strong>与 niu plugin 命令族的边界</strong>——bundle 契约：api = "niubash:plugin-bundle@0.1.0"、min_niubash = "1.0.0"（2.0 线自旧 winuxsh: 前缀迁至 niubash:）。发布档附 .sha256。更新模型：oh-my-niu 不是 niu plugin 的 source（niu plugin update oh-my-niu 报 unknown source，1.4.4 实测）——捆好的框架随 niubash 版本走（niu self-update 推进基线），update/rollback 的 spec+lockfile 机制管的是外部第三方源。旧的 niu plugin themes/doctor/review/search 内建面也已退役（niubash#145）：主题选择就是 NIU_THEME，诊断走顶层 niu doctor。</p>
       </div>
     </details>
     <h3>The catalog points at official upstreams</h3>

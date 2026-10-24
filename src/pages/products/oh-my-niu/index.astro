@@ -25,11 +25,15 @@ const rcBootstrap = [
   "NIU_THEME=minimal",
   'source "$NIUBASH/oh-my-niu.niu"',
 ].join('\n');
+// 日常操作（niubash 1.4.4 实测 CLI 面；`niu plugin themes/doctor` 已退役——#145，
+// 主题选择就是 NIU_THEME，诊断走顶层 niu doctor，捆绑基线随 niu self-update 推进）
 const pluginOps = [
-  'niu plugin themes            # 主题总览',
-  'niu plugin doctor            # bundle 健康检查',
-  'niu plugin update oh-my-niu  # 在随 niubash 的离线基线之上独立更新',
-  'niu plugin rollback oh-my-niu',
+  '# 换主题：改 NIU_THEME 后重开终端，或当前会话全量重载',
+  'source "$NIUBASH/oh-my-niu.niu" --reload',
+  '# 捆绑基线随 niubash 版本推进',
+  'niu self-update',
+  '# 顶层健康检查（rc 块、PATH 一致性等）',
+  'niu doctor',
 ].join('\n');
 const mooCmd = 'niu_moo "Bash, native on Windows."   # cowsay 风格对话泡';
 
@@ -53,7 +57,7 @@ const whyCards: WhyCard[] = [
   {
     tag: '不绑死',
     title: 'catalog 指向官方上游',
-    body: 'niu plugin catalog 的三个 bash 生态源（oh-my-bash、bash-it、bash-completion）直指各自官方仓，不指向 oh-my-niu：上游插件一行不改即可原生运行，官方 bundle 只是选项之一。',
+    body: 'niu plugin 的 bash 生态 catalog（niu plugin add oh-my-bash 即装）直指各自官方仓，不指向 oh-my-niu：上游插件一行不改即可原生运行，官方 bundle 只是选项之一。',
   },
 ];
 
@@ -161,7 +165,7 @@ const productJsonLd = {
 
 <DocsLayout
   title="Oh My Niu — Niubash 官方主题与插件框架"
-  description="Oh My Niu 产品文档：niubash 的官方 Oh My 式插件框架与捆绑发行——27 款主题、50 个插件目录、174 个补全定义、环境包与 prompt-core；插件即目录、主题即插件，随 niubash 发行、独立更新，catalog 指向官方上游。"
+  description="Oh My Niu 产品文档：niubash 的官方 Oh My 式插件框架与捆绑发行——27 款主题、51 个插件目录、175 个补全定义、环境包与 prompt-core；插件即目录、主题即插件，随 niubash 发行、独立更新，catalog 指向官方上游。"
   path="/products/oh-my-niu/"
   jsonLdExtra={productJsonLd}
   ogImage="/og/oh-my-niu.png"
@@ -227,16 +231,17 @@ const productJsonLd = {
   <section>
     <h2>安装与快速上手</h2>
     <p>
-      bundle 随 niubash 发行（离线基线），启用只需 rc 三行；也可以经
-      <code>niu plugin</code> 命令族安装/更新/回滚。入口
-      <code>oh-my-niu.niu</code> 可重入——source 两次是空操作，
+      bundle 随 niubash 发行（离线基线，随 <code>niu self-update</code> 一并推进），
+      启用只需 rc 三行。<code>niu plugin</code> 命令族管的是<strong>外部生态</strong>
+      （oh-my-bash、bash-it 等第三方源），与捆好的 oh-my-niu 是两条互不干扰的轨道。
+      入口 <code>oh-my-niu.niu</code> 可重入——source 两次是空操作，
       全量重载加 <code>--reload</code>。
     </p>
     <div class="codeblock">
       <pre class="cmd"><code>{rcBootstrap}</code></pre>
       <CopyButton copy={rcBootstrap} />
     </div>
-    <h3>首跑引导</h3>
+    <h3>日常操作</h3>
     <div class="codeblock">
       <pre class="cmd"><code>{pluginOps}</code></pre>
       <CopyButton copy={pluginOps} />
@@ -277,7 +282,7 @@ const productJsonLd = {
     </table>
     <p class="src-line">
       来源：oh-my-niu README「First-Party Plugins」插件表与 <code>plugins/</code>、
-      <code>themes/</code> 目录（实测计数 2026-10-19：theme-* 目录与 themes/*.toml 均为
+      <code>themes/</code> 目录（实测计数 2026-10-24：theme-* 目录与 themes/*.toml 均为
       27、集合一致；上表四组合计 27）。
     </p>
     <h3>目录优先模型</h3>
@@ -311,17 +316,23 @@ const productJsonLd = {
       </tbody>
     </table>
     <p class="src-line">来源：niubash <code>crates/niubash-runtime/src/plugins/descriptors.rs</code>（ManagerDescriptor origin 字段）· HIGHLIGHTS #13。</p>
-    <h3>与 niu plugin 命令联动</h3>
+    <h3>与 niu plugin 命令族的边界</h3>
     <p>
       bundle 契约：<code>api = "niubash:plugin-bundle@0.1.0"</code>、
       <code>min_niubash = "1.0.0"</code>（2.0 线自旧 <code>winuxsh:</code> 前缀迁至
       <code>niubash:</code>；旧 <code>min_winuxsh</code> 字段仍被接受，改名前的
       <code>~/.oh-my-winuxsh</code> 目录作为回退仍被发现）。发布档
-      <code>oh-my-niu-&lt;version&gt;.zip</code> 附 <code>.sha256</code>，经
-      <code>niu plugin update oh-my-niu --from … --checksum-file …</code> 升级、
-      <code>niu plugin rollback oh-my-niu</code> 回滚；<code>niu plugin review/search/themes/doctor</code>
-      是审阅与诊断面（CLI 全录见 <a href="/docs/cli/">CLI 参考</a>）。托管 TOML 亦映射到同一插件系统
-      （<code>[plugins] bundles = ["oh-my-niu"]</code> + <code>load = […]</code> + 权限声明）。
+      <code>oh-my-niu-&lt;version&gt;.zip</code> 附 <code>.sha256</code>。
+    </p>
+    <p>
+      更新模型一句话：<strong>oh-my-niu 不是 <code>niu plugin</code> 的 source</strong>——
+      <code>niu plugin update oh-my-niu</code> 会报 unknown source（1.4.4 实测），
+      这是有意设计：捆好的框架随 niubash 版本走（<code>niu self-update</code> 推进基线），
+      <code>update/rollback</code> 那 spec+lockfile 机制管的是外部第三方源。
+      旧的 <code>niu plugin themes/doctor/review/search</code> 内建面也已退役
+      （niubash#145）：主题选择就是 <code>NIU_THEME</code>，主题总览看上方画廊或
+      <code>plugins/theme-*/</code> 目录，诊断走顶层 <code>niu doctor</code>
+      （CLI 全录见 <a href="/docs/cli/">CLI 参考</a>）。
     </p>
   </section>
 

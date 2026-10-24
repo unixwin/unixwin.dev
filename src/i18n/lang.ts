@@ -9,7 +9,16 @@
  *   niu-lang-auto     — 本次会话已做过一次自动语言判定（防循环，每会话一次）
  */
 
-/** 有对应英文版的 zh 路径（新增 en 页时同步维护此清单）。 */
+/** 有对应英文版的 zh 路径（新增 en 页时同步维护此清单）。
+ *  深页配对（2026-10-24 枚举自 dist，修复产品/docs 深页 EN 切换回退到区段首页的问题）：
+ *  - 产品 6 页、docs 文章 5 页、/changelog/all/、/agents/universal/：显式枚举（稳定）；
+ *  - /agents/<slug>/：由 agents.json 数据驱动（见 agentsDeepPair，新增 agent 自动配对）。 */
+import agentsJson from '../data/agents.json';
+
+const AGENT_SLUGS: ReadonlySet<string> = new Set(
+  (agentsJson as { agents: { slug: string }[] }).agents.map((a) => a.slug),
+);
+
 export const PAIRED_ZH_ROUTES: ReadonlySet<string> = new Set([
   '/',
   '/agents/',
@@ -18,7 +27,30 @@ export const PAIRED_ZH_ROUTES: ReadonlySet<string> = new Set([
   '/docs/',
   '/changelog/',
   '/privacy/',
+  // 产品文档页（zh/en 双语全量）
+  '/products/niubash/',
+  '/products/winuxcmd/',
+  '/products/rubash/',
+  '/products/niu-git/',
+  '/products/wpm/',
+  '/products/oh-my-niu/',
+  // docs 文章页
+  '/docs/cli/',
+  '/docs/compatibility/',
+  '/docs/execution-model/',
+  '/docs/paths-and-msys/',
+  '/docs/performance-model/',
+  // changelog 全量页 + agents 万能接入手册
+  '/changelog/all/',
+  '/agents/universal/',
 ]);
+
+/** /agents/<slug>/ 深页配对（slug 集合来自 agents.json，单一事实源）。 */
+export function agentsDeepPair(p: string): string | null {
+  const m = p.match(/^\/agents\/([^/]+)\/$/);
+  if (!m) return null;
+  return AGENT_SLUGS.has(m[1]) || m[1] === 'universal' ? `/en${p}` : null;
+}
 
 export type PageLang = 'zh' | 'en';
 
@@ -37,8 +69,8 @@ export function inferLang(path: string): PageLang {
 /** zh 路径 → 对应 en 路径；无对应 en 页返回 null。 */
 export function zhToEn(zhPath: string): string | null {
   const p = normalizePath(zhPath);
-  if (!PAIRED_ZH_ROUTES.has(p)) return null;
-  return p === '/' ? '/en/' : `/en${p}`;
+  if (PAIRED_ZH_ROUTES.has(p)) return p === '/' ? '/en/' : `/en${p}`;
+  return agentsDeepPair(p);
 }
 
 /** en 路径 → 对应 zh 路径（去掉 /en 前缀；非 en 路径原样规范化返回）。 */
@@ -124,7 +156,7 @@ export function resolveSwitchPair(pathname: string): SwitchPair {
   // zh 深页区段回退
   if (p.startsWith('/docs/')) return { lang: 'zh', otherPath: '/en/docs/' };
   if (p.startsWith('/agents/')) return { lang: 'zh', otherPath: '/en/agents/' };
-  if (p.startsWith('/products/')) return { lang: 'zh', otherPath: '/en/' };
+  if (p.startsWith('/products/')) return { lang: 'zh', otherPath: '/en/products/' };
 
   return { lang: 'zh', otherPath: null };
 }

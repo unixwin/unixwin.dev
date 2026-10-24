@@ -135,6 +135,13 @@ const jsonLd = {
     <meta name="generator" content={Astro.generator} />
     {/* Bing Webmaster 验证（issue #9；站点级公开验证串，非机密） */}
     <meta name="msvalidate.01" content="EE5280E1E3008B57B4EE4FF45EC7AA0F" />
+    {/* Cloudflare Web Analytics 手动 snippet（issue #21：自动注入被缓存规则干扰，
+        手动安装最稳；免 cookie，/privacy/ 页已披露） */}
+    <script
+      type="module"
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "95e665bd60104278a91f0575552fab85"}'
+    ></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     {/* Preload 主展示字体（Fraunces latin wght，67KB）：global.css 的 @font-face
         带 font-display: swap，浏览器要等 CSS 解析完才会发起字体请求——preload

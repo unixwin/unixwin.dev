@@ -1,4 +1,59 @@
+# UNIXWIN — unixwin.dev
+#
+# AI 爬虫策略（issue #12，口径：全面开放）：
+# 本组织的目标就是被搜索引擎与 AI 引擎发现、引用与索引——niubash / WinuxCmd /
+# rubash / niu-git / wpm 是开源软件，训练与检索引用对项目是纯收益。
+# 因此对搜索类、AI 输入类、训练类爬虫统一显式 Allow；欲调整时改对应段即可。
+#
+# Content-Signal（Cloudflare 内容信号声明）：
+#   search=yes   允许被搜索引擎索引
+#   ai-train=yes 允许用于 AI 训练
+#   ai-input=yes 允许作为 AI 输入（检索/引用/ grounding）
+
 User-agent: *
 Allow: /
 
+# ---- AI 搜索 / 引用 / 用户代理类 ----
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-User
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Perplexity-User
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: Applebot
+Allow: /
+User-agent: DuckAssistBot
+Allow: /
+User-agent: YouBot
+Allow: /
+User-agent: MistralAI-User
+Allow: /
+
+# ---- 训练类 ----
+User-agent: GPTBot
+Allow: /
+User-agent: CCBot
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+User-agent: Bytespider
+Allow: /
+User-agent: meta-externalagent
+Allow: /
+User-agent: Amazonbot
+Allow: /
+
+Content-Signal: search=yes, ai-train=yes, ai-input=yes
+
 Sitemap: https://unixwin.dev/sitemap-index.xml
+Sitemap: https://unixwin.dev/sitemap.xml

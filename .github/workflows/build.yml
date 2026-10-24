@@ -19,5 +19,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # issue #10：构建前实时拉取 GitHub Releases / CHANGELOG / star 数据，
+      # 让 JSON-LD 的 softwareVersion 等字段以 GitHub Releases 为单一事实源，
+      # 不再依赖人工本地刷新提交。失败不阻塞构建（回落到仓内已提交的数据）。
+      - name: Refresh GitHub data (releases / changelogs / stars)
+        run: npm run fetch:github
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build
         run: npm run build

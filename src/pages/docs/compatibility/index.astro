@@ -5,12 +5,17 @@
  * nameref 残差竞态归因文档、niubash docs/src/rubash-bash-compat-matrix.md。
  */
 import DocsLayout from '../../../components/DocsLayout.astro';
+import FaqSection from '../../../components/FaqSection.astro';
+import { faqByIds, faqJsonLd } from '../../../data/faq';
+
+const pageFaq = faqByIds(['what-is-83', 'gitbash-diff', 'perf', 'free-platforms']);
 ---
 
 <DocsLayout
   title="兼容总览：83/83 是什么意思"
   description="niubash 引擎对 GNU Bash 5.3 上游 83 套测试语料 83/83 通过、82 套逐字节一致；true-baseline 差分方法、byte-identical 语义、超额语料与「兼容≠相同实现」的定位。"
   path="/docs/compatibility/"
+  jsonLdExtra={faqJsonLd(pageFaq, 'zh')}
 >
   <header class="doc-head">
     <h1>兼容总览：83/83 是什么意思</h1>
@@ -127,6 +132,8 @@ import DocsLayout from '../../../components/DocsLayout.astro';
       <li><a href="https://github.com/unixwin/rubash/blob/master/docs/nameref-suite-residual-gnu-race-20261012.md" target="_blank" rel="noopener noreferrer">nameref 残差 = GNU 竞态的逐字节归因 ↗</a></li>
     </ul>
   </footer>
+
+  <FaqSection items={pageFaq} lang="zh" />
 </DocsLayout>
 
 <style>

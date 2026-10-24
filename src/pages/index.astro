@@ -130,7 +130,7 @@ const softwareAppJsonLd = {
 
 <BaseLayout
   title="UNIXWIN — Niubash、WinuxCmd、Rubash：AI-native 的真·Bash 家族"
-  description="UNIXWIN：AI-native 的真·Bash 家族——niubash、WinuxCmd、rubash、niu-git、wpm。真 bash 语法、真 Unix 命令、原生 Windows / Linux / macOS，无 WSL、无 MSYS。83/83 GNU 套件全过、82 套逐字节一致、~14ms git 启动、5 平台原生构建、安装后全家族约 16 MB。"
+  description="UNIXWIN：AI 原生真 Bash 家族——niubash、WinuxCmd、rubash、niu-git、wpm。真 bash 语法与 Unix 命令，原生 Windows，无 WSL 无 MSYS，83/83 GNU 套件通过。"
   keywords="niubash,winuxcmd,rubash,niu-git,wpm,bash for windows,git bash alternative,ai-native bash"
   jsonLdExtra={softwareAppJsonLd}
   theme="day"
@@ -367,14 +367,19 @@ const softwareAppJsonLd = {
               <span class="demo-dot" aria-hidden="true"></span>
               Git Bash (MSYS)
             </p>
-            <img
-              src="/assets/demo-gitbash.gif"
-              alt="实录：Git Bash 的 MSYS 运行时改写参数，cd、cmd /c、git grep -n 三条命令接连失败"
+            <video
+              class="demo-video"
+              src="/assets/demo-gitbash.webm"
+              poster="/assets/demo-gitbash-poster.jpg"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
               width="692"
               height="334"
-              loading="lazy"
-              decoding="async"
-            />
+              aria-label="实录：Git Bash 的 MSYS 运行时改写参数，cd、cmd /c、git grep -n 三条命令接连失败"
+            ></video>
             <p class="demo-verdict is-bad">argv 被运行时改写 → 三连败</p>
           </div>
           <div class="demo-col">
@@ -382,14 +387,19 @@ const softwareAppJsonLd = {
               <span class="demo-dot" aria-hidden="true"></span>
               niubash (niu)
             </p>
-            <img
-              src="/assets/demo-niu.gif"
-              alt="实录：niu 直接执行同一组 Windows 原生参数命令——node argv 逐字节原样、cmd /c dir、cd D:\repo、git grep -n 全部一次通过"
+            <video
+              class="demo-video"
+              src="/assets/demo-niu.webm"
+              poster="/assets/demo-niu-poster.jpg"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
               width="880"
               height="460"
-              loading="lazy"
-              decoding="async"
-            />
+              aria-label="实录：niu 直接执行同一组 Windows 原生参数命令——node argv 逐字节原样、cmd /c dir、cd D:\repo、git grep -n 全部一次通过"
+            ></video>
             <p class="demo-verdict is-ok">argv 逐字节原样 → 一次通过</p>
           </div>
         </div>
@@ -1243,7 +1253,8 @@ const softwareAppJsonLd = {
     background: var(--accent-2); /* teal：与 hero 终端「绿」点同源 */
   }
 
-  .demo-fig img {
+  .demo-fig img,
+  .demo-fig .demo-video {
     display: block;
     width: 100%;
     height: auto;

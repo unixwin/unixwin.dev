@@ -1,0 +1,171 @@
+---
+/**
+ * /changelog/all/ — 全量更新日志（issue #17：从主页拆出，主页每产品只留最近 3 个版本）。
+ * 数据源：src/data/changelogs.json（npm run fetch:github 生成）。
+ */
+import BaseLayout from '../../components/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import Badge from '../../components/Badge.astro';
+import { buildEntries, repoNames, fetchedDate, productByRepo } from '../../lib/changelog';
+
+function toneOf(group: string): string {
+  const g = group.toLowerCase();
+  if (g === '' ) return 'other';
+  if (/added|新增|new/.test(g)) return 'added';
+  if (/changed|change|性能|优化|perf/.test(g)) return 'changed';
+  if (/fixed|fix|修复|bugfix/.test(g)) return 'fixed';
+  if (/removed|remove|移除|删除/.test(g)) return 'removed';
+  if (/deprecated|弃用/.test(g)) return 'removed';
+  if (/security|安全/.test(g)) return 'security';
+  return 'other';
+}
+
+const groupOrder = ['Added', '新增', 'Changed', '性能', 'Fixed', '修复', 'Removed', '移除', 'Deprecated', 'Security', '安全'];
+function groupSort(a: string, b: string): number {
+  const ia = groupOrder.indexOf(a);
+  const ib = groupOrder.indexOf(b);
+  if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  return a.localeCompare(b);
+}
+
+const entries = buildEntries();
+const repoNamesList = repoNames();
+const fetchedAt = fetchedDate();
+---
+
+<BaseLayout
+  title="全部更新日志"
+  description="UNIXWIN 全家桶完整更新历史：niubash、WinuxCmd、rubash、niu-git、oh-my-niu 全部版本。"
+  theme="day"
+  path="/changelog/all/"
+>
+  <SiteHeader />
+
+  <main class="container">
+    <section class="cl-head">
+      <h1>全部更新日志</h1>
+      <p class="cl-sub">
+        {fetchedAt ? `聚合自各仓库 CHANGELOG · 拉取于 ${fetchedAt} · 共 ${entries.length} 个版本` : '尚未拉取数据'}
+        <span class="dot">·</span>
+        <a href="/changelog/">← 只看每产品最近 3 个版本</a>
+      </p>
+
+      <div class="chips" role="navigation" aria-label="按产品过滤">
+        <a class="chip" href="/changelog/all/">全部</a>
+        {repoNamesList.map((name) => (
+          <a class="chip" href={`/changelog/all/?repo=${name}`}>{productByRepo.get(name)?.name ?? name}</a>
+        ))}
+      </div>
+    </section>
+
+    <ol class="timeline">
+      {entries.map((e) => (
+        <li class="entry" style={`--entry-accent: ${e.accent};`}>
+          <details>
+            <summary>
+              <span class="entry-repo" style={`--repo-accent: ${e.accent};`}>{e.productName}</span>
+              <span class="entry-version">{e.unreleased ? 'Unreleased' : e.version}</span>
+              {e.unreleased && <Badge tone="warn">未发布</Badge>}
+              <span class="entry-date">{e.date || '日期未知'}</span>
+            </summary>
+            <div class="entry-body">
+              {Object.keys(e.sections)
+                .sort(groupSort)
+                .map((group) => (
+                  <div class={`group group-${toneOf(group)}`}>
+                    <h3>{group === '' ? '更新' : group}</h3>
+                    <ul>
+                      {e.sections[group].map((line) => (
+                        <li>{line}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+            </div>
+          </details>
+        </li>
+      ))}
+    </ol>
+  </main>
+
+  <SiteFooter />
+</BaseLayout>
+
+<style>
+  .cl-head { padding: 3rem 0 1rem; }
+  .cl-head h1 { margin-bottom: 0.2rem; }
+  .cl-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+  .cl-sub a { color: var(--link); }
+  .dot { margin: 0 0.3rem; color: var(--border); }
+
+  .chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .chip {
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.2rem 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-decoration: none;
+  }
+  .chip:hover { color: var(--text); border-color: var(--accent); text-decoration: none; }
+
+  .timeline {
+    list-style: none;
+    margin: 1.2rem 0 3rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .entry {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--entry-accent, var(--accent));
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .entry summary {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    font-family: var(--font-mono);
+  }
+  .entry summary::-webkit-details-marker { color: var(--muted); }
+  .entry-repo { color: var(--repo-accent, var(--accent)); font-weight: 700; }
+  .entry-version { color: var(--text); }
+  .entry-date { margin-left: auto; color: var(--muted); font-size: 0.82rem; }
+  .entry-body {
+    border-top: 1px solid var(--border);
+    padding: 1rem 1.3rem 1.2rem;
+    background: var(--bg-code);
+  }
+  .group { margin-bottom: 1rem; }
+  .group:last-child { margin-bottom: 0; }
+  .group h3 {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 0.4rem;
+  }
+  .group ul { margin: 0; padding-left: 1.2rem; }
+  .group li { font-size: 0.88rem; margin-bottom: 0.35rem; color: var(--text); }
+  .group-added h3 { color: var(--accent); }
+  .group-changed h3 { color: var(--accent-2); }
+  .group-fixed h3 { color: var(--warn); }
+  .group-removed h3 { color: var(--danger); }
+  .group-security h3 { color: var(--danger); }
+  .group-other h3 { color: var(--muted); }
+  .group-added li { border-left: 2px solid var(--accent); }
+  .group-changed li { border-left: 2px solid var(--accent-2); }
+  .group-fixed li { border-left: 2px solid var(--warn); }
+  .group-removed li,
+  .group-security li { border-left: 2px solid var(--danger); }
+  .group-other li { border-left: 2px solid var(--border); }
+  .group li { padding-left: 0.55rem; list-style: none; }
+</style>

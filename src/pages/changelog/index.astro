@@ -10,51 +10,7 @@ import BaseLayout from '../../components/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import Badge from '../../components/Badge.astro';
-import changelogs from '../../data/changelogs.json';
-import products from '../../data/products.json';
-
-interface Entry {
-  repo: string;
-  productId: string;
-  productName: string;
-  accent: string;
-  version: string;
-  date: string;
-  unreleased: boolean;
-  sections: Record<string, string[]>;
-}
-
-const productByRepo = new Map(products.map((p) => [p.repo.split('/').pop(), p]));
-// 兜底主色取自 products.json 首条（数据驱动，避免硬编码颜色）
-const defaultAccent = products[0]?.accent ?? 'var(--accent)';
-
-const entries: Entry[] = [];
-for (const repo of changelogs.repos ?? []) {
-  const product = productByRepo.get(repo.repo);
-  for (const v of repo.versions ?? []) {
-    entries.push({
-      repo: repo.repo,
-      productId: product?.id ?? repo.repo,
-      productName: product?.name ?? repo.repo,
-      accent: product?.accent ?? defaultAccent,
-      version: v.version,
-      date: v.date ?? '',
-      unreleased: Boolean(v.unreleased),
-      sections: v.sections ?? {},
-    });
-  }
-}
-
-// 排序：Unreleased 最前 → 日期倒序 → 无日期垫底
-entries.sort((a, b) => {
-  if (a.unreleased !== b.unreleased) return a.unreleased ? 1 : -1; // Unreleased 沉底（issue#1 P2-8）
-  const da = /^\d{4}-\d{2}-\d{2}$/.test(a.date) ? a.date : '';
-  const db = /^\d{4}-\d{2}-\d{2}$/.test(b.date) ? b.date : '';
-  if (da && db) return da === db ? a.repo.localeCompare(b.repo) : da < db ? 1 : -1;
-  if (da) return -1;
-  if (db) return 1;
-  return 0;
-});
+import { buildEntries, slimEntries, repoNames, fetchedDate, productByRepo } from '../../lib/changelog';
 
 // 分组名 → tone
 function toneOf(group: string): string {
@@ -77,9 +33,12 @@ function groupSort(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
+// 主页只保留每产品最近 3 个版本 + 全部 Unreleased；全量历史在 /changelog/all/（issue #17）
+const entries = slimEntries(buildEntries(), 3);
 const isEmpty = entries.length === 0;
-const repoNames = [...new Set((changelogs.repos ?? []).map((r) => r.repo))];
-const fetchedAt = changelogs.fetchedAt ? new Date(changelogs.fetchedAt).toISOString().slice(0, 10) : '';
+const repoNamesList = repoNames();
+const fetchedAt = fetchedDate();
+const totalAll = buildEntries().length;
 ---
 
 <BaseLayout
@@ -94,15 +53,16 @@ const fetchedAt = changelogs.fetchedAt ? new Date(changelogs.fetchedAt).toISOStr
     <section class="cl-head">
       <h1>更新日志</h1>
       <p class="cl-sub">
-        {fetchedAt ? `聚合自各仓库 CHANGELOG · 拉取于 ${fetchedAt}` : '尚未拉取数据'}
+        {fetchedAt ? `聚合自各仓库 CHANGELOG · 拉取于 ${fetchedAt} · 每产品显示最近 3 个版本` : '尚未拉取数据'}
       </p>
 
       <!-- 产品过滤 chips（?repo= 纯装饰，服务端不做过滤） -->
       <div class="chips" role="navigation" aria-label="按产品过滤">
         <a class="chip" href="/changelog/">全部</a>
-        {repoNames.map((name) => (
+        {repoNamesList.map((name) => (
           <a class="chip" href={`/changelog/?repo=${name}`}>{productByRepo.get(name)?.name ?? name}</a>
         ))}
+        <a class="chip is-all" href="/changelog/all/">全部历史（{totalAll} 个版本）→</a>
       </div>
     </section>
 
@@ -183,6 +143,11 @@ const fetchedAt = changelogs.fetchedAt ? new Date(changelogs.fetchedAt).toISOStr
     color: var(--text);
     border-color: var(--accent);
     text-decoration: none;
+  }
+
+  .chip.is-all {
+    color: var(--accent);
+    border-color: var(--accent);
   }
 
   .empty {

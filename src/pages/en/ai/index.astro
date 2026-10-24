@@ -16,6 +16,10 @@ import SiteFooter from '../../../components/SiteFooter.astro';
 import Section from '../../../components/Section.astro';
 import Badge from '../../../components/Badge.astro';
 import CopyButton from '../../../components/CopyButton.astro';
+import FaqSection from '../../../components/FaqSection.astro';
+import { faqByIds, faqJsonLd } from '../../../data/faq';
+
+const pageFaq = faqByIds(['switch-agent', 'no-wsl-msys', 'naming', 'free-platforms', 'perf']);
 
 // ---- One-click install prompt (main CTA; rewritten natively for English) ----
 const installPrompt = [
@@ -178,12 +182,13 @@ const skillSummary = [
 
 <BaseLayout
   title="The Portal for AI: Install niubash for AI Agents"
-  description="The UNIXWIN portal built for AI: a one-click install prompt (paste it into your agent and niubash gets installed), the official skill bundle, a wpm package-manager quick look, a self-service agent onboarding template, and machine-readable entries. Install niubash for AI agents — Claude Code, Codex, Cursor, VS Code, opencode, Zed. Real bash syntax, real Unix commands, native Windows."
+  description="The UNIXWIN portal for AI agents: paste-ready install prompts, official skills and machine-readable entries for 24 agents incl. Claude Code and Cursor."
   keywords="install niubash for ai agents,niubash,winuxcmd,rubash,niu-git,wpm,ai agent shell,bash for windows,git bash alternative,claude code shell,codex shell,cursor shell,vs code,opencode,zed"
   theme="day"
   path="/en/ai/"
   lang="en"
   enPath="/ai/"
+  jsonLdExtra={faqJsonLd(pageFaq, 'en')}
 >
   <SiteHeader />
 
@@ -408,6 +413,8 @@ const skillSummary = [
         <a href="/en/agents/">/en/agents/ directory</a>.
       </p>
     </section>
+
+    <FaqSection items={pageFaq} lang="en" />
   </main>
 
   <SiteFooter />

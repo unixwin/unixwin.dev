@@ -17,13 +17,28 @@ export function getStaticPaths() {
 const agent = agentsData.agents.find((a: any) => a.slug === Astro.params.slug) as any;
 const statusTone = agent.status === 'ready' ? 'accent' : agent.status === 'partial' ? 'warn' : 'muted';
 const statusLabel = { ready: '可用', partial: '部分', blocked: '暂不支持', unverified: '待核验' }[agent.status] ?? agent.status;
+
+// meta description 加长到 ~120 字（issue #18）：做什么 + 换壳/验证/回滚交付物
+const pageDescription = `${agent.oneLiner}本页提供一键换壳脚本、真实验证命令与回滚步骤，附 ${agent.mechanism} 机制说明与常见坑。`;
+
+// BreadcrumbList（issue #18）：首页 → Agent 目录 → 当前 agent
+const SITE = 'https://unixwin.dev';
+const breadcrumbLd = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '首页', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: 'Agent 目录', item: `${SITE}/agents/` },
+    { '@type': 'ListItem', position: 3, name: agent.name, item: `${SITE}/agents/${agent.slug}/` },
+  ],
+};
 ---
 
 <BaseLayout
   title={`${agent.name} × niubash`}
-  description={agent.oneLiner}
+  description={pageDescription}
   theme="day"
   path={`/agents/${agent.slug}/`}
+  jsonLdExtra={breadcrumbLd}
 >
   <SiteHeader />
 

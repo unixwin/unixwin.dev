@@ -1,0 +1,63 @@
+---
+/**
+ * FaqSection — 可见 FAQ 区块（issue #13）。
+ * 答案文本与 faqJsonLd() 输出的 FAQPage JSON-LD 完全一致（同源 faq.ts）。
+ * 用 <details> 折叠：SEO/AI 引擎可读（HTML 内联），视觉上不打断长文。
+ */
+import type { FaqItem } from '../data/faq';
+
+interface Props {
+  items: FaqItem[];
+  lang?: 'zh' | 'en';
+  title?: string;
+}
+
+const { items, lang = 'zh', title } = Astro.props;
+const heading = title ?? (lang === 'en' ? 'FAQ' : '常见问题');
+---
+
+<section class="faq" aria-label={heading}>
+  <h2>{heading}</h2>
+  {items.map((f) => (
+    <details class="faq-item">
+      <summary>{lang === 'en' ? f.qEn : f.q}</summary>
+      <p>{lang === 'en' ? f.aEn : f.a}</p>
+    </details>
+  ))}
+</section>
+
+<style>
+  .faq {
+    margin: 2.2rem 0;
+  }
+
+  .faq h2 {
+    margin: 0 0 0.9rem;
+  }
+
+  .faq-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    margin-bottom: 0.55rem;
+    overflow: hidden;
+  }
+
+  .faq-item summary {
+    cursor: pointer;
+    padding: 0.75rem 1.1rem;
+    font-weight: 600;
+    list-style-position: outside;
+  }
+
+  .faq-item summary:hover {
+    color: var(--accent);
+  }
+
+  .faq-item p {
+    margin: 0;
+    padding: 0.2rem 1.1rem 0.95rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+</style>

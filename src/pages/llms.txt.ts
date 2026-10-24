@@ -41,6 +41,7 @@ ${ordered.map((p) => `- [${p.name}](https://unixwin.dev/#${p.id}): ${p.tagline_e
 - [Benchmarks](https://unixwin.dev/benchmarks/): measured numbers vs Git Bash / WSL / GNU bash.
 - [wpm](https://github.com/unixwin/wpm-source): the package manager built into WinuxCmd — \`wpm\` prints help, \`wpm list\` browses packages, \`wpm install ripgrep fd jq gawk\` installs them (niugit is preinstalled on Windows).
 - [Changelog](https://unixwin.dev/changelog/): aggregated release timeline across the family.
+- [llms-full.txt](https://unixwin.dev/llms-full.txt): full-text edition of this guide — products, per-agent notes, FAQ, docs map in one file.
 `;
 
 export const GET: APIRoute = () => {

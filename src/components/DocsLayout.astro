@@ -21,6 +21,7 @@
  *   toc         boolean 是否渲染右栏 On this page（默认 true；卡片首页传 false）
  *   zhBanner    boolean en 页顶部渲染「正文暂为中文」提示条（默认 false；
  *                       与 ZhOnlyBanner 组件同款，链接按 path 去 /en 前缀）
+ *   ogImage     string  本页 OG/Twitter 图（透传 BaseLayout；产品页传 /og/<id>.png，issue #18）
  */
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from './SiteHeader.astro';
@@ -51,10 +52,11 @@ interface Props {
   enPath?: string;
   toc?: boolean;
   zhBanner?: boolean;
-  jsonLdExtra?: Record<string, unknown>;
+  jsonLdExtra?: Record<string, unknown> | Array<Record<string, unknown>>;
+  ogImage?: string;
 }
 
-const { title, description, path, lang, enPath, toc = true, zhBanner = false, jsonLdExtra } = Astro.props;
+const { title, description, path, lang, enPath, toc = true, zhBanner = false, jsonLdExtra, ogImage } = Astro.props;
 
 const LAST_UPDATED = '2026-10-19';
 
@@ -109,6 +111,32 @@ for (const section of sections) {
 const isDocsHome = currentPath === '/docs';
 const showCrumb = !isDocsHome && currentSection !== null && currentLabel !== null;
 
+// —— BreadcrumbList JSON-LD（issue #18）：首页 → 文档 → 当前页，与可见面包屑一致 ——
+const SITE = 'https://unixwin.dev';
+const breadcrumbLd = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: isEn ? 'Home' : '首页', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: T.crumbRoot, item: `${SITE}${isEn ? '/en/docs/' : '/docs/'}` },
+    ...(showCrumb
+      ? [
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: (isEn ? (currentLabelEn ?? currentLabel) : currentLabel) ?? '',
+            item: `${SITE}${path}`,
+          },
+        ]
+      : []),
+  ],
+};
+
+// 页面自带的结构化对象（SoftwareApplication、FAQPage…）与面包屑合并输出
+const mergedLd: Array<Record<string, unknown>> = [
+  ...(jsonLdExtra ? (Array.isArray(jsonLdExtra) ? jsonLdExtra : [jsonLdExtra]) : []),
+  breadcrumbLd,
+];
+
 // 扁平化站内条目（外链不参与 prev/next）
 const flat = sections.flatMap((s) => s.items).filter((i) => !i.external);
 const index = flat.findIndex((i) => (i.href.replace(/\/+$/, '') || '/') === currentPath);
@@ -117,7 +145,7 @@ const next = index >= 0 && index < flat.length - 1 ? flat[index + 1] : null;
 const showPager = !isDocsHome && (prev !== null || next !== null) && index >= 0;
 ---
 
-<BaseLayout title={title} description={description} theme="day" path={path} lang={lang} enPath={enPath} jsonLdExtra={jsonLdExtra}>
+<BaseLayout title={title} description={description} theme="day" path={path} lang={lang} enPath={enPath} jsonLdExtra={mergedLd} ogImage={ogImage}>
   <SiteHeader />
 
   <div class="container docs-grid">

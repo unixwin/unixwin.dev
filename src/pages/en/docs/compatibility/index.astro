@@ -7,6 +7,10 @@
  * nameref residual attribution doc, niubash docs/src/rubash-bash-compat-matrix.md.
  */
 import DocsLayout from '../../../../components/DocsLayout.astro';
+import FaqSection from '../../../../components/FaqSection.astro';
+import { faqByIds, faqJsonLd } from '../../../../data/faq';
+
+const pageFaq = faqByIds(['what-is-83', 'gitbash-diff', 'perf', 'free-platforms']);
 ---
 
 <DocsLayout
@@ -16,6 +20,7 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
   lang="en"
   enPath="/docs/compatibility/"
   zhBanner
+  jsonLdExtra={faqJsonLd(pageFaq, 'en')}
 >
   <header class="doc-head">
     <h1>Compatibility overview: what 83/83 means</h1>
@@ -165,6 +170,8 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
       <li><a href="/docs/compatibility/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
     </ul>
   </footer>
+
+  <FaqSection items={pageFaq} lang="en" />
 </DocsLayout>
 
 <style>

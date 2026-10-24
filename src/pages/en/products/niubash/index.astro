@@ -7,6 +7,9 @@
  */
 import DocsLayout from '../../../../components/DocsLayout.astro';
 import CopyButton from '../../../../components/CopyButton.astro';
+import FaqSection from '../../../../components/FaqSection.astro';
+import { faqByIds, faqJsonLd } from '../../../../data/faq';
+import repoMeta from '../../../../data/repo-meta.json';
 
 const installWinget = 'winget install --id Unixwin.Niubash --source winget';
 const installWin = 'irm https://unixwin.dev/install.ps1 | iex';
@@ -48,6 +51,12 @@ const bench = [
 
 const news = [
   {
+    version: '1.4.4',
+    date: '2026-10-22',
+    summary:
+      'Ships the rubash 1.4.3 engine: root fix for ping/netstat/tracert "command not found" (System32 stores them as UPPERCASE PING.EXE etc. — command-stem case folding); ${v^^} interactive crash fix; WinuxCmd v1.1.20 pin; MSIX foreign-env hardening.',
+  },
+  {
     version: '1.4.3',
     date: '2026-10-21',
     summary:
@@ -79,6 +88,13 @@ const news = [
   },
 ];
 
+// Build-time dynamic meta (issue #10: versions come from GitHub Releases)
+const nbMeta = (repoMeta.repos as Record<string, { stars: number; latest: string | null }>).niubash;
+const latestV = nbMeta?.latest ?? 'v1.4.4';
+const starsN = nbMeta?.stars ?? 188;
+const metaDate = repoMeta.fetchedAt ? repoMeta.fetchedAt.slice(0, 10) : '';
+const productFaq = faqByIds(['gitbash-diff', 'no-wsl-msys', 'what-is-83', 'switch-agent', 'free-platforms', 'perf', 'naming']);
+
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -97,7 +113,8 @@ const productJsonLd = {
   path="/en/products/niubash/"
   lang="en"
   enPath="/products/niubash/"
-  jsonLdExtra={productJsonLd}
+  jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'en')]}
+  ogImage="/og/niubash.png"
   zhBanner
 >
   <header class="doc-head">
@@ -111,12 +128,12 @@ const productJsonLd = {
     <div class="badges">
       <span class="p-badge">Rust</span>
       <span class="p-badge">Windows · Linux · macOS</span>
-      <span class="p-badge">stable v1.4.3</span>
+      <span class="p-badge">stable {latestV}</span>
     </div>
     <p class="meta-line">
       <a href="https://github.com/unixwin/niubash" target="_blank" rel="noopener noreferrer">github.com/unixwin/niubash ↗</a>
-      <span class="dot">·</span> Star 178
-      <span class="dot">·</span> latest v1.4.3 (measured via repo-meta)
+      <span class="dot">·</span> Star {starsN}
+      <span class="dot">·</span> latest {latestV} (measured via repo-meta{metaDate ? `, ${metaDate}` : ""})
     </p>
   </header>
 
@@ -292,6 +309,8 @@ const productJsonLd = {
       <li><a href="/products/niubash/" hreflang="zh-CN" lang="zh-CN">Chinese edition of this page</a></li>
     </ul>
   </section>
+
+  <FaqSection items={productFaq} lang="en" />
 </DocsLayout>
 
 <style>

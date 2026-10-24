@@ -7,49 +7,7 @@ import BaseLayout from '../../../components/BaseLayout.astro';
 import SiteHeader from '../../../components/SiteHeader.astro';
 import SiteFooter from '../../../components/SiteFooter.astro';
 import Badge from '../../../components/Badge.astro';
-import changelogs from '../../../data/changelogs.json';
-import products from '../../../data/products.json';
-
-interface Entry {
-  repo: string;
-  productId: string;
-  productName: string;
-  accent: string;
-  version: string;
-  date: string;
-  unreleased: boolean;
-  sections: Record<string, string[]>;
-}
-
-const productByRepo = new Map(products.map((p) => [p.repo.split('/').pop(), p]));
-const defaultAccent = products[0]?.accent ?? 'var(--accent)';
-
-const entries: Entry[] = [];
-for (const repo of changelogs.repos ?? []) {
-  const product = productByRepo.get(repo.repo);
-  for (const v of repo.versions ?? []) {
-    entries.push({
-      repo: repo.repo,
-      productId: product?.id ?? repo.repo,
-      productName: product?.name ?? repo.repo,
-      accent: product?.accent ?? defaultAccent,
-      version: v.version,
-      date: v.date ?? '',
-      unreleased: Boolean(v.unreleased),
-      sections: v.sections ?? {},
-    });
-  }
-}
-
-entries.sort((a, b) => {
-  if (a.unreleased !== b.unreleased) return a.unreleased ? 1 : -1;
-  const da = /^\d{4}-\d{2}-\d{2}$/.test(a.date) ? a.date : '';
-  const db = /^\d{4}-\d{2}-\d{2}$/.test(b.date) ? b.date : '';
-  if (da && db) return da === db ? a.repo.localeCompare(b.repo) : da < db ? 1 : -1;
-  if (da) return -1;
-  if (db) return 1;
-  return 0;
-});
+import { buildEntries, slimEntries, repoNames, fetchedDate, productByRepo } from '../../../lib/changelog';
 
 function toneOf(group: string): string {
   const g = group.toLowerCase();
@@ -71,9 +29,12 @@ function groupSort(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
+// Slim view: latest 3 released versions per product + all Unreleased; full history at /en/changelog/all/
+const entries = slimEntries(buildEntries(), 3);
 const isEmpty = entries.length === 0;
-const repoNames = [...new Set((changelogs.repos ?? []).map((r) => r.repo))];
-const fetchedAt = changelogs.fetchedAt ? new Date(changelogs.fetchedAt).toISOString().slice(0, 10) : '';
+const repoNamesList = repoNames();
+const fetchedAt = fetchedDate();
+const totalAll = buildEntries().length;
 ---
 
 <BaseLayout
@@ -90,14 +51,15 @@ const fetchedAt = changelogs.fetchedAt ? new Date(changelogs.fetchedAt).toISOStr
     <section class="cl-head">
       <h1>Changelog</h1>
       <p class="cl-sub">
-        {fetchedAt ? `Aggregated from each repo's CHANGELOG · fetched ${fetchedAt}` : 'No data fetched yet'}
+        {fetchedAt ? `Aggregated from each repo's CHANGELOG · fetched ${fetchedAt} · latest 3 versions per product` : 'No data fetched yet'}
       </p>
 
       <div class="chips" role="navigation" aria-label="Filter by product">
         <a class="chip" href="/en/changelog/">All</a>
-        {repoNames.map((name) => (
+        {repoNamesList.map((name) => (
           <a class="chip" href={`/en/changelog/?repo=${name}`}>{productByRepo.get(name)?.name ?? name}</a>
         ))}
+        <a class="chip is-all" href="/en/changelog/all/">Full history ({totalAll} versions) →</a>
       </div>
     </section>
 
@@ -178,6 +140,11 @@ const fetchedAt = changelogs.fetchedAt ? new Date(changelogs.fetchedAt).toISOStr
     color: var(--text);
     border-color: var(--accent);
     text-decoration: none;
+  }
+
+  .chip.is-all {
+    color: var(--accent);
+    border-color: var(--accent);
   }
 
   .empty {

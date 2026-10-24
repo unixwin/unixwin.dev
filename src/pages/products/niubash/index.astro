@@ -7,6 +7,9 @@
  */
 import DocsLayout from '../../../components/DocsLayout.astro';
 import CopyButton from '../../../components/CopyButton.astro';
+import FaqSection from '../../../components/FaqSection.astro';
+import { faqByIds, faqJsonLd } from '../../../data/faq';
+import repoMeta from '../../../data/repo-meta.json';
 
 interface Row {
   a: string;
@@ -124,6 +127,12 @@ const bench: Row[] = [
 
 const news: News[] = [
   {
+    version: '1.4.4',
+    date: '2026-10-22',
+    summary:
+      '携带 rubash 1.4.3 引擎：ping/netstat/tracert「command not found」根修（System32 大写盘上名 PING.EXE 的 command-stem 大小写折叠）；${v^^} 交互崩溃修复；WinuxCmd v1.1.20 pin；MSIX 外来环境加固。',
+  },
+  {
     version: '1.4.3',
     date: '2026-10-21',
     summary:
@@ -155,6 +164,13 @@ const news: News[] = [
   },
 ];
 
+// 构建期动态元数据（issue #10：版本号以 GitHub Releases 为单一事实源）
+const nbMeta = (repoMeta.repos as Record<string, { stars: number; latest: string | null }>).niubash;
+const latestV = nbMeta?.latest ?? 'v1.4.4';
+const starsN = nbMeta?.stars ?? 188;
+const metaDate = repoMeta.fetchedAt ? repoMeta.fetchedAt.slice(0, 10) : '';
+const productFaq = faqByIds(['gitbash-diff', 'no-wsl-msys', 'what-is-83', 'switch-agent', 'free-platforms', 'perf', 'naming']);
+
 const productJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -171,7 +187,8 @@ const productJsonLd = {
   title="niubash — AI-native 的真·Bash"
   description="niubash 产品文档：Rust 实现的原生三平台 Bash 兼容 shell。零 fork 三层执行、无 MSYS、四大路径方言全收、83/83 GNU 上游语料通过、AI agent 旗标面与 wpm 联动。"
   path="/products/niubash/"
-  jsonLdExtra={productJsonLd}
+  jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'zh')]}
+  ogImage="/og/niubash.png"
 >
   <header class="doc-head">
     <h1>niubash</h1>
@@ -183,12 +200,12 @@ const productJsonLd = {
     <div class="badges">
       <span class="p-badge">Rust</span>
       <span class="p-badge">Windows · Linux · macOS</span>
-      <span class="p-badge">stable v1.4.3</span>
+      <span class="p-badge">stable {latestV}</span>
     </div>
     <p class="meta-line">
       <a href="https://github.com/unixwin/niubash" target="_blank" rel="noopener noreferrer">github.com/unixwin/niubash ↗</a>
-      <span class="dot">·</span> Star 178
-      <span class="dot">·</span> 最新版本 v1.4.3（repo-meta 实测）
+      <span class="dot">·</span> Star {starsN}
+      <span class="dot">·</span> 最新版本 {latestV}（repo-meta{metaDate ? ` 实测 ${metaDate}` : ""}）
     </p>
   </header>
 
@@ -368,6 +385,8 @@ const productJsonLd = {
       <li><a href="https://unixwin.github.io/niubash/" target="_blank" rel="noopener noreferrer">完整手册（GitHub Pages）↗</a></li>
     </ul>
   </section>
+
+  <FaqSection items={productFaq} lang="zh" />
 </DocsLayout>
 
 <style>

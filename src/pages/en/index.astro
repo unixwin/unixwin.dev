@@ -135,7 +135,7 @@ const softwareAppJsonLd = {
 
 <BaseLayout
   title="UNIXWIN — Niubash, WinuxCmd, Rubash: the AI-native bash family"
-  description="UNIXWIN: the AI-native bash family — niubash, WinuxCmd, rubash, niu-git and wpm. Real bash syntax, real Unix commands, native on Windows / Linux / macOS. No WSL, no MSYS. 83/83 GNU suites passing, 82 byte-identical, ~14 ms git startup, 5 native platforms, ≈16 MB installed family."
+  description="UNIXWIN: the AI-native bash family. Real bash syntax, real Unix commands, native Windows. No WSL, no MSYS. 83/83 GNU upstream suites passing."
   keywords="niubash,winuxcmd,rubash,niu-git,wpm,bash for windows,git bash alternative,ai-native bash"
   jsonLdExtra={softwareAppJsonLd}
   theme="day"
@@ -396,14 +396,19 @@ const softwareAppJsonLd = {
               <span class="demo-dot" aria-hidden="true"></span>
               Git Bash (MSYS)
             </p>
-            <img
-              src="/assets/demo-gitbash.gif"
-              alt="Recorded run: Git Bash's MSYS runtime rewrites arguments and breaks cd, cmd /c and git grep -n in turn"
+            <video
+              class="demo-video"
+              src="/assets/demo-gitbash.webm"
+              poster="/assets/demo-gitbash-poster.jpg"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
               width="692"
               height="334"
-              loading="lazy"
-              decoding="async"
-            />
+              aria-label="Recorded run: Git Bash's MSYS runtime rewrites arguments and breaks cd, cmd /c and git grep -n in turn"
+            ></video>
             <p class="demo-verdict is-bad">runtime rewrites argv → three straight failures</p>
           </div>
           <div class="demo-col">
@@ -411,14 +416,19 @@ const softwareAppJsonLd = {
               <span class="demo-dot" aria-hidden="true"></span>
               niubash (niu)
             </p>
-            <img
-              src="/assets/demo-niu.gif"
-              alt="Recorded run: niu executes the same Windows-native commands — node argv arrives byte-for-byte, cmd /c dir, cd and git grep -n all pass first try"
+            <video
+              class="demo-video"
+              src="/assets/demo-niu.webm"
+              poster="/assets/demo-niu-poster.jpg"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
               width="880"
               height="460"
-              loading="lazy"
-              decoding="async"
-            />
+              aria-label="Recorded run: niu executes the same Windows-native commands — node argv arrives byte-for-byte, cmd /c dir, cd and git grep -n all pass first try"
+            ></video>
             <p class="demo-verdict is-ok">argv byte-for-byte → passes first try</p>
           </div>
         </div>
@@ -1316,7 +1326,8 @@ const softwareAppJsonLd = {
     background: var(--accent-2); /* teal: same source as the hero terminal "green" dot */
   }
 
-  .demo-fig img {
+  .demo-fig img,
+  .demo-fig .demo-video {
     display: block;
     width: 100%;
     height: auto;

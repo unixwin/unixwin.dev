@@ -13,9 +13,14 @@
  *                       清单自动推断（zh 页在清单内且未传 enPath 的行为一致）。
  *   keywords    string  逗号分隔的 SEO/GEO 关键字 → 输出 <meta name="keywords">。
  *                       （可选；缺省不输出该 meta，保持既有页面行为不变。）
- *   jsonLdExtra object  页面对象（如 SoftwareApplication）→ 作为第二个
+ *   jsonLdExtra object | object[]  页面对象（如 SoftwareApplication、BreadcrumbList、
+ *                       FAQPage）→ 多个时包成 @graph，作为第二个
  *                       <script type="application/ld+json"> 与现有 Organization
  *                       JSON-LD 并列输出。（可选；缺省只输出 Organization。）
+ *   ogImage     string  本页 OG/Twitter 图 URL（可选；缺省 /og-image.png；
+ *                       产品页传 /og/<id>.png，issue #18）。
+ *   noindex     boolean true 时不输出 canonical/hreflang，改输出
+ *                       <meta name="robots" content="noindex">（404 页用，issue #16）。
  *
  * 亮/暗（day/night）：<head> 顶部跑一段 is:inline 防 FOUC
  * 脚本（改编自 astrowind ApplyColorMode，MIT，见 THIRD_PARTY_NOTICES.md）——
@@ -45,16 +50,35 @@ interface Props {
   lang?: 'zh' | 'en';
   enPath?: string;
   keywords?: string;
-  jsonLdExtra?: object;
+  jsonLdExtra?: object | object[];
+  ogImage?: string;
+  noindex?: boolean;
 }
 
-const { title, description, theme = 'day', path = '/', lang = 'zh', enPath, keywords, jsonLdExtra } =
-  Astro.props;
+const {
+  title,
+  description,
+  theme = 'day',
+  path = '/',
+  lang = 'zh',
+  enPath,
+  keywords,
+  jsonLdExtra,
+  ogImage: ogImageProp,
+  noindex = false,
+} = Astro.props;
 
 const SITE = 'https://unixwin.dev';
 const fullTitle = title.includes('UNIXWIN') ? title : `${title} · UNIXWIN`;
 const canonical = new URL(path, SITE).href;
-const ogImage = `${SITE}/og-image.png`;
+const ogImage = ogImageProp ? (ogImageProp.startsWith('http') ? ogImageProp : `${SITE}${ogImageProp}`) : `${SITE}/og-image.png`;
+// 多个结构化对象包成 @graph（Google 推荐的多节点容器的等价物）
+const jsonLdExtraGraph =
+  Array.isArray(jsonLdExtra) && jsonLdExtra.length > 1
+    ? { '@context': 'https://schema.org', '@graph': jsonLdExtra }
+    : Array.isArray(jsonLdExtra)
+      ? jsonLdExtra[0]
+      : jsonLdExtra;
 
 // ---- i18n 配对：zh-CN/en/x-default 三条 hreflang + 是否自动跳转 ----
 const pair = resolveLangPair(path, lang, enPath);
@@ -63,7 +87,7 @@ const enUrl = pair.enPath ? new URL(pair.enPath, SITE).href : canonical;
 const htmlLang = pair.lang === 'en' ? 'en' : 'zh-CN';
 const ogLocale = pair.lang === 'en' ? 'en_US' : 'zh_CN';
 // AutoRedirect 仅「zh 页且存在 en 页」时于 <head> 内条件渲染
-const needsAutoRedirect = pair.lang === 'zh' && Boolean(pair.enPath);
+const needsAutoRedirect = pair.lang === 'zh' && Boolean(pair.enPath) && !noindex;
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -123,11 +147,17 @@ const jsonLd = {
       crossorigin
       href="/fonts/fraunces-latin-wght-normal.woff2"
     />
-    <link rel="canonical" href={canonical} />
+    {noindex ? (
+      <meta name="robots" content="noindex" />
+    ) : (
+      <>
+        <link rel="canonical" href={canonical} />
 
-    <link rel="alternate" hreflang="zh-CN" href={zhUrl} />
-    <link rel="alternate" hreflang="en" href={enUrl} />
-    <link rel="alternate" hreflang="x-default" href={zhUrl} />
+        <link rel="alternate" hreflang="zh-CN" href={zhUrl} />
+        <link rel="alternate" hreflang="en" href={enUrl} />
+        <link rel="alternate" hreflang="x-default" href={zhUrl} />
+      </>
+    )}
 
     {needsAutoRedirect && pair.enPath && <AutoRedirect enPath={pair.enPath} />}
 
@@ -147,8 +177,8 @@ const jsonLd = {
     <meta name="twitter:image" content={ogImage} />
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-    {jsonLdExtra && (
-      <script type="application/ld+json" set:html={JSON.stringify(jsonLdExtra)} />
+    {jsonLdExtraGraph && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLdExtraGraph)} />
     )}
   </head>
   <body>

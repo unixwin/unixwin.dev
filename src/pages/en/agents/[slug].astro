@@ -36,15 +36,30 @@ const scriptLabel = agent.script ? agent.script.label_en ?? agent.script.label :
 const statusTone = agent.status === 'ready' ? 'accent' : agent.status === 'partial' ? 'warn' : 'muted';
 const statusLabel = { ready: 'Ready', partial: 'Partial', blocked: 'Blocked', unverified: 'Unverified' }[agent.status] ?? agent.status;
 const difficultyLabel = difficulty === '—' ? 'Difficulty —' : `Difficulty ${difficulty}`;
+
+// meta description ~120+ chars (issue #18): what it does + the switch/verify/rollback deliverables
+const pageDescription = `${oneLiner} This page ships a copy-paste switch script, a real verify command and rollback steps, with notes on the ${mechanism} mechanism and known traps.`;
+
+// BreadcrumbList (issue #18): Home → Agent directory → current agent
+const SITE = 'https://unixwin.dev';
+const breadcrumbLd = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: 'Agent directory', item: `${SITE}/en/agents/` },
+    { '@type': 'ListItem', position: 3, name: displayName, item: `${SITE}/en/agents/${agent.slug}/` },
+  ],
+};
 ---
 
 <BaseLayout
   title={`${displayName} × niubash (English edition)`}
-  description={oneLiner}
+  description={pageDescription}
   theme="day"
   path={`/en/agents/${agent.slug}/`}
   lang="en"
   enPath={`/agents/${agent.slug}/`}
+  jsonLdExtra={breadcrumbLd}
 >
   <SiteHeader />
 

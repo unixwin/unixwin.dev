@@ -65,7 +65,7 @@ npm run build              # 出 dist/
 - [ ] **/download/**：平台 tab + 版本号构建期注入 + 中国镜像（gh.caomengxuan666.com）写进命令 + sha256 折叠表
 - [ ] **中英双语**：`/en/` 路由成对（沿用旧站 sessionStorage 语言探测方案）
 - [ ] 搜索引擎收录：百度/谷歌/必应验证文件放 `public/`（域名已 Active）；开 Cloudflare Web Analytics
-- [ ] llms.txt 扩充为 v2 完整版 + `/llms-full.txt`
+- [x] llms.txt 扩充为 v2 完整版 + `/llms-full.txt`（2026-10-24：端点从 data 模块拼装，llms.txt 有指向行；issue #11）
 
 ## 4. 环境备忘
 

@@ -10,7 +10,7 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
 
 <DocsLayout
   title="Execution model: three tiers, zero forks"
-  description="The niubash engine replicates fork's semantics, not its mechanism: in-process subshells, a real-handle fd table (POSIX dup semantics), real processes only at boundaries; 62 real builtins + 12 inlined coreutils + pipeline-inline arms — observable behavior identical to GNU Bash."
+  description="fork's semantics without fork: in-process subshells, an fd table with POSIX dup semantics, real processes only at boundaries — behavior identical to GNU Bash."
   path="/en/docs/execution-model/"
   lang="en"
   enPath="/docs/execution-model/"

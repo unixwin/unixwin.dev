@@ -40,16 +40,21 @@ const stats = [
 ];
 
 // ---- Install: PowerShell primary / wpm / other platforms (Releases) ----
+// Linux/macOS direct-download versions track repo-meta.json (niubash latest,
+// same source as the JSON-LD softwareVersion below, refreshed by fetch:github)
+// instead of a hand-pinned tag — these tabs sat at v1.4.3 while v1.4.4 was out.
+// The fallback only guards a missing repo-meta value.
+const niuLatest = repoMeta.repos?.niubash?.latest ?? 'v1.4.4';
 const installTabs = [
   { label: 'winget', code: 'winget install --id Unixwin.Niubash --source winget' },
   { label: 'PowerShell', code: 'irm https://unixwin.dev/install.ps1 | iex' },
   {
     label: 'Linux',
-    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.3/niubash-v1.4.3-linux-x86_64.tar.gz && tar xzf niubash.tar.gz',
+    code: `curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/${niuLatest}/niubash-${niuLatest}-linux-x86_64.tar.gz && tar xzf niubash.tar.gz`,
   },
   {
     label: 'macOS',
-    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.3/niubash-v1.4.3-macos-x86_64.tar.gz && tar xzf niubash.tar.gz',
+    code: `curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/${niuLatest}/niubash-${niuLatest}-macos-x86_64.tar.gz && tar xzf niubash.tar.gz`,
   },
 ];
 

@@ -10,7 +10,7 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
 
 <DocsLayout
   title="Paths & MSYS: the biggest behavioral difference"
-  description="niubash accepts all four path dialects (C:\\, /d/, /mnt/d, /cygdrive/d); argv stays byte-for-byte verbatim with no MSYS runtime; uname reporting MSYS_NT is a deliberate compatibility persona; the write-side bare-drive gap is tracked in the open."
+  description="niubash accepts all four path dialects — Windows, MSYS, WSL and Cygwin forms — and never rewrites argv: no MSYS runtime, no path-conversion heuristics."
   path="/en/docs/paths-and-msys/"
   lang="en"
   enPath="/docs/paths-and-msys/"

@@ -37,16 +37,20 @@ const stats = [
 ];
 
 // ---- Install：PowerShell 主线 / wpm / 其他平台（Releases） ----
+// Linux/macOS 直装包版本跟 repo-meta.json 的 niubash latest 走（与下方 JSON-LD
+// softwareVersion 同源、随 fetch:github 刷新），不再手写钉版——曾钉死 v1.4.3
+// 而实际最新已是 v1.4.4。fallback 仅为 repo-meta 缺值时的保底。
+const niuLatest = repoMeta.repos?.niubash?.latest ?? 'v1.4.4';
 const installTabs = [
   { label: 'winget', code: 'winget install --id Unixwin.Niubash --source winget' },
   { label: 'PowerShell', code: 'irm https://unixwin.dev/install.ps1 | iex' },
   {
     label: 'Linux',
-    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.3/niubash-v1.4.3-linux-x86_64.tar.gz && tar xzf niubash.tar.gz',
+    code: `curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/${niuLatest}/niubash-${niuLatest}-linux-x86_64.tar.gz && tar xzf niubash.tar.gz`,
   },
   {
     label: 'macOS',
-    code: 'curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/v1.4.3/niubash-v1.4.3-macos-x86_64.tar.gz && tar xzf niubash.tar.gz',
+    code: `curl -fsSL -o niubash.tar.gz https://github.com/unixwin/niubash/releases/download/${niuLatest}/niubash-${niuLatest}-macos-x86_64.tar.gz && tar xzf niubash.tar.gz`,
   },
 ];
 

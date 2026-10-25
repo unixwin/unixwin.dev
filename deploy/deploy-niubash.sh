@@ -62,9 +62,24 @@ sleep 1
 code="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8888/ || true)"
 [ "$code" = "200" ] || [ "$code" = "301" ] || die "Site did not return 200/301 (got '${code}'). Roll back with: sudo bash /home/${SITE_USER}/rollback-niubash.sh"
 
-for path in /en/ /install.ps1 /sitemap-index.xml /robots.txt; do
+# Plan A (2026-10-25) 后的预期状态码：页面/sitemap 全部 301 归一，
+# 分发载荷（install.ps1）与验证文件保持 200。
+check() {
+  local expect="$1" path="$2" c
   c="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:8888${path}" || true)"
-  printf '    %-22s %s\n' "$path" "$c"
-done
+  printf '    %-24s %s (expect %s)\n' "$path" "$c" "$expect"
+  [ "$c" = "$expect" ] || die "self-check failed: ${path} -> ${c}, expected ${expect}"
+}
+check 301 /
+check 301 /index.html
+check 301 /en/
+check 301 /en/index.html
+check 301 /sitemap-index.xml
+check 301 /sitemap.xml
+check 200 /robots.txt
+check 200 /install.ps1
+check 200 /BingSiteAuth.xml
+check 200 /baidu_verify_codeva-076vAVfw1K.html
+check 200 /googled3ccf1da77f88b19.html
 
 printf '\n\033[1;32mDeployed.\033[0m https://dl.caomengxuan666.com/\n'

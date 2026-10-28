@@ -152,7 +152,7 @@ const selfupdate: Row[] = [
 const plugin: Row[] = [
   {
     cmd: 'niu plugin add <id|owner/repo|url|path>',
-    purpose: '安装外部插件源（不受信）',
+    purpose: '安装外部插件源',
     note: '支持四种定位形式。',
     src: 'niu --help 实机（1.4.0）',
   },
@@ -175,12 +175,6 @@ const plugin: Row[] = [
     src: 'niu --help 实机（1.4.0）',
   },
   {
-    cmd: 'niu plugin trust <id>',
-    purpose: '审阅并激活某源的资产',
-    note: '信任检查层。',
-    src: 'niu --help 实机（1.4.0）',
-  },
-  {
     cmd: 'niu plugin discover [--verbose]',
     purpose: '外部插件源总览（只读）',
     note: '不改任何状态。',
@@ -189,7 +183,7 @@ const plugin: Row[] = [
   {
     cmd: 'niu plugin source <command>',
     purpose: '源协议全集',
-    note: 'add / trust / sign / verify / remove / update / rollback / list。',
+    note: 'add / remove / update / rollback / list。',
     src: 'niu --help 实机（1.4.0）',
   },
   {
@@ -294,13 +288,7 @@ const plugins: Row[] = [
   {
     cmd: 'niu plugin add <id|owner/repo|url|path>',
     purpose: '安装外部插件源',
-    note: '克隆到 ~/.niubash/sources/<id> 并登记 registry；新源默认不受信，add 后不会执行任何内容。',
-    src: 'getting-started.md',
-  },
-  {
-    cmd: 'niu plugin trust <id>',
-    purpose: '审阅通过执行门',
-    note: 'review 校验和后放行；enable 在 trust 之前会被拒绝。',
+    note: '克隆到 ~/.niubash/sources/<id> 并登记 registry；add 本身不执行任何内容，enable 前资产不生效。可选 --checksum <sha256> 在安装时对整棵源树做一次性校验，不匹配即拒绝——这是目前唯一的完整性检查。',
     src: 'getting-started.md',
   },
   {
@@ -476,7 +464,7 @@ const doctor: Row[] = [
 
   <section>
     <h2 id="plugin">plugin 子命令（全）</h2>
-    <p>外部 bash 生态（oh-my-bash / bash-it / bash-completion 等）的安装、信任与锁定。</p>
+    <p>外部 bash 生态（oh-my-bash / bash-it / bash-completion 等）的安装与锁定。</p>
     <div class="table-scroll">
       <table class="cli-table">
         <thead><tr><th>命令</th><th>作用</th><th>备注（来源）</th></tr></thead>
@@ -584,8 +572,9 @@ const doctor: Row[] = [
   <section>
     <h2 id="plugin">plugin 子命令</h2>
     <p>
-      外部 bash 生态（oh-my-bash、bash-it、任意 git 源）的安装、信任与激活——
-      一律「先装、后审、再信」，声明式 spec 是唯一事实源。
+      外部 bash 生态（oh-my-bash、bash-it、任意 git 源）的安装与激活——
+      声明式 spec 是唯一事实源。已无信任体系：唯一的完整性检查是安装时
+      一次性 <code>--checksum</code> 校验（对整棵源树做 sha256，不匹配即拒绝）。
     </p>
     <div class="table-scroll">
       <table class="cli-table">

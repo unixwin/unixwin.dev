@@ -154,7 +154,7 @@ const selfupdate: Row[] = [
 const plugin: Row[] = [
   {
     cmd: 'niu plugin add <id|owner/repo|url|path>',
-    purpose: 'Install an external plugin source (untrusted)',
+    purpose: 'Install an external plugin source',
     note: 'Four locator forms supported.',
     src: 'niu --help, live binary (1.4.0)',
   },
@@ -177,12 +177,6 @@ const plugin: Row[] = [
     src: 'niu --help, live binary (1.4.0)',
   },
   {
-    cmd: 'niu plugin trust <id>',
-    purpose: 'Review and activate a source\'s assets',
-    note: 'The trust-check layer.',
-    src: 'niu --help, live binary (1.4.0)',
-  },
-  {
     cmd: 'niu plugin discover [--verbose]',
     purpose: 'Read-only overview of external plugin sources',
     note: 'Changes no state.',
@@ -191,7 +185,7 @@ const plugin: Row[] = [
   {
     cmd: 'niu plugin source <command>',
     purpose: 'The full source protocol',
-    note: 'add / trust / sign / verify / remove / update / rollback / list.',
+    note: 'add / remove / update / rollback / list.',
     src: 'niu --help, live binary (1.4.0)',
   },
   {
@@ -296,13 +290,7 @@ const plugins: Row[] = [
   {
     cmd: 'niu plugin add <id|owner/repo|url|path>',
     purpose: 'Install an external plugin source',
-    note: 'Clones into ~/.niubash/sources/<id> and registers the registry; a new source is untrusted by default and add executes nothing.',
-    src: 'getting-started.md',
-  },
-  {
-    cmd: 'niu plugin trust <id>',
-    purpose: 'Review-pass the execution gate',
-    note: 'Enables after checksum review; enable before trust is rejected.',
+    note: 'Clones into ~/.niubash/sources/<id> and registers the registry; add executes nothing and assets stay inactive until enable. The optional --checksum <sha256> verifies the whole source tree once, at install time, and refuses on mismatch — the only integrity check remaining.',
     src: 'getting-started.md',
   },
   {
@@ -482,7 +470,7 @@ const doctor: Row[] = [
 
   <section>
     <h2 id="plugin">plugin subcommands (complete)</h2>
-    <p>Installing, trusting and locking the external bash ecosystem (oh-my-bash / bash-it / bash-completion etc.).</p>
+    <p>Installing and locking the external bash ecosystem (oh-my-bash / bash-it / bash-completion etc.).</p>
     <div class="table-scroll">
       <table class="cli-table">
         <thead><tr><th>Command</th><th>Purpose</th><th>Notes (source)</th></tr></thead>
@@ -590,9 +578,10 @@ const doctor: Row[] = [
   <section>
     <h2 id="plugins">plugin subcommands (workflow)</h2>
     <p>
-      Installing, trusting and activating the external bash ecosystem (oh-my-bash, bash-it, any git
-      source) — always "install first, review second, trust third"; the declarative spec is the single
-      source of truth.
+      Installing and activating the external bash ecosystem (oh-my-bash, bash-it, any git
+      source); the declarative spec is the single source of truth. There is no trust system —
+      the only integrity check is the one-shot install-time <code>--checksum</code>
+      verification (sha256 over the whole source tree, refused on mismatch).
     </p>
     <div class="table-scroll">
       <table class="cli-table">

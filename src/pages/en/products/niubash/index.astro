@@ -122,7 +122,7 @@ const productJsonLd = {
     <p class="lead">
       The AI-native real Bash: real syntax, real Unix commands, native Windows / Linux / macOS.
       One <code>niu.exe</code> packages the language engine (rubash), real Unix commands (WinuxCmd),
-      a git-aware prompt and a plugin system with a trust model; it is not MSYS2, Cygwin, Git Bash or
+      a git-aware prompt and a plugin system; it is not MSYS2, Cygwin, Git Bash or
       WSL — no POSIX emulation layer, no path-conversion heuristics.
     </p>
     <div class="badges">
@@ -240,7 +240,7 @@ const productJsonLd = {
       <summary>中文原文 · Chinese original（AI 集成 / 插件系统 / 提示符 三节全文）</summary>
       <div lang="zh-CN">
         <p><strong>AI 集成</strong>：agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：<code>niu -c true</code> 的冷启动地板从 105.6 ms 压到 26.3 ms（一次性快路径六连 PR；29 例行为电池零差异）。其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，与 <code>-c</code> 同路径、同 BASH_EXECUTION_STRING 契约。其三，目录记忆 <code>--cwd-state</code>。会话级接入：<strong>从 niu 会话启动的 agent 直接拿到 niu 导出的 $SHELL</strong>。逐家 agent 见 <a href="/en/agents/">AI Agent 接入目录</a>；给 agent 的一键安装提示词见 <a href="/en/ai/">给 AI 的门户</a>；全部旗标语义见 <a href="/en/docs/cli/">CLI 与旗标参考</a>。</p>
-        <p><strong>插件系统</strong>：外部 bash 生态走「先装、后审、再信」：<code>niu plugin add</code> 克隆源（新源默认不受信），<code>niu plugin trust</code> 审阅校验和后放行，<code>niu plugin enable</code> 在 rc 尾部维护托管块——块外内容永不改写。声明式 spec（~/.niubash/plugins.toml）是唯一事实源，sync / restore / rollback 一族动词带 lockfile 锁定，镜像（niu plugin mirror）对国内网络友好。运行时信任层会复验 pin。</p>
+        <p><strong>插件系统</strong>：外部 bash 生态的接入流程：<code>niu plugin add</code> 克隆源（add 本身不执行任何内容，enable 前资产不生效；可选 --checksum &lt;sha256&gt; 在安装时对整棵源树做一次性校验，不匹配即拒绝——这是目前唯一的完整性检查），<code>niu plugin enable</code> 在 rc 尾部维护托管块——块外内容永不改写。声明式 spec（~/.niubash/plugins.toml）是唯一事实源，sync / restore / rollback 一族动词带 lockfile 锁定，镜像（niu plugin mirror）对国内网络友好。</p>
         <p><strong>提示符</strong>：默认提示符是 Git Bash 骨架，但分支段读 .git/HEAD 文件而不是 fork git——「提示符永不 spawn」红线，实测冷 39 ms / 暖 p50 2.5 ms，对照 Git Bash 每提示符 __git_ps1 约 100–300 ms。PS1 / 主题声明照常接管，set -o vi 的编辑模式指示器保留。</p>
       </div>
     </details>

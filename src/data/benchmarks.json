@@ -34,12 +34,13 @@
     }
   },
   "latency": [
-    { "metric": "git 启动（git --version）", "us": "13.7 ms 均值 / 11.5 ms 最低 · git status 22.6 ms", "them": "Git Bash 45–103 ms（niu-git#12 同场：mingw64\\bin 51.3 ms · cmd\\git.exe 45.3 ms）", "badge": "3–7x faster", "source": "niu-git#12（2026-10-16 合入）· niubash#374" },
-    { "metric": "一次性执行 niu -c 'true'（2026-10-28 复测）", "us": "4.14 ms（空跑 p50 3.71 ms）", "them": "GNU bash 5.3.20 2.67 ms（空跑 2.60 ms）· Linux 同机 release 口径", "badge": "", "source": "2026-10-28 perf 轮 · 50 样本交错复测" },
-    { "metric": "提示符 git 段", "us": "读 .git/HEAD ≤29 ms", "them": "每条提示符 spawn git 113–362 ms", "badge": "4–12x faster", "source": "GITBASH-KILLER 面 3（真仓 min-of-20）" },
-    { "metric": "shell 启动（5 次实测）", "us": "rubash 27–48 ms", "them": "Git Bash 60–93 ms · WSL 202–278 ms", "badge": "2–3x faster", "source": "data/bench/startup.tsv" },
+    { "metric": "git 启动（git --version，Windows 实测）", "us": "13.7 ms 均值 / 11.5 ms 最低 · git status 22.6 ms", "them": "Git Bash 45–103 ms（niu-git#12 同场：mingw64\\bin 51.3 ms · cmd\\git.exe 45.3 ms）", "badge": "3–7x faster", "source": "niu-git#12（2026-10-16 合入）· niubash#374" },
+    { "metric": "一次性执行 niu -c true（Windows 实测）", "us": "26.3 ms", "them": "Git Bash 71 ms", "badge": "2.7x faster", "source": "GITBASH-KILLER 面 6" },
+    { "metric": "一次性执行 niu -c 'true'（Linux 实测 · 2026-10-28 复测）", "us": "4.14 ms（空跑 p50 3.71 ms）", "them": "GNU bash 5.3.20 2.67 ms（空跑 2.60 ms）", "badge": "", "source": "2026-10-28 perf 轮 · 50 样本交错复测（Linux 同机 release 构建）" },
+    { "metric": "提示符 git 段（Windows 实测）", "us": "读 .git/HEAD ≤29 ms", "them": "每条提示符 spawn git 113–362 ms", "badge": "4–12x faster", "source": "GITBASH-KILLER 面 3（真仓 min-of-20）" },
+    { "metric": "shell 启动（5 次实测，Windows 实测）", "us": "rubash 27–48 ms", "them": "Git Bash 60–93 ms · WSL 202–278 ms", "badge": "2–3x faster", "source": "data/bench/startup.tsv" },
     { "metric": "安装体积", "us": "niu ≈16 MB · 零 DLL", "them": "Git Bash 440 MB + 20 MB msys-2.0.dll", "badge": "27x lighter", "source": "GITBASH-KILLER 面 4（装机位实测）" },
-    { "metric": "WinuxCmd", "us": "3.79 MB 携带 176 命令 / 1,924 选项 · ~19 ms 冷启", "them": "—", "badge": "", "source": "WinuxCmd README:32,:74（PGO：sort −18%、nl −17%）" }
+    { "metric": "WinuxCmd", "us": "3.79 MB 携带 176 命令 / 1,924 选项 · ~19 ms 冷启（Windows 实测）", "them": "—", "badge": "", "source": "WinuxCmd README:32,:74（PGO：sort −18%、nl −17%）" }
   ],
   "headToHead": {
     "title": "Windows 同场：8/8 全部快于 Git Bash",
@@ -91,7 +92,8 @@
     ]
   },
   "engineering": [
-    { "item": "一次性执行优化（xgr 六连）", "detail": "niu -c 快路径六连后，2026-10-28 统一口径复测 4.14 ms（空跑 p50 3.71 ms，Linux 同机 release）", "source": "niubash PR #267–#272 · 2026-10-28 perf 轮" },
+    { "item": "一次性执行优化（xgr 六连）", "detail": "niu -c true 105.6 ms → 19.8 ms（Windows 实测）", "source": "niubash PR #267–#272" },
+    { "item": "一次性执行复测（Linux 口径）", "detail": "niu -c 'true' 4.14 ms（空跑 p50 3.71 ms）；GNU bash 5.3.20 2.67 / 2.60 ms · Linux 同机 release 构建", "source": "2026-10-28 perf 轮 · 50 样本交错复测" },
     { "item": "多行粘贴", "detail": "自动误执行 186 次 → 0；257 行载荷 300s 超时 → 4.6s", "source": "PR #252/#288 · paste_multiline_bench.py" },
     { "item": "nvm.sh 重词法 checkpoint", "detail": "与 GNU 差距 720x → 8x，重词法字节 −40%", "source": "rubash PR #486" },
     { "item": "数组元素写 O(n²)→O(1) 均摊", "detail": "K=5000 单次写 vs GNU：关联 445x → 9.9x、索引 736x → 3.8x（旧版对自身为 45 倍 / 177 倍）；附带修好 O(n²) tokenizer（10001 段真解析 563→17.8 ms）", "source": "rubash#618/#616（账本 docs/performance.md）· 早先 #650/#652" },

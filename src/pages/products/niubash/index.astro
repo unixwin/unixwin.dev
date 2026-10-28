@@ -76,7 +76,7 @@ const features: Feature[] = [
   },
   {
     title: 'git 感知的快速提示符',
-    body: '默认提示符读 .git/HEAD 文件（微秒级）渲染分支与脏标记，不再像 Git Bash 那样每条提示符 spawn git 子进程（实测 113–362ms）；仓库外连 stat 都省掉。视觉对齐 Git Bash 骨架，但明确不做 MINGW64 身份段。',
+    body: '默认提示符读 .git/HEAD 文件（微秒级）渲染分支与脏标记，不再像 Git Bash 那样每条提示符 spawn git 子进程（Windows 实测 113–362ms）；仓库外连 stat 都省掉。视觉对齐 Git Bash 骨架，但明确不做 MINGW64 身份段。',
   },
   {
     title: '输入管线做到字节级',
@@ -94,14 +94,20 @@ const features: Feature[] = [
 
 const bench: Row[] = [
   {
-    a: '一次性执行 niu -c true',
+    a: '一次性执行 niu -c true（Windows 口径）',
+    b: '26.3 ms（优化前 105.6 ms，一次性快路径六连 PR；Windows 实测）',
+    c: 'Git Bash 71 ms',
+    src: 'GITBASH-KILLER 面 6 · niubash PR #267–#272',
+  },
+  {
+    a: "一次性执行 niu -c 'true'（Linux 口径）",
     b: '4.14 ms（空跑 p50 3.71 ms；Linux 同机 release 口径）',
     c: 'GNU bash 5.3.20 2.67 ms（空跑 2.60 ms）',
     src: '2026-10-28 perf 轮 · 50 样本交错复测',
   },
   {
     a: '提示符 git 段',
-    b: '读 .git/HEAD ≤29 ms',
+    b: '读 .git/HEAD ≤29 ms（Windows 实测）',
     c: '每条提示符 spawn git 113–362 ms',
     src: 'GITBASH-KILLER 面 3（真仓 min-of-20）',
   },
@@ -268,7 +274,7 @@ const productJsonLd = {
       Windows 装完即有完整命令层：安装器自带完整 WinuxCmd root（176 个 Unix 命令与内建包管理器
       wpm，落在 <code>&#123;app&#125;\winuxcmd\</code>，PATH 指向 <code>winuxcmd\bin</code>），发行包并按
       <code>preinstall.json</code> 预装 gawk（含 awk shim）、niu-git、ripgrep、fd——PATH 上的
-      git 即原生 git（~14 ms）；其中仅 gawk 为 x64 资产；ARM64 安装同样预装 niu-git / ripgrep / fd。
+      git 即原生 git（Windows 实测 ~14 ms）；其中仅 gawk 为 x64 资产；ARM64 安装同样预装 niu-git / ripgrep / fd。
     </p>
     <p>Linux / macOS 取可移植 tar.gz 解压即用：</p>
     <div class="cmd">
@@ -291,9 +297,11 @@ const productJsonLd = {
     <h3>AI 集成</h3>
     <p>
       agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：跳过 REPL
-      专属初始化；2026-10-28 统一口径复测（50 样本交错、release 构建、Linux 同机）：
-      niu 空跑 p50 3.71 ms、<code>niu -c 'true'</code> 4.14 ms（GNU bash 5.3.20 为
-      2.60 / 2.67 ms；早先的 Windows 口径旧数不可复现、已下线）。
+      专属初始化，<code>niu -c true</code> 的冷启动地板从 105.6 ms 一路压到 26.3 ms
+      （Windows 实测；一次性快路径六连 PR；29 例行为电池零差异）。Linux 口径另行
+      复测（2026-10-28，50 样本交错、release 构建、Linux 同机）：niu 空跑 p50
+      3.71 ms、<code>niu -c 'true'</code> 4.14 ms，GNU bash 5.3.20 为 2.60 / 2.67 ms
+      ——与 Windows 数字分栏呈现，各自与同平台对照比较。
       其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，
       与 <code>-c</code> 同路径、同 <code>BASH_EXECUTION_STRING</code> 契约。其三，目录记忆
       <code>--cwd-state</code>：agent 按工作区各配一个状态文件，链式调用即共享 cwd。
@@ -318,14 +326,14 @@ const productJsonLd = {
     <p>
       默认提示符是 Git Bash 骨架（绿 user@host、黄 POSIX 形态 cwd、青分支 + 脏星），
       但分支段读 <code>.git/HEAD</code> 文件而不是 fork git——这是「提示符永不 spawn」红线的产物，
-      实测冷 39 ms / 暖 p50 2.5 ms，对照 Git Bash 每提示符 <code>__git_ps1</code> 的约 100–300 ms。
+      Windows 实测冷 39 ms / 暖 p50 2.5 ms，对照 Git Bash 每提示符 <code>__git_ps1</code> 的约 100–300 ms。
       PS1 / 主题声明照常接管，<code>set -o vi</code> 的编辑模式指示器保留。
     </p>
   </section>
 
   <section>
     <h2 id="bench">实测数字</h2>
-    <p>每条为真机实测、可复现，基准脚本随仓附上；完整对比见 <a href="/benchmarks/">基准页</a>。</p>
+    <p>每条为真机实测、可复现，基准脚本随仓附上；数字按平台分行标注（Windows 实测 / Linux 口径），不跨平台比较；完整对比见 <a href="/benchmarks/">基准页</a>。</p>
     <div class="table-scroll">
       <table class="cli-table">
         <thead>
@@ -348,7 +356,7 @@ const productJsonLd = {
   </section>
 
   <section>
-    <h2 id="perf-round">性能轮定版：2026-10-28</h2>
+    <h2 id="perf-round">性能轮定版：2026-10-28（Linux 口径）</h2>
     <p>
       2026-10-28 引擎性能轮的定版数字（release 构建、Linux 同机交错采样、采样门
       load1 ≤ 2.0；本节口径仅限 Linux 同机，不代表 Windows 量级）：

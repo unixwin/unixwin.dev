@@ -53,9 +53,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'perf',
     q: '性能怎么样？',
-    a: '一次性执行（niu -c true）经专项优化后 19.8ms；niu-git 启动约 14ms（Git Bash 45–103ms）；命令替换与子壳类负载比 GNU bash 快 13–62x。全部数字附实测方法与复现产物，见「基准测试」（/benchmarks/）。',
+    a: '一次性执行（niu -c true）2026-10-28 统一口径复测 4.14ms（空跑 p50 3.71ms；GNU bash 5.3.20 为 2.67 / 2.60ms；Linux 同机 release）；niu-git 启动约 14ms（Git Bash 45–103ms）；命令替换与子壳类负载比 GNU bash 快 13–62x。全部数字附实测方法与复现产物，见「基准测试」（/benchmarks/）。',
     qEn: 'How is the performance?',
-    aEn: 'One-shot execution (niu -c true) is 19.8 ms after dedicated optimization; niu-git starts in ~14 ms (Git Bash: 45–103 ms); command-substitution and subshell workloads run 13–62x faster than GNU bash. Every number ships with its measurement method and reproducible artifacts — see Benchmarks (/benchmarks/).',
+    aEn: 'One-shot execution (niu -c true) re-measured 2026-10-28 at 4.14 ms (bare run p50 3.71 ms; GNU bash 5.3.20 2.67 / 2.60 ms; Linux same-machine, release builds); niu-git starts in ~14 ms (Git Bash: 45–103 ms); command-substitution and subshell workloads run 13–62x faster than GNU bash. Every number ships with its measurement method and reproducible artifacts — see Benchmarks (/benchmarks/).',
   },
   {
     id: 'naming',

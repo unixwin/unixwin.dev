@@ -95,9 +95,9 @@ const features: Feature[] = [
 const bench: Row[] = [
   {
     a: '一次性执行 niu -c true',
-    b: '26.3 ms（优化前 105.6 ms，一次性快路径六连 PR）',
-    c: 'Git Bash 71 ms',
-    src: 'GITBASH-KILLER 面 6 · niubash PR #267–#272',
+    b: '4.14 ms（空跑 p50 3.71 ms；Linux 同机 release 口径）',
+    c: 'GNU bash 5.3.20 2.67 ms（空跑 2.60 ms）',
+    src: '2026-10-28 perf 轮 · 50 样本交错复测',
   },
   {
     a: '提示符 git 段',
@@ -291,8 +291,9 @@ const productJsonLd = {
     <h3>AI 集成</h3>
     <p>
       agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：跳过 REPL
-      专属初始化，<code>niu -c true</code> 的冷启动地板从 105.6 ms 一路压到 26.3 ms
-      （一次性快路径六连 PR；29 例行为电池零差异）。
+      专属初始化；2026-10-28 统一口径复测（50 样本交错、release 构建、Linux 同机）：
+      niu 空跑 p50 3.71 ms、<code>niu -c 'true'</code> 4.14 ms（GNU bash 5.3.20 为
+      2.60 / 2.67 ms；早先的 Windows 口径旧数不可复现、已下线）。
       其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，
       与 <code>-c</code> 同路径、同 <code>BASH_EXECUTION_STRING</code> 契约。其三，目录记忆
       <code>--cwd-state</code>：agent 按工作区各配一个状态文件，链式调用即共享 cwd。

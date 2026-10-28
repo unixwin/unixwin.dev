@@ -10,7 +10,7 @@ import DocsLayout from '../../../components/DocsLayout.astro';
 
 <DocsLayout
   title="性能特征：哪里快、哪里持平"
-  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（Win32 CreateProcess 地板）。同机实测：git 启动 ~14ms、一次性执行 26.3ms、提示符读 .git/HEAD。"
+  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（Win32 CreateProcess 地板）。同机实测：git 启动 ~14ms、提示符读 .git/HEAD。"
   path="/docs/performance-model/"
 >
   <header class="doc-head">
@@ -81,7 +81,7 @@ import DocsLayout from '../../../components/DocsLayout.astro';
       </thead>
       <tbody>
         <tr><td>git 启动（<code>git --version</code>）</td><td><strong>~14 ms</strong>（niu-git：MSVC + schannel，无 MSYS）</td><td>Git Bash 45–103 ms</td></tr>
-        <tr><td>一次性执行 <code>niu -c true</code></td><td><strong>26.3 ms</strong></td><td>Git Bash 71 ms</td></tr>
+        <tr><td>一次性执行 <code>niu -c 'true'</code>（2026-10-28 复测）</td><td><strong>4.14 ms</strong>（空跑 p50 3.71 ms）</td><td>GNU bash 5.3.20 2.67 ms（空跑 2.60 ms）· Linux 同机 release 口径</td></tr>
         <tr><td>shell 启动（5 次实测）</td><td><strong>rubash 27–48 ms</strong></td><td>Git Bash 60–93 ms · WSL 202–278 ms</td></tr>
         <tr><td>提示符 git 段</td><td><strong>读 <code>.git/HEAD</code>，≤29 ms</strong></td><td>每条提示符 spawn git 113–362 ms</td></tr>
         <tr><td>WinuxCmd 工具层</td><td>3.79 MB 携带 176 命令 / 1,924 选项，~19 ms 冷启</td><td>—</td></tr>
@@ -91,8 +91,10 @@ import DocsLayout from '../../../components/DocsLayout.astro';
     <p>
       提示符一项值得展开：Git Bash 兼容主题不 spawn git 子进程，而是直接读
       <code>.git/HEAD</code> 文件（微秒级），把「每敲一条命令付一次 git 启动」变成
-      「不付」。一次性执行数字对 agent 与 CI 尤其重要——<code>niu -c</code> 的
-      冷启动地板从 105.6 ms 一路压到 26.3 ms（一次性快路径六连 PR）。
+      「不付」。一次性执行数字对 agent 与 CI 尤其重要——2026-10-28 按统一口径
+      （50 样本交错、release 构建、Linux 同机）复测：niu 空跑 p50 3.71 ms、
+      <code>niu -c 'true'</code> 4.14 ms，GNU bash 5.3.20 为 2.60 / 2.67 ms；
+      本页早先的 Windows 口径旧数不可复现，已下线。
     </p>
   </section>
 

@@ -19,9 +19,9 @@ const installSource = 'git clone https://github.com/unixwin/niubash.git && cd ni
 const bench = [
   {
     a: 'One-shot execution niu -c true',
-    b: '26.3 ms (was 105.6 ms — six one-shot fast-path PRs)',
-    c: 'Git Bash 71 ms',
-    src: 'GITBASH-KILLER facet 6 · niubash PR #267–#272',
+    b: '4.14 ms (bare run p50 3.71 ms; Linux same-machine, release builds)',
+    c: 'GNU bash 5.3.20: 2.67 ms (bare 2.60 ms)',
+    src: '2026-10-28 perf round · 50-sample interleaved re-measurement',
   },
   {
     a: 'Prompt git segment',
@@ -239,7 +239,7 @@ const productJsonLd = {
     <details class="zh-fold">
       <summary>中文原文 · Chinese original（AI 集成 / 插件系统 / 提示符 三节全文）</summary>
       <div lang="zh-CN">
-        <p><strong>AI 集成</strong>：agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：<code>niu -c true</code> 的冷启动地板从 105.6 ms 压到 26.3 ms（一次性快路径六连 PR；29 例行为电池零差异）。其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，与 <code>-c</code> 同路径、同 BASH_EXECUTION_STRING 契约。其三，目录记忆 <code>--cwd-state</code>。会话级接入：<strong>从 niu 会话启动的 agent 直接拿到 niu 导出的 $SHELL</strong>。逐家 agent 见 <a href="/en/agents/">AI Agent 接入目录</a>；给 agent 的一键安装提示词见 <a href="/en/ai/">给 AI 的门户</a>；全部旗标语义见 <a href="/en/docs/cli/">CLI 与旗标参考</a>。</p>
+        <p><strong>AI 集成</strong>：agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：2026-10-28 统一口径复测（50 样本交错、release 构建、Linux 同机）：niu 空跑 p50 3.71 ms、<code>niu -c 'true'</code> 4.14 ms（GNU bash 5.3.20 为 2.60 / 2.67 ms；早先的 Windows 口径旧数不可复现、已下线）。其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，与 <code>-c</code> 同路径、同 BASH_EXECUTION_STRING 契约。其三，目录记忆 <code>--cwd-state</code>。会话级接入：<strong>从 niu 会话启动的 agent 直接拿到 niu 导出的 $SHELL</strong>。逐家 agent 见 <a href="/en/agents/">AI Agent 接入目录</a>；给 agent 的一键安装提示词见 <a href="/en/ai/">给 AI 的门户</a>；全部旗标语义见 <a href="/en/docs/cli/">CLI 与旗标参考</a>。</p>
         <p><strong>插件系统</strong>：外部 bash 生态走「先装、后审、再信」：<code>niu plugin add</code> 克隆源（新源默认不受信），<code>niu plugin trust</code> 审阅校验和后放行，<code>niu plugin enable</code> 在 rc 尾部维护托管块——块外内容永不改写。声明式 spec（~/.niubash/plugins.toml）是唯一事实源，sync / restore / rollback 一族动词带 lockfile 锁定，镜像（niu plugin mirror）对国内网络友好。运行时信任层会复验 pin。</p>
         <p><strong>提示符</strong>：默认提示符是 Git Bash 骨架，但分支段读 .git/HEAD 文件而不是 fork git——「提示符永不 spawn」红线，实测冷 39 ms / 暖 p50 2.5 ms，对照 Git Bash 每提示符 __git_ps1 约 100–300 ms。PS1 / 主题声明照常接管，set -o vi 的编辑模式指示器保留。</p>
       </div>

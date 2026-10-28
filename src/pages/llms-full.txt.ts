@@ -85,7 +85,7 @@ echo "SHELL=$SHELL"; uname -s
 - GNU Bash upstream test suites: ${facts.bashSuites} passing, ${facts.byteIdentical}
 - Unix commands bundled: ${facts.commands} (${facts.options} options)
 - git startup (niu-git): ${facts.gitStartup} vs Git Bash 45–103 ms
-- One-shot execution \`niu -c true\`: 19.8 ms (was 105.6 ms)
+- One-shot execution \`niu -c true\`: 4.14 ms (bare run p50 3.71 ms; GNU bash 5.3.20 2.67 / 2.60 ms — Linux same-machine, release builds, 2026-10-28 re-measurement)
 - Installed family size: ${facts.familySize}, zero DLL dependencies
 - Native platforms: ${facts.platforms} (Windows x64/arm64, Linux gnu/musl, macOS, Android, OpenHarmony CI gates)
 - Unit tests: ${facts.unitTests}

@@ -347,6 +347,47 @@ const productJsonLd = {
   </section>
 
   <section>
+    <h2 id="perf-round">性能轮定版：2026-10-28</h2>
+    <p>
+      2026-10-28 引擎性能轮的定版数字（release 构建、Linux 同机交错采样、采样门
+      load1 ≤ 2.0；本节口径仅限 Linux 同机，不代表 Windows 量级）：
+    </p>
+    <ul>
+      <li>
+        启动：niu 空跑 p50 <strong>3.71 ms</strong>（2026-10-25 基线 16.98 ms，非交互
+        快路径生效），与裸引擎 rubash 的 3.28 ms 同级；GNU bash 5.3.20 为 2.60 ms。
+        niu -c 'true' 为 4.14 ms（rubash 3.59 ms，GNU 2.67 ms）。
+      </li>
+      <li>
+        领先面：管道负载 pipe_200 为 GNU 耗时的 <strong>0.045×</strong>、命令替换循环
+        comsub_loop 为 <strong>0.107×</strong>——零 fork 进程内模型的结构性领先。
+      </li>
+      <li>
+        长字符串模式替换曾是全场最差形状：<code>{'${v/#seg/SEG}'}</code> 由 498.68× 修到
+        <strong>1.00×</strong>、<code>{'${v%%.*}'}</code> 由 84.39× 修到 <strong>0.24×</strong>
+        （rubash PR #1909，已合并）。
+      </li>
+      <li>
+        数组元素写回归（+28–31%）经二分定位根因并修复（rubash PR #1912，已合并），
+        填充三例绝对耗时回到 2025 基线。
+      </li>
+      <li>
+        算术下标直读 <code>{'$((a[i]))'}</code> 的形状差距关闭：10.98× → 2.99×（rubash PR #1615）。
+      </li>
+      <li>
+        仍在优化中：关联数组元素读、解析吞吐、declare/getopts 每调用常数、procsub 读放大
+        四个族——落地并通过门禁前不在此预支数字。
+      </li>
+    </ul>
+    <p class="src-line">
+      引擎面完整 A 表与方法学见 rubash 仓
+      <a href="https://github.com/unixwin/rubash/blob/master/docs/performance.md" target="_blank" rel="noopener noreferrer">性能账本 ↗</a>；
+      语料与原始结果在
+      <a href="https://github.com/unixwin/shellbench" target="_blank" rel="noopener noreferrer">shellbench 仓 ↗</a>。
+    </p>
+  </section>
+
+  <section>
     <h2 id="news">更新动态</h2>
     <div class="table-scroll">
       <table class="cli-table">

@@ -271,6 +271,56 @@ const productJsonLd = {
   </section>
 
   <section>
+    <h2 id="perf-round">Perf round, finalized: 2026-10-28</h2>
+    <p>
+      Finalized numbers from the 2026-10-28 engine perf round (release builds,
+      same-machine interleaved sampling on Linux, sampling gate load1 ≤ 2.0;
+      this section's caliber is Linux same-machine only and says nothing about
+      Windows magnitudes):
+    </p>
+    <ul>
+      <li>
+        Startup: niu bare-run p50 <strong>3.71 ms</strong> (16.98 ms in the
+        2026-10-25 baseline — the non-interactive fast path at work), level with
+        the bare rubash engine at 3.28 ms; GNU bash 5.3.20 measures 2.60 ms.
+        niu -c 'true' is 4.14 ms (rubash 3.59 ms, GNU 2.67 ms).
+      </li>
+      <li>
+        Lead faces: the pipe_200 workload takes <strong>0.045×</strong> of GNU's
+        time and comsub_loop takes <strong>0.107×</strong> — the structural lead
+        of the zero-fork, in-process execution model.
+      </li>
+      <li>
+        Long-string pattern substitution was the worst shape in the corpus:
+        <code>{'${v/#seg/SEG}'}</code> fixed from 498.68× to <strong>1.00×</strong>
+        and <code>{'${v%%.*}'}</code> from 84.39× to <strong>0.24×</strong>
+        (rubash PR #1909, merged).
+      </li>
+      <li>
+        An array element-write regression (+28–31%) was bisected to its root
+        cause and fixed (rubash PR #1912, merged); the three fill cases are
+        back at their 2025 baselines.
+      </li>
+      <li>
+        The arithmetic subscript read shape gap is closed:
+        <code>{'$((a[i]))'}</code> went from 10.98× to 2.99× (rubash PR #1615).
+      </li>
+      <li>
+        Still being optimized: associative-array element reads, parse
+        throughput, declare/getopts per-call constants, and procsub read
+        scaling — no numbers are published for these until the fixes land
+        and pass their gates.
+      </li>
+    </ul>
+    <p class="src-line">
+      The full engine A-table and methodology live in rubash's
+      <a href="https://github.com/unixwin/rubash/blob/master/docs/performance.md" target="_blank" rel="noopener noreferrer">performance ledger ↗</a>;
+      the corpus and raw results are in the
+      <a href="https://github.com/unixwin/shellbench" target="_blank" rel="noopener noreferrer">shellbench repo ↗</a>.
+    </p>
+  </section>
+
+  <section>
     <h2 id="news">Release feed</h2>
     <div class="table-scroll">
       <table class="cli-table">

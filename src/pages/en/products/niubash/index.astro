@@ -25,7 +25,7 @@ const bench = [
   },
   {
     a: 'Prompt git segment',
-    b: 'reads .git/HEAD, ≤29 ms',
+    b: 'at most one spawn per pass · p50 26 ms in a repo (measured on Windows)',
     c: 'git spawned per prompt: 113–362 ms',
     src: 'GITBASH-KILLER facet 3 (real repo, min-of-20)',
   },
@@ -72,7 +72,7 @@ const news = [
     version: '1.4.0',
     date: '2026-10-10',
     summary:
-      'Git Bash-compatible default prompt (reads .git/HEAD, no git spawn), --encoded-command and --cwd-state, end-to-end vi mode, agent skill bundle, release packages preload gawk/niu-git/ripgrep/fd.',
+      'Git Bash-compatible default prompt, --encoded-command and --cwd-state, end-to-end vi mode, agent skill bundle, release packages preload gawk/niu-git/ripgrep/fd.',
   },
   {
     version: '1.3.4',
@@ -175,7 +175,7 @@ const productJsonLd = {
       Real plugins (oh-my-bash, bash-it, bash-completion run unmodified), agent-ready flags
       (<code>--encoded-command</code>, <code>--cwd-state</code>), $SHELL-based agent onboarding,
       12 inlined file commands + 178 applet completions, built-in wpm, a git-aware prompt that
-      never spawns git, and console device redirects that work where Git Bash fails outright
+      spawns the user's own git at most once per pass, and console device redirects that work where Git Bash fails outright
       (<code>echo &gt;/dev/tty</code>, <code>exec 3&lt;&gt;/dev/tty</code>, <code>test -e /dev/tty</code>
       — GNU-consistent, which is what keeps git/ssh askpass prompts working). The full ten-point
       list (Chinese):
@@ -189,7 +189,7 @@ const productJsonLd = {
           <li><strong>AI agent 接入：$SHELL 即机制</strong>——niu 导出 $SHELL，遵循 POSIX 约定的 agent 从 niu 会话启动即用、零配置；安装器在探针路径布放 bash 启动器命中 Claude Code 的第一探针。</li>
           <li><strong>内联命令与编译进壳的补全</strong>——12 个高频文件命令内联执行，echo | cat 全程零进程；178 个 WinuxCmd applet 的真实旗标补全编译进 shell。</li>
           <li><strong>wpm 联动：命令即包</strong>——rg / fd / bat / jq / node 一条 wpm install 到位；Windows 发行包预装 gawk、niu-git、ripgrep、fd。</li>
-          <li><strong>git 感知的快速提示符</strong>——默认提示符读 .git/HEAD 文件（微秒级）渲染分支与脏标记，不再每条提示符 spawn git 子进程（实测 113–362ms）。</li>
+          <li><strong>git 感知的快速提示符</strong>——默认提示符的分支与脏标记来自用户自己的 git：仓内每遍至多一次有界 spawn，同一遍的重绘复用本遍结果，仓库外零 spawn（对照 Git Bash 每提示符三到五次 fork，实测 113–362ms）。</li>
           <li><strong>输入管线做到字节级</strong>——多行粘贴自动误执行 186 次 → 0，257 行载荷 300s 超时 → 4.6s；ConPTY 粘贴丢字符、typeahead 吃键、控制台 read 三面逐项与 GNU 行为对齐。</li>
           <li><strong>控制台设备重定向：Git Bash 报错的地方 niu 照跑</strong>——echo &gt;/dev/tty、exec 3&lt;&gt;/dev/tty、test -e /dev/tty 与 GNU 行为一致，同组命令在 Git Bash 的 MSYS 层报 Invalid argument；引擎把 CON 拆成 CONIN$/CONOUT$ 两端，git/ssh askpass 正依赖这条路。</li>
           <li><strong>跨平台到 CI 腿：三个发布平台，六个发布目标</strong>——Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六目标每次发布冒烟四查；Android 双目标 incubating，OpenHarmony 仅 CI 编译检查。</li>
@@ -241,7 +241,7 @@ const productJsonLd = {
       <div lang="zh-CN">
         <p><strong>AI 集成</strong>：agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：<code>niu -c true</code> 的冷启动地板从 105.6 ms 压到 26.3 ms（一次性快路径六连 PR；29 例行为电池零差异）。其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，与 <code>-c</code> 同路径、同 BASH_EXECUTION_STRING 契约。其三，目录记忆 <code>--cwd-state</code>。会话级接入：<strong>从 niu 会话启动的 agent 直接拿到 niu 导出的 $SHELL</strong>。逐家 agent 见 <a href="/en/agents/">AI Agent 接入目录</a>；给 agent 的一键安装提示词见 <a href="/en/ai/">给 AI 的门户</a>；全部旗标语义见 <a href="/en/docs/cli/">CLI 与旗标参考</a>。</p>
         <p><strong>插件系统</strong>：外部 bash 生态的接入流程：<code>niu plugin add</code> 克隆源（add 本身不执行任何内容，enable 前资产不生效；可选 --checksum &lt;sha256&gt; 在安装时对整棵源树做一次性校验，不匹配即拒绝——这是目前唯一的完整性检查），<code>niu plugin enable</code> 在 rc 尾部维护托管块——块外内容永不改写。声明式 spec（~/.niubash/plugins.toml）是唯一事实源，sync / restore / rollback 一族动词带 lockfile 锁定，镜像（niu plugin mirror）对国内网络友好。</p>
-        <p><strong>提示符</strong>：默认提示符是 Git Bash 骨架，但分支段读 .git/HEAD 文件而不是 fork git——「提示符永不 spawn」红线，实测冷 39 ms / 暖 p50 2.5 ms，对照 Git Bash 每提示符 __git_ps1 约 100–300 ms。PS1 / 主题声明照常接管，set -o vi 的编辑模式指示器保留。</p>
+        <p><strong>提示符</strong>：默认提示符是 Git Bash 骨架，分支段跑用户自己的 git：仓内每遍至多一次有界 spawn（git status --porcelain=v2 --branch），同遍重绘复用本遍段值，仓库外零 spawn；用真 git 而非进程内库是保真裁定。实测仓内 p50 26 ms（Windows），对照 Git Bash 每提示符 __git_ps1 三到五次 fork 的约 100–300 ms。PS1 / 主题声明照常接管，set -o vi 的编辑模式指示器保留。</p>
       </div>
     </details>
   </section>

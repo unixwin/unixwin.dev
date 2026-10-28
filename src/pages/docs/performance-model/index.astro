@@ -10,7 +10,7 @@ import DocsLayout from '../../../components/DocsLayout.astro';
 
 <DocsLayout
   title="性能特征：哪里快、哪里持平"
-  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（Win32 CreateProcess 地板）。同机实测：git 启动 ~14ms、一次性执行 26.3ms、提示符读 .git/HEAD。"
+  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（Win32 CreateProcess 地板）。同机实测：git 启动 ~14ms、一次性执行 26.3ms、提示符 git 段每遍至多一次 spawn。"
   path="/docs/performance-model/"
 >
   <header class="doc-head">
@@ -83,15 +83,19 @@ import DocsLayout from '../../../components/DocsLayout.astro';
         <tr><td>git 启动（<code>git --version</code>）</td><td><strong>~14 ms</strong>（niu-git：MSVC + schannel，无 MSYS）</td><td>Git Bash 45–103 ms</td></tr>
         <tr><td>一次性执行 <code>niu -c true</code></td><td><strong>26.3 ms</strong></td><td>Git Bash 71 ms</td></tr>
         <tr><td>shell 启动（5 次实测）</td><td><strong>rubash 27–48 ms</strong></td><td>Git Bash 60–93 ms · WSL 202–278 ms</td></tr>
-        <tr><td>提示符 git 段</td><td><strong>读 <code>.git/HEAD</code>，≤29 ms</strong></td><td>每条提示符 spawn git 113–362 ms</td></tr>
+        <tr><td>提示符 git 段</td><td><strong>每遍至多 1 次 spawn（仓内 p50 26 ms）</strong></td><td>每条提示符 spawn git 113–362 ms</td></tr>
         <tr><td>WinuxCmd 工具层</td><td>3.79 MB 携带 176 命令 / 1,924 选项，~19 ms 冷启</td><td>—</td></tr>
         <tr><td>安装体积</td><td>niu ≈16 MB · 零 DLL</td><td>Git Bash 440 MB + 20 MB <code>msys-2.0.dll</code></td></tr>
       </tbody>
     </table>
     <p>
-      提示符一项值得展开：Git Bash 兼容主题不 spawn git 子进程，而是直接读
-      <code>.git/HEAD</code> 文件（微秒级），把「每敲一条命令付一次 git 启动」变成
-      「不付」。一次性执行数字对 agent 与 CI 尤其重要——<code>niu -c</code> 的
+      提示符一项值得展开：Git Bash 兼容主题的分支段跑用户自己的 git——仓内每遍
+      至多一次有界的 <code>git status --porcelain=v2 --branch</code>（2 秒超时、
+      隔离运行），同一遍内的重绘复用本遍已算好的段值、不再 spawn；仓库外零
+      spawn（只向上找 <code>.git</code> 标记）。用真 git 是保真裁定：稀疏检出、
+      子模块、链接工作树与 partial clone 的状态只有用户实际在跑的 git 答得对，
+      进程内库曾在旧属主仓库上静默丢过分支段。代价是仓内每遍一次 git 启动
+      （Windows 实测 p50 26 ms），对照 <code>__git_ps1</code> 每遍三到五次 fork。一次性执行数字对 agent 与 CI 尤其重要——<code>niu -c</code> 的
       冷启动地板从 105.6 ms 一路压到 26.3 ms（一次性快路径六连 PR）。
     </p>
   </section>

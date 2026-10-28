@@ -356,10 +356,10 @@ const softwareAppJsonLd = {
           </span>
           <h3 class="why-title">快</h3>
           <p class="why-body">
-            <code>git --version</code> 约 <strong>~14ms</strong>，Git Bash 要 45–103ms；提示符直接读
-            <code>.git/HEAD</code>（≤29ms），对方每条提示符给 git 交 113–362ms 的税。
+            <code>git --version</code> 约 <strong>~14ms</strong>，Git Bash 要 45–103ms；提示符 git 段
+            每遍至多 spawn 一次（仓内 p50 26ms），对方每条提示符给 git 交 113–362ms 的税。
           </p>
-          <code class="why-chip">git ~14ms · prompt ≤29ms</code>
+          <code class="why-chip">git ~14ms · prompt ≤1 spawn/遍</code>
         </article>
       </div>
 

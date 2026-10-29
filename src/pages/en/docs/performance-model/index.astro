@@ -68,8 +68,10 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
     <h2>External processes: parity is a design fact</h2>
     <p>
       niubash does not claim faster external processes — they should not be faster. Single-spawn cost:
-      rubash 1.183 ms vs GNU 1.121 ms — <strong>even</strong>, because both land on the same Win32
-      <code>CreateProcess</code> floor. The entire zero-fork payoff comes from the "no process"
+      rubash 1.183 ms vs GNU 1.121 ms — <strong>even</strong>, because both land on the same exec
+      floor in the measured environment (these figures were measured under WSL2 Linux, min-of-3 —
+      they are not Win32 <code>CreateProcess</code> magnitudes; Windows caliber is the
+      Windows-measured tables on this page). The entire zero-fork payoff comes from the "no process"
       paths, not from making "necessary processes" faster. That is also the essential difference from
       the MSYS layer: in Git Bash every process additionally pays the fork-emulation tax.
     </p>

@@ -10,7 +10,7 @@ import DocsLayout from '../../../components/DocsLayout.astro';
 
 <DocsLayout
   title="性能特征：哪里快、哪里持平"
-  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（Win32 CreateProcess 地板）。Windows 同机实测：git 启动 ~14ms、一次性执行 26.3ms、提示符读 .git/HEAD；Linux 口径数字另行分栏标注。"
+  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（单次 spawn 为 WSL2 Linux 实测的 exec 地板）。Windows 同机实测：git 启动 ~14ms、一次性执行 26.3ms、提示符读 .git/HEAD；Linux 口径数字另行分栏标注。"
   path="/docs/performance-model/"
 >
   <header class="doc-head">
@@ -56,8 +56,10 @@ import DocsLayout from '../../../components/DocsLayout.astro';
     <h2>外部进程：持平是设计事实</h2>
     <p>
       niubash 不宣称外部进程更快——因为它不该更快。单次 spawn 成本 rubash
-      1.183 ms vs GNU 1.121 ms：<strong>持平</strong>，因为两者最终都落在同一个
-      Win32 <code>CreateProcess</code> 地板上。零 fork 的全部收益来自「不建进程」
+      1.183 ms vs GNU 1.121 ms：<strong>持平</strong>，因为两者在实测环境里最终都落在
+      同一个 exec 地板上（此数系 WSL2 Linux 实测，min-of-3——不是 Win32
+      <code>CreateProcess</code> 的量级；Windows 口径以本页各 Windows 实测表为准）。
+      零 fork 的全部收益来自「不建进程」
       的路径，不来自把「必须建的进程」变快。这也是与 MSYS 层的本质区别：Git Bash
       的每个进程还要额外支付 fork 模拟的税。
     </p>

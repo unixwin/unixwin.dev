@@ -79,7 +79,7 @@ const features: Feature[] = [
   },
   {
     title: 'prompt-core',
-    body: '提示符 API 与 segment 注册表的拥有者，默认开启；git 提示符段按 bundle 契约解析为 niubash 原生 Vcs 段（面向 niubash 1.4.1+），分支/脏星/短 SHA 进程内渲染，零 git 子进程。',
+    body: '提示符 API 与 segment 注册表的拥有者，默认开启；git 提示符段按 bundle 契约解析为 niubash 原生 Vcs 段（面向 niubash 1.4.1+），分支/脏星/短 SHA 由原生段渲染，段值取自用户自己的 git（仓内每遍至多一次有界 spawn，同遍复用）。',
   },
   {
     title: 'Starship 接管模式',
@@ -374,7 +374,7 @@ const productJsonLd = {
           更名 oh-my-winuxsh → oh-my-niu（对齐 niubash 1.0.0 品牌）；bundle/plugin API 前缀
           <code>winuxsh:</code> → <code>niubash:</code>，环境前缀改 <code>NIU_*</code>；
           新一方插件 command-timer / auto-env / dirmarks / git-fetch-reminder / env-sync；
-          git 提示符段面向 niubash 1.4.1+ 解析为原生 Vcs 段（进程内渲染、零 git 子进程）。
+          git 提示符段面向 niubash 1.4.1+ 解析为原生 Vcs 段（段值取自用户自己的 git，仓内每遍至多一次有界 spawn）。
         </span>
       </li>
       <li>

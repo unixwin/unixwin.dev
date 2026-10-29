@@ -36,7 +36,7 @@
   "latency": [
     { "metric": "git 启动（git --version）", "us": "13.7 ms 均值 / 11.5 ms 最低 · git status 22.6 ms", "them": "Git Bash 45–103 ms（niu-git#12 同场：mingw64\\bin 51.3 ms · cmd\\git.exe 45.3 ms）", "badge": "3–7x faster", "source": "niu-git#12（2026-10-16 合入）· niubash#374" },
     { "metric": "一次性执行 niu -c true", "us": "26.3 ms", "them": "Git Bash 71 ms", "badge": "2.7x faster", "source": "GITBASH-KILLER 面 6" },
-    { "metric": "提示符 git 段", "us": "读 .git/HEAD ≤29 ms", "them": "每条提示符 spawn git 113–362 ms", "badge": "4–12x faster", "source": "GITBASH-KILLER 面 3（真仓 min-of-20）" },
+    { "metric": "提示符 git 段", "us": "每遍至多 1 次 spawn（仓内 p50 26 ms）", "them": "每条提示符 spawn git 113–362 ms", "badge": "4–12x faster", "source": "GITBASH-KILLER 面 3（真仓 min-of-20）" },
     { "metric": "shell 启动（5 次实测）", "us": "rubash 27–48 ms", "them": "Git Bash 60–93 ms · WSL 202–278 ms", "badge": "2–3x faster", "source": "data/bench/startup.tsv" },
     { "metric": "安装体积", "us": "niu ≈16 MB · 零 DLL", "them": "Git Bash 440 MB + 20 MB msys-2.0.dll", "badge": "27x lighter", "source": "GITBASH-KILLER 面 4（装机位实测）" },
     { "metric": "WinuxCmd", "us": "3.79 MB 携带 176 命令 / 1,924 选项 · ~19 ms 冷启", "them": "—", "badge": "", "source": "WinuxCmd README:32,:74（PGO：sort −18%、nl −17%）" }

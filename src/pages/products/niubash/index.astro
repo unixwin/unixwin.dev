@@ -76,7 +76,7 @@ const features: Feature[] = [
   },
   {
     title: 'git 感知的快速提示符',
-    body: '默认提示符读 .git/HEAD 文件（微秒级）渲染分支与脏标记，不再像 Git Bash 那样每条提示符 spawn git 子进程（实测 113–362ms）；仓库外连 stat 都省掉。视觉对齐 Git Bash 骨架，但明确不做 MINGW64 身份段。',
+    body: '默认提示符的分支与脏标记来自用户自己的 git：仓内每遍至多一次有界 spawn（status --porcelain=v2 --branch），同一遍的重绘复用本遍结果，仓库外零 spawn——对照 Git Bash 的 __git_ps1 每遍三到五次 fork（实测 113–362ms）。用真 git 是为保真：稀疏检出、子模块、链接工作树只有真 git 答得对。视觉对齐 Git Bash 骨架，但明确不做 MINGW64 身份段。',
   },
   {
     title: '输入管线做到字节级',
@@ -101,7 +101,7 @@ const bench: Row[] = [
   },
   {
     a: '提示符 git 段',
-    b: '读 .git/HEAD ≤29 ms',
+    b: '每遍至多 1 次 spawn · 仓内 p50 26 ms（Windows 实测）',
     c: '每条提示符 spawn git 113–362 ms',
     src: 'GITBASH-KILLER 面 3（真仓 min-of-20）',
   },
@@ -148,7 +148,7 @@ const news: News[] = [
     version: '1.4.0',
     date: '2026-10-10',
     summary:
-      'Git Bash 兼容默认提示符（读 .git/HEAD，不 spawn git）、--encoded-command 与 --cwd-state、vi 模式端到端、agent skill bundle、发布包预装 gawk/niu-git/ripgrep/fd。',
+      'Git Bash 兼容默认提示符、--encoded-command 与 --cwd-state、vi 模式端到端、agent skill bundle、发布包预装 gawk/niu-git/ripgrep/fd。',
   },
   {
     version: '1.3.4',
@@ -317,8 +317,11 @@ const productJsonLd = {
     <h3>提示符</h3>
     <p>
       默认提示符是 Git Bash 骨架（绿 user@host、黄 POSIX 形态 cwd、青分支 + 脏星），
-      但分支段读 <code>.git/HEAD</code> 文件而不是 fork git——这是「提示符永不 spawn」红线的产物，
-      实测冷 39 ms / 暖 p50 2.5 ms，对照 Git Bash 每提示符 <code>__git_ps1</code> 的约 100–300 ms。
+      分支段跑用户自己的 git：仓内每遍至多一次有界的 <code>git status --porcelain=v2 --branch</code>
+      （2 秒超时、从不取 index.lock、stderr 丢弃），同一遍内的重绘复用本遍的段值，
+      仓库外零 spawn。用真 git 而非进程内库是保真裁定——稀疏检出、子模块、
+      链接工作树只有真 git 答得对。Windows 实测仓内 p50 26 ms，对照 Git Bash
+      每提示符 <code>__git_ps1</code> 三到五次 fork 的约 100–300 ms。
       PS1 / 主题声明照常接管，<code>set -o vi</code> 的编辑模式指示器保留。
     </p>
   </section>

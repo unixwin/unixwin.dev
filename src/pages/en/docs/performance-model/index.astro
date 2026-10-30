@@ -25,7 +25,9 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
       <strong>wherever bash must create a process and niubash does not, niubash is faster; wherever
       both must create a process, the two are even.</strong> Every number on this page is a
       same-machine measurement (method at the end), benchmark artifacts ship with the package, and
-      each can be checked on the <a href="/en/benchmarks/">benchmarks page</a>.
+      each can be checked on the <a href="/en/benchmarks/">benchmarks page</a>. Numbers are split
+      by platform: Windows and Linux figures are each measured on their own machine and labeled
+      as such, and are never converted or compared across platforms.
     </p>
   </header>
 
@@ -34,7 +36,7 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
     <p>
       Command substitution, subshells, background jobs — the constructs bash forks for on every use —
       are <code>ShellState::clone</code> plus an fd-table copy in niubash, never process creation.
-      Same-session measurements of 2026-10-18 (750 iterations per workload, interleaved rotation,
+      Same-session measurements on Windows, 2026-10-18 (750 iterations per workload, interleaved rotation,
       warm-up discarded, min-of-3, in ms):
     </p>
     <table class="doc-table">
@@ -66,8 +68,10 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
     <h2>External processes: parity is a design fact</h2>
     <p>
       niubash does not claim faster external processes — they should not be faster. Single-spawn cost:
-      rubash 1.183 ms vs GNU 1.121 ms — <strong>even</strong>, because both land on the same Win32
-      <code>CreateProcess</code> floor. The entire zero-fork payoff comes from the "no process"
+      rubash 1.183 ms vs GNU 1.121 ms — <strong>even</strong>, because both land on the same exec
+      floor in the measured environment (these figures were measured under WSL2 Linux, min-of-3 —
+      they are not Win32 <code>CreateProcess</code> magnitudes; Windows caliber is the
+      Windows-measured tables on this page). The entire zero-fork payoff comes from the "no process"
       paths, not from making "necessary processes" faster. That is also the essential difference from
       the MSYS layer: in Git Bash every process additionally pays the fork-emulation tax.
     </p>
@@ -105,11 +109,12 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
         <tr><th>Metric</th><th>niubash family</th><th>Contrast</th></tr>
       </thead>
       <tbody>
-        <tr><td>git startup (<code>git --version</code>)</td><td><strong>~14 ms</strong> (niu-git: MSVC + schannel, no MSYS)</td><td>Git Bash 45–103 ms</td></tr>
-        <tr><td>One-shot execution <code>niu -c true</code></td><td><strong>26.3 ms</strong></td><td>Git Bash 71 ms</td></tr>
-        <tr><td>Shell startup (5 measured runs)</td><td><strong>rubash 27–48 ms</strong></td><td>Git Bash 60–93 ms · WSL 202–278 ms</td></tr>
-        <tr><td>Prompt git segment</td><td><strong>at most one spawn per pass (p50 26 ms in a repo)</strong></td><td>Git spawned per prompt: 113–362 ms</td></tr>
-        <tr><td>WinuxCmd tool layer</td><td>3.79 MB carrying 176 commands / 1,924 options, ~19 ms cold start</td><td>—</td></tr>
+        <tr><td>git startup (<code>git --version</code>, measured on Windows)</td><td><strong>13.7 ms mean / 11.5 ms min</strong> (niu-git: MSVC + schannel, no MSYS)</td><td>Git Bash 45–103 ms</td></tr>
+        <tr><td>One-shot execution <code>niu -c true</code> (measured on Windows)</td><td><strong>26.3 ms</strong></td><td>Git Bash 71 ms</td></tr>
+        <tr><td>One-shot execution <code>niu -c 'true'</code> (Linux, re-measured 2026-10-28)</td><td><strong>4.14 ms</strong> (bare run p50 3.71 ms)</td><td>GNU bash 5.3.20: 2.67 ms (bare 2.60 ms) · Linux same-machine, release builds</td></tr>
+        <tr><td>Shell startup (5 measured runs, on Windows)</td><td><strong>rubash 27–48 ms</strong></td><td>Git Bash 60–93 ms · WSL 202–278 ms</td></tr>
+        <tr><td>Prompt git segment (measured on Windows)</td><td><strong>at most one spawn per pass (p50 26 ms in a repo)</strong></td><td>Git spawned per prompt: 113–362 ms</td></tr>
+        <tr><td>WinuxCmd tool layer</td><td>3.79 MB carrying 176 commands / 1,924 options, ~19 ms cold start (measured on Windows)</td><td>—</td></tr>
         <tr><td>Install size</td><td>niu ≈16 MB · zero DLLs</td><td>Git Bash 440 MB + 20 MB <code>msys-2.0.dll</code></td></tr>
       </tbody>
     </table>
@@ -125,6 +130,10 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
           进程内库曾在旧属主仓库上静默丢过分支段。代价是仓内每遍一次 git 启动
           （Windows 实测 p50 26 ms），对照 <code>__git_ps1</code> 每遍三到五次 fork。一次性执行数字对 agent 与 CI 尤其重要——<code>niu -c</code> 的
           冷启动地板从 105.6 ms 一路压到 26.3 ms（一次性快路径六连 PR）。
+          Linux 口径另行复测：2026-10-28 按统一口径（50 样本
+          交错、release 构建、Linux 同机），niu 空跑 p50 3.71 ms、
+          <code>niu -c 'true'</code> 4.14 ms，GNU bash 5.3.20 为 2.60 / 2.67 ms；
+          两组数字分属不同平台，各自与同平台对照比较。
         </p>
       </div>
     </details>
@@ -135,7 +144,9 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
     <p>
       Environment: Intel Xeon w5-3435 · Windows 10 19045 · same-machine WSL2 Ubuntu (GNU Bash 5.3.0
       contrast) · Git Bash 5.3.0. Method: interleaved rotation (rubash → Git Bash → WSL), one warm-up
-      round discarded, min-of-3, identical timing for all three. Numbers move with versions; the
+      round discarded, min-of-3, identical timing for all three (that is the Windows set's
+      caliber; the Linux rows in the table carry their own caliber inline and are presented
+      separately). Numbers move with versions; the
       methodology does not: nothing unmeasured gets written, wins and losses both shown. The repo
       also runs a nightly performance gate (per-asset timing trends; hard-fails over budget) against
       regressions.

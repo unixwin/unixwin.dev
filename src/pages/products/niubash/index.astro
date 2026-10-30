@@ -94,10 +94,16 @@ const features: Feature[] = [
 
 const bench: Row[] = [
   {
-    a: '一次性执行 niu -c true',
-    b: '26.3 ms（优化前 105.6 ms，一次性快路径六连 PR）',
+    a: '一次性执行 niu -c true（Windows 口径）',
+    b: '26.3 ms（优化前 105.6 ms，一次性快路径六连 PR；Windows 实测）',
     c: 'Git Bash 71 ms',
     src: 'GITBASH-KILLER 面 6 · niubash PR #267–#272',
+  },
+  {
+    a: "一次性执行 niu -c 'true'（Linux 口径）",
+    b: '4.14 ms（空跑 p50 3.71 ms；Linux 同机 release 口径）',
+    c: 'GNU bash 5.3.20 2.67 ms（空跑 2.60 ms）',
+    src: '2026-10-28 perf 轮 · 50 样本交错复测',
   },
   {
     a: '提示符 git 段',
@@ -268,7 +274,7 @@ const productJsonLd = {
       Windows 装完即有完整命令层：安装器自带完整 WinuxCmd root（176 个 Unix 命令与内建包管理器
       wpm，落在 <code>&#123;app&#125;\winuxcmd\</code>，PATH 指向 <code>winuxcmd\bin</code>），发行包并按
       <code>preinstall.json</code> 预装 gawk（含 awk shim）、niu-git、ripgrep、fd——PATH 上的
-      git 即原生 git（~14 ms）；其中仅 gawk 为 x64 资产；ARM64 安装同样预装 niu-git / ripgrep / fd。
+      git 即原生 git（Windows 实测 ~14 ms）；其中仅 gawk 为 x64 资产；ARM64 安装同样预装 niu-git / ripgrep / fd。
     </p>
     <p>Linux / macOS 取可移植 tar.gz 解压即用：</p>
     <div class="cmd">
@@ -292,7 +298,10 @@ const productJsonLd = {
     <p>
       agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：跳过 REPL
       专属初始化，<code>niu -c true</code> 的冷启动地板从 105.6 ms 一路压到 26.3 ms
-      （一次性快路径六连 PR；29 例行为电池零差异）。
+      （Windows 实测；一次性快路径六连 PR；29 例行为电池零差异）。Linux 口径另行
+      复测（2026-10-28，50 样本交错、release 构建、Linux 同机）：niu 空跑 p50
+      3.71 ms、<code>niu -c 'true'</code> 4.14 ms，GNU bash 5.3.20 为 2.60 / 2.67 ms
+      ——与 Windows 数字分栏呈现，各自与同平台对照比较。
       其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，
       与 <code>-c</code> 同路径、同 <code>BASH_EXECUTION_STRING</code> 契约。其三，目录记忆
       <code>--cwd-state</code>：agent 按工作区各配一个状态文件，链式调用即共享 cwd。
@@ -328,7 +337,7 @@ const productJsonLd = {
 
   <section>
     <h2 id="bench">实测数字</h2>
-    <p>每条为真机实测、可复现，基准脚本随仓附上；完整对比见 <a href="/benchmarks/">基准页</a>。</p>
+    <p>每条为真机实测、可复现，基准脚本随仓附上；数字按平台分行标注（Windows 实测 / Linux 口径），不跨平台比较；完整对比见 <a href="/benchmarks/">基准页</a>。</p>
     <div class="table-scroll">
       <table class="cli-table">
         <thead>
@@ -348,6 +357,73 @@ const productJsonLd = {
         </tbody>
       </table>
     </div>
+  </section>
+
+  <section>
+    <h2 id="perf-round">性能轮定版：2026-10-28（Linux 口径）</h2>
+    <p>
+      2026-10-28 引擎性能轮的定版数字（release 构建、Linux 同机交错采样、采样门
+      load1 ≤ 2.0；本节口径仅限 Linux 同机，不代表 Windows 量级）：
+    </p>
+    <ul>
+      <li>
+        启动：niu 空跑 p50 <strong>3.71 ms</strong>（2026-10-25 基线 16.98 ms，非交互
+        快路径生效），与裸引擎 rubash 的 3.28 ms 同级；GNU bash 5.3.20 为 2.60 ms。
+        niu -c 'true' 为 4.14 ms（rubash 3.59 ms，GNU 2.67 ms）。
+      </li>
+      <li>
+        领先面：管道负载 pipe_200 为 GNU 耗时的 <strong>0.045×</strong>、命令替换循环
+        comsub_loop 为 <strong>0.107×</strong>——零 fork 进程内模型的结构性领先。
+      </li>
+      <li>
+        长字符串模式替换曾是全场最差形状：<code>{'${v/#seg/SEG}'}</code> 由 498.68× 修到
+        <strong>1.00×</strong>、<code>{'${v%%.*}'}</code> 由 84.39× 修到 <strong>0.24×</strong>
+        （rubash PR #1909，已合并）。
+      </li>
+      <li>
+        数组元素写回归（+28–31%）经二分定位根因并修复（rubash PR #1912，已合并），
+        填充三例绝对耗时回到 2026-10-25 基线。
+      </li>
+      <li>
+        算术下标直读 <code>{'$((a[i]))'}</code> 的形状差距关闭：10.98× → 2.99×（rubash PR #1615）。
+      </li>
+      <li>
+        残差轮收尾（2026-10-29 回填；Linux 同机 release 构建，绝对值为同窗口
+        配对采样）：关联数组元素读已修——普通 miss 不再随表规模增长，10,000
+        条目时 18.3 µs 对 GNU 13.4 µs；长度形 <code>{'${#m[key]}'}</code> 的
+        增长因子由 ×10.67 压到 ×1.08。机制是组合表 settle 读法（rubash
+        PR #1919 已合并、长度腿在残差批），不在写侧。
+      </li>
+      <li>
+        命令补全候选走查已加缓存：肥 PATH（约 3,100 个候选）下
+        <code>compgen -c</code> 由 110.6 ms/次降到 13.6 ms/次（同窗口 GNU
+        277.6 ms/次）；走查只在 PATH/当前目录指纹变化时重跑。
+      </li>
+      <li>
+        大脚本分组读入提速：8,000 行函数定义组（nvm.sh 类重启动脚本呈现的
+        形状）由 3.248 s 降到 0.533 s。
+      </li>
+      <li>
+        procsub 读的立案量级（68×、procsub 特异）经分解证伪：排空同一
+        procsub 仅 1.3 µs/行，while-read 残差与文件、管道源同价，属一般
+        地板税（A 表口径约 2.83–2.95×，跟踪中），不是 procsub 端点缺陷。
+      </li>
+      <li>
+        仍在优化中：解析吞吐、declare/getopts 每调用常数两个族——落地并
+        通过门禁前不在此预支数字。
+      </li>
+    </ul>
+    <p>
+      循环脚本（Windows 口径）：<strong>27.3s → 1.5s</strong>——150 次外部命令
+      启动的循环脚本，Windows 同机实测（niubash 1.4.4 vs Git Bash），原始记录见
+      <a href="https://github.com/unixwin/niubash/issues/567" target="_blank" rel="noopener noreferrer">niubash #567 ↗</a>。
+    </p>
+    <p class="src-line">
+      引擎面完整 A 表与方法学见 rubash 仓
+      <a href="https://github.com/unixwin/rubash/blob/master/docs/performance.md" target="_blank" rel="noopener noreferrer">性能账本 ↗</a>；
+      语料与原始结果在
+      <a href="https://github.com/unixwin/shellbench" target="_blank" rel="noopener noreferrer">shellbench 仓 ↗</a>。
+    </p>
   </section>
 
   <section>

@@ -68,6 +68,23 @@ const T: Record<string, string> = {
   'niubash README:32 · niu-git（MSVC+schannel，无 MSYS）':
     'niubash README:32 · niu-git (MSVC + schannel, no MSYS)',
   'GITBASH-KILLER 面 6': 'GITBASH-KILLER card 6',
+  'git 启动（git --version，Windows 实测）': 'git startup (git --version, measured on Windows)',
+  '一次性执行 niu -c true（Windows 实测）': 'One-shot niu -c true (measured on Windows)',
+  '一次性执行 niu -c \'true\'（Linux 实测 · 2026-10-28 复测）':
+    "One-shot niu -c 'true' (measured on Linux · re-measured 2026-10-28)",
+  '4.14 ms（空跑 p50 3.71 ms）': '4.14 ms (bare run p50 3.71 ms)',
+  'GNU bash 5.3.20 2.67 ms（空跑 2.60 ms）': 'GNU bash 5.3.20: 2.67 ms (bare 2.60 ms)',
+  '2026-10-28 perf 轮 · 50 样本交错复测（Linux 同机 release 构建）':
+    '2026-10-28 perf round · 50-sample interleaved re-measurement (Linux same-machine, release builds)',
+  '提示符 git 段（Windows 实测）': 'Prompt git segment (measured on Windows)',
+  'shell 启动（5 次实测，Windows 实测）': 'shell startup (5 measured runs, on Windows)',
+  '3.79 MB 携带 176 命令 / 1,924 选项 · ~19 ms 冷启（Windows 实测）':
+    '3.79 MB carrying 176 commands / 1,924 options · ~19 ms cold start (measured on Windows)',
+  'niu -c true 105.6 ms → 19.8 ms（Windows 实测）': 'niu -c true 105.6 ms → 19.8 ms (measured on Windows)',
+  '一次性执行复测（Linux 口径）': 'One-shot re-measurement (Linux caliber)',
+  'niu -c \'true\' 4.14 ms（空跑 p50 3.71 ms）；GNU bash 5.3.20 2.67 / 2.60 ms · Linux 同机 release 构建':
+    "niu -c 'true' 4.14 ms (bare run p50 3.71 ms); GNU bash 5.3.20 2.67 / 2.60 ms · Linux same-machine, release builds",
+  '2026-10-28 perf 轮 · 50 样本交错复测': '2026-10-28 perf round · 50-sample interleaved re-measurement',
   'GITBASH-KILLER 面 3（真仓 min-of-20）': 'GITBASH-KILLER card 3 (real repo, min-of-20)',
   'GITBASH-KILLER 面 4（装机位实测）': 'GITBASH-KILLER card 4 (measured on a real install)',
   'WinuxCmd README:32,:74（PGO：sort −18%、nl −17%）':
@@ -211,6 +228,7 @@ const t = (s: string): string => T[s] ?? s;
 
     <section class="sec">
       <h2>Startup · latency · size</h2>
+      <p class="sec-desc">Rows are split by platform: rows marked Windows were measured on a Windows machine, rows marked Linux on a Linux machine; the two sets are never compared across platforms.</p>
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>Metric</th><th>niubash / rubash</th><th>Baseline</th><th>Ratio</th><th>Source</th></tr></thead>

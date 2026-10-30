@@ -10,7 +10,7 @@ import DocsLayout from '../../../components/DocsLayout.astro';
 
 <DocsLayout
   title="性能特征：哪里快、哪里持平"
-  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（Win32 CreateProcess 地板）。同机实测：git 启动 ~14ms、一次性执行 26.3ms、提示符 git 段每遍至多一次 spawn。"
+  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（单次 spawn 为 WSL2 Linux 实测的 exec 地板）。同机实测：git 启动 13.7 ms 均值、一次性执行 26.3 ms、提示符 git 段每遍至多一次 spawn；Linux 口径数字另行分栏标注。"
   path="/docs/performance-model/"
 >
   <header class="doc-head">
@@ -20,7 +20,8 @@ import DocsLayout from '../../../components/DocsLayout.astro';
       可以一句话说清：<strong>凡是 bash 要建进程而 niubash 不建的地方，niubash 快；
       凡是双方都必须建进程的地方，双方持平。</strong>这一页的每个数字都来自同机
       实测（方法在文末），基准产物随包附上，可在
-      <a href="/benchmarks/">基准页</a> 逐条核对。
+      <a href="/benchmarks/">基准页</a> 逐条核对。数字按平台分栏呈现：
+      Windows 与 Linux 各自同机实测、各自标注口径，不跨平台换算或比较。
     </p>
   </header>
 
@@ -29,7 +30,7 @@ import DocsLayout from '../../../components/DocsLayout.astro';
     <p>
       命令替换、子壳、后台作业——bash 语义里每来一次就 fork 一次的构造——在
       niubash 里是 <code>ShellState::clone</code> 与 fd 表复制，不经过进程创建。
-      2026-10-18 同场实测（每轮 ×750 次迭代，交错轮换、弃热身、min-of-3，单位 ms）：
+      2026-10-18 Windows 同场实测（每轮 ×750 次迭代，交错轮换、弃热身、min-of-3，单位 ms）：
     </p>
     <table class="doc-table">
       <thead>
@@ -55,8 +56,10 @@ import DocsLayout from '../../../components/DocsLayout.astro';
     <h2>外部进程：持平是设计事实</h2>
     <p>
       niubash 不宣称外部进程更快——因为它不该更快。单次 spawn 成本 rubash
-      1.183 ms vs GNU 1.121 ms：<strong>持平</strong>，因为两者最终都落在同一个
-      Win32 <code>CreateProcess</code> 地板上。零 fork 的全部收益来自「不建进程」
+      1.183 ms vs GNU 1.121 ms：<strong>持平</strong>，因为两者在实测环境里最终都落在
+      同一个 exec 地板上（此数系 WSL2 Linux 实测，min-of-3——不是 Win32
+      <code>CreateProcess</code> 的量级；Windows 口径以本页各 Windows 实测表为准）。
+      零 fork 的全部收益来自「不建进程」
       的路径，不来自把「必须建的进程」变快。这也是与 MSYS 层的本质区别：Git Bash
       的每个进程还要额外支付 fork 模拟的税。
     </p>
@@ -80,11 +83,12 @@ import DocsLayout from '../../../components/DocsLayout.astro';
         <tr><th>指标</th><th>niubash 系</th><th>对照</th></tr>
       </thead>
       <tbody>
-        <tr><td>git 启动（<code>git --version</code>）</td><td><strong>~14 ms</strong>（niu-git：MSVC + schannel，无 MSYS）</td><td>Git Bash 45–103 ms</td></tr>
-        <tr><td>一次性执行 <code>niu -c true</code></td><td><strong>26.3 ms</strong></td><td>Git Bash 71 ms</td></tr>
-        <tr><td>shell 启动（5 次实测）</td><td><strong>rubash 27–48 ms</strong></td><td>Git Bash 60–93 ms · WSL 202–278 ms</td></tr>
-        <tr><td>提示符 git 段</td><td><strong>每遍至多 1 次 spawn（仓内 p50 26 ms）</strong></td><td>每条提示符 spawn git 113–362 ms</td></tr>
-        <tr><td>WinuxCmd 工具层</td><td>3.79 MB 携带 176 命令 / 1,924 选项，~19 ms 冷启</td><td>—</td></tr>
+        <tr><td>git 启动（<code>git --version</code>，Windows 实测）</td><td><strong>13.7 ms 均值 / 11.5 ms 最低</strong>（niu-git：MSVC + schannel，无 MSYS）</td><td>Git Bash 45–103 ms</td></tr>
+        <tr><td>一次性执行 <code>niu -c true</code>（Windows 实测）</td><td><strong>26.3 ms</strong></td><td>Git Bash 71 ms</td></tr>
+        <tr><td>一次性执行 <code>niu -c 'true'</code>（Linux 实测 · 2026-10-28 复测）</td><td><strong>4.14 ms</strong>（空跑 p50 3.71 ms）</td><td>GNU bash 5.3.20 2.67 ms（空跑 2.60 ms）· Linux 同机 release 口径</td></tr>
+        <tr><td>shell 启动（5 次实测，Windows 实测）</td><td><strong>rubash 27–48 ms</strong></td><td>Git Bash 60–93 ms · WSL 202–278 ms</td></tr>
+        <tr><td>提示符 git 段（Windows 实测）</td><td><strong>每遍至多 1 次 spawn（仓内 p50 26 ms）</strong></td><td>每条提示符 spawn git 113–362 ms</td></tr>
+        <tr><td>WinuxCmd 工具层</td><td>3.79 MB 携带 176 命令 / 1,924 选项，~19 ms 冷启（Windows 实测）</td><td>—</td></tr>
         <tr><td>安装体积</td><td>niu ≈16 MB · 零 DLL</td><td>Git Bash 440 MB + 20 MB <code>msys-2.0.dll</code></td></tr>
       </tbody>
     </table>
@@ -97,6 +101,10 @@ import DocsLayout from '../../../components/DocsLayout.astro';
       进程内库曾在旧属主仓库上静默丢过分支段。代价是仓内每遍一次 git 启动
       （Windows 实测 p50 26 ms），对照 <code>__git_ps1</code> 每遍三到五次 fork。一次性执行数字对 agent 与 CI 尤其重要——<code>niu -c</code> 的
       冷启动地板从 105.6 ms 一路压到 26.3 ms（一次性快路径六连 PR）。
+      Linux 口径另行复测：2026-10-28 按统一口径（50 样本
+      交错、release 构建、Linux 同机），niu 空跑 p50 3.71 ms、
+      <code>niu -c 'true'</code> 4.14 ms，GNU bash 5.3.20 为 2.60 / 2.67 ms；
+      两组数字分属不同平台，各自与同平台对照比较。
     </p>
   </section>
 
@@ -105,7 +113,8 @@ import DocsLayout from '../../../components/DocsLayout.astro';
     <p>
       环境：Intel Xeon w5-3435 · Windows 10 19045 · 同机 WSL2 Ubuntu（GNU Bash
       5.3.0 对照）· Git Bash 5.3.0。方法：交错轮换（rubash→Git Bash→WSL）、弃
-      1 轮热身、min-of-3、三方同一计时法。数字随版本会动，口径不变：未实测不写、
+      1 轮热身、min-of-3、三方同一计时法（以上为 Windows 组口径；表中 Linux
+      行的口径已在行内注明，与 Windows 组分开呈现）。数字随版本会动，口径不变：未实测不写、
       输赢都展示。仓库另有夜间性能门（每资产计时趋势，超预算硬失败）防止回潮。
     </p>
     <p>

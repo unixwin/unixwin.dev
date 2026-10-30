@@ -53,9 +53,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'perf',
     q: '性能怎么样？',
-    a: '一次性执行（niu -c true）经专项优化后 19.8ms；niu-git 启动约 14ms（Git Bash 45–103ms）；命令替换与子壳类负载比 GNU bash 快 13–62x。全部数字附实测方法与复现产物，见「基准测试」（/benchmarks/）。',
+    a: '一次性执行（niu -c true）经专项优化后 19.8ms（Windows 实测）；Linux 口径复测（2026-10-28，release 构建、50 样本交错、Linux 同机）：niu -c \'true\' 4.14ms（空跑 p50 3.71ms），GNU bash 5.3.20 为 2.67 / 2.60ms；niu-git 启动约 14ms（Windows 实测，Git Bash 45–103ms）；命令替换与子壳类负载比 GNU bash 快 13–62x。全部数字按平台分开标注、附实测方法与复现产物，见「基准测试」（/benchmarks/）。',
     qEn: 'How is the performance?',
-    aEn: 'One-shot execution (niu -c true) is 19.8 ms after dedicated optimization; niu-git starts in ~14 ms (Git Bash: 45–103 ms); command-substitution and subshell workloads run 13–62x faster than GNU bash. Every number ships with its measurement method and reproducible artifacts — see Benchmarks (/benchmarks/).',
+    aEn: 'One-shot execution (niu -c true) is 19.8 ms after dedicated optimization (measured on Windows); re-measured under the Linux caliber (2026-10-28, release builds, 50-sample interleaved, Linux same-machine): niu -c \'true\' 4.14 ms (bare run p50 3.71 ms), GNU bash 5.3.20 at 2.67 / 2.60 ms; niu-git starts in ~14 ms (measured on Windows; Git Bash: 45–103 ms); command-substitution and subshell workloads run 13–62x faster than GNU bash. Every figure is labeled by platform and ships with its measurement method and reproducible artifacts — see Benchmarks (/benchmarks/).',
   },
   {
     id: 'naming',

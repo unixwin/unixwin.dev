@@ -44,7 +44,7 @@ const whyCards: WhyCard[] = [
   {
     icon: 'Cygwin',
     title: '不是模拟层',
-    body: 'Cygwin 要你做路径翻译体操、付 2–5 秒启动；WinuxCmd 理解 C:\\ 与 UNC 原生形态，冷启动约 19 ms，无运行时 DLL。',
+    body: 'Cygwin 要你做路径翻译体操、付 2–5 秒启动；WinuxCmd 理解 C:\\ 与 UNC 原生形态，冷启动约 19 ms（Windows 实测），无运行时 DLL。',
   },
   {
     icon: 'GnuWin32',
@@ -121,7 +121,7 @@ interface FactRow {
 }
 const factRows: FactRow[] = [
   { metric: '单文件体积', value: '3.79 MB（携带 176 命令 / 1,924 选项，静态链接、零依赖）', src: 'WinuxCmd README.md:74' },
-  { metric: '冷启动', value: '~19 ms', src: 'WinuxCmd README.md:74' },
+  { metric: '冷启动', value: '~19 ms（Windows 实测）', src: 'WinuxCmd README.md:74' },
   { metric: 'PGO 收益', value: 'sort −18% · nl −17%（x64 发布档，真实负载训练）', src: 'WinuxCmd README.md:74 · scripts/build-pgo.ps1' },
   { metric: '质量门', value: '差分 178 例 93%（165 通过 / 13 例平台差异实名在册）· 2,420 单元测试 99.6%', src: 'README.md · tests/differential/baseline.json' },
   { metric: '负载对照', value: 'cat 100 MB 0.8 s · sort 1M 行 2.1 s · grep 100 MB 1.2 s · find 10K 文件 0.3 s（与 GNU/WSL2 差距 ~10–15%）', src: 'README.md Benchmarks（Win11 · i7-13700K · 32 GB · NVMe）' },
@@ -157,7 +157,7 @@ const productJsonLd = {
 
 <DocsLayout
   title="WinuxCmd — 原生 Windows 的 Unix 命令集"
-  description="WinuxCmd 产品文档：单个原生 Win32 可执行文件携带 176 个 Unix 命令 / 1,924 个选项，3.79 MB、~19 ms 冷启、PGO 构建；对 GNU coreutils 9.7 差分 178 例 93% 通过；wpm 包管理器内建，与 niubash PATH 注入零胶水联动。"
+  description="WinuxCmd 产品文档：单个原生 Win32 可执行文件携带 176 个 Unix 命令 / 1,924 个选项，3.79 MB、~19 ms 冷启（Windows 实测）、PGO 构建；对 GNU coreutils 9.7 差分 178 例 93% 通过；wpm 包管理器内建，与 niubash PATH 注入零胶水联动。"
   path="/products/winuxcmd/"
   jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'zh')]}
   ogImage="/og/winuxcmd.png"
@@ -341,7 +341,7 @@ const productJsonLd = {
       </tbody>
     </table>
     <p>
-      更多口径（git 启动 ~14 ms、一次性执行 26.3 ms 等 niubash 家族数字）见
+      更多口径（git 启动 ~14 ms、一次性执行 26.3 ms 等 niubash 家族数字，Windows 实测；Linux 口径数字在基准页分栏单列）见
       <a href="/benchmarks/">基准页</a>。
     </p>
   </section>
@@ -366,7 +366,7 @@ const productJsonLd = {
         <strong>{wcVersions[1]?.version ?? 'v1.1.14'}（{wcVersions[1]?.date ?? '2026-10-17'}）</strong>
         <span>
           wpm：<code>links verify</code> 逐路径报告不指向当前 winuxcmd.exe 的命令链接；
-          <code>winuxcmd-shim.exe</code> 小转发器把 shim 包的分发跳数从 24.5 ms 降到 12.1 ms；
+          <code>winuxcmd-shim.exe</code> 小转发器把 shim 包的分发跳数从 24.5 ms 降到 12.1 ms（Windows 实测）；
           <code>wpm update winuxcmd</code> 不再把命令链接静默留在旧镜像上；自更新回滚副本保留最新两份自动修剪。
         </span>
       </li>

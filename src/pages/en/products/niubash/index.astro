@@ -18,10 +18,16 @@ const installSource = 'git clone https://github.com/unixwin/niubash.git && cd ni
 
 const bench = [
   {
-    a: 'One-shot execution niu -c true',
-    b: '26.3 ms (was 105.6 ms — six one-shot fast-path PRs)',
+    a: 'One-shot execution niu -c true (Windows caliber)',
+    b: '26.3 ms (was 105.6 ms — six one-shot fast-path PRs; measured on Windows)',
     c: 'Git Bash 71 ms',
     src: 'GITBASH-KILLER facet 6 · niubash PR #267–#272',
+  },
+  {
+    a: "One-shot execution niu -c 'true' (Linux caliber)",
+    b: '4.14 ms (bare run p50 3.71 ms; Linux same-machine, release builds)',
+    c: 'GNU bash 5.3.20: 2.67 ms (bare 2.60 ms)',
+    src: '2026-10-28 perf round · 50-sample interleaved re-measurement',
   },
   {
     a: 'Prompt git segment',
@@ -214,7 +220,7 @@ const productJsonLd = {
       On Windows the install ships a complete command layer: the full WinuxCmd root (176 Unix commands
       plus the built-in wpm package manager, under <code>&#123;app&#125;\winuxcmd\</code>, PATH pointed at
       <code>winuxcmd\bin</code>), and per <code>preinstall.json</code> preloads gawk (with an awk shim),
-      niu-git, ripgrep and fd — git on PATH is native git (~14 ms). Only gawk is x64-only; ARM64
+      niu-git, ripgrep and fd — git on PATH is native git (~14 ms on Windows, measured). Only gawk is x64-only; ARM64
       installs likewise preload niu-git / ripgrep / fd.
     </p>
     <p>Linux / macOS: grab the portable tar.gz and unpack:</p>
@@ -239,7 +245,7 @@ const productJsonLd = {
     <details class="zh-fold">
       <summary>中文原文 · Chinese original（AI 集成 / 插件系统 / 提示符 三节全文）</summary>
       <div lang="zh-CN">
-        <p><strong>AI 集成</strong>：agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：<code>niu -c true</code> 的冷启动地板从 105.6 ms 压到 26.3 ms（一次性快路径六连 PR；29 例行为电池零差异）。其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，与 <code>-c</code> 同路径、同 BASH_EXECUTION_STRING 契约。其三，目录记忆 <code>--cwd-state</code>。会话级接入：<strong>从 niu 会话启动的 agent 直接拿到 niu 导出的 $SHELL</strong>。逐家 agent 见 <a href="/en/agents/">AI Agent 接入目录</a>；给 agent 的一键安装提示词见 <a href="/en/ai/">给 AI 的门户</a>；全部旗标语义见 <a href="/en/docs/cli/">CLI 与旗标参考</a>。</p>
+        <p><strong>AI 集成</strong>：agent 的高频调用面是一次性 <code>-c</code>，niu 为此做了三件事。其一，快路径：<code>niu -c true</code> 的冷启动地板从 105.6 ms 压到 26.3 ms（一次性快路径六连 PR；29 例行为电池零差异）。Linux 口径另行复测（2026-10-28，50 样本交错、release 构建、Linux 同机）：niu 空跑 p50 3.71 ms、<code>niu -c 'true'</code> 4.14 ms（GNU bash 5.3.20 为 2.60 / 2.67 ms），与 Windows 数字分栏呈现，各自与同平台对照比较。其二，免引号通道 <code>--encoded-command</code>：base64 载荷免掉跨进程引号转义，与 <code>-c</code> 同路径、同 BASH_EXECUTION_STRING 契约。其三，目录记忆 <code>--cwd-state</code>。会话级接入：<strong>从 niu 会话启动的 agent 直接拿到 niu 导出的 $SHELL</strong>。逐家 agent 见 <a href="/en/agents/">AI Agent 接入目录</a>；给 agent 的一键安装提示词见 <a href="/en/ai/">给 AI 的门户</a>；全部旗标语义见 <a href="/en/docs/cli/">CLI 与旗标参考</a>。</p>
         <p><strong>插件系统</strong>：外部 bash 生态的接入流程：<code>niu plugin add</code> 克隆源（add 本身不执行任何内容，enable 前资产不生效；可选 --checksum &lt;sha256&gt; 在安装时对整棵源树做一次性校验，不匹配即拒绝——这是目前唯一的完整性检查），<code>niu plugin enable</code> 在 rc 尾部维护托管块——块外内容永不改写。声明式 spec（~/.niubash/plugins.toml）是唯一事实源，sync / restore / rollback 一族动词带 lockfile 锁定，镜像（niu plugin mirror）对国内网络友好。</p>
         <p><strong>提示符</strong>：默认提示符是 Git Bash 骨架，分支段跑用户自己的 git：仓内每遍至多一次有界 spawn（git status --porcelain=v2 --branch），同遍重绘复用本遍段值，仓库外零 spawn；用真 git 而非进程内库是保真裁定。实测仓内 p50 26 ms（Windows），对照 Git Bash 每提示符 __git_ps1 三到五次 fork 的约 100–300 ms。PS1 / 主题声明照常接管，set -o vi 的编辑模式指示器保留。</p>
       </div>
@@ -248,7 +254,7 @@ const productJsonLd = {
 
   <section>
     <h2 id="bench">Measured numbers</h2>
-    <p>Every row is a same-machine, reproducible measurement; benchmark scripts ship with the repo. Full comparison on the <a href="/en/benchmarks/">benchmarks page</a>.</p>
+    <p>Every row is a same-machine, reproducible measurement; benchmark scripts ship with the repo. Rows are labeled by platform (measured on Windows / Linux caliber) and are not compared across platforms. Full comparison on the <a href="/en/benchmarks/">benchmarks page</a>.</p>
     <div class="table-scroll">
       <table class="cli-table">
         <thead>
@@ -268,6 +274,89 @@ const productJsonLd = {
         </tbody>
       </table>
     </div>
+  </section>
+
+  <section>
+    <h2 id="perf-round">Perf round, finalized: 2026-10-28 (Linux caliber)</h2>
+    <p>
+      Finalized numbers from the 2026-10-28 engine perf round (release builds,
+      same-machine interleaved sampling on Linux, sampling gate load1 ≤ 2.0;
+      this section's caliber is Linux same-machine only and says nothing about
+      Windows magnitudes):
+    </p>
+    <ul>
+      <li>
+        Startup: niu bare-run p50 <strong>3.71 ms</strong> (16.98 ms in the
+        2026-10-25 baseline — the non-interactive fast path at work), level with
+        the bare rubash engine at 3.28 ms; GNU bash 5.3.20 measures 2.60 ms.
+        niu -c 'true' is 4.14 ms (rubash 3.59 ms, GNU 2.67 ms).
+      </li>
+      <li>
+        Lead faces: the pipe_200 workload takes <strong>0.045×</strong> of GNU's
+        time and comsub_loop takes <strong>0.107×</strong> — the structural lead
+        of the zero-fork, in-process execution model.
+      </li>
+      <li>
+        Long-string pattern substitution was the worst shape in the corpus:
+        <code>{'${v/#seg/SEG}'}</code> fixed from 498.68× to <strong>1.00×</strong>
+        and <code>{'${v%%.*}'}</code> from 84.39× to <strong>0.24×</strong>
+        (rubash PR #1909, merged).
+      </li>
+      <li>
+        An array element-write regression (+28–31%) was bisected to its root
+        cause and fixed (rubash PR #1912, merged); the three fill cases are
+        back at their 2026-10-25 baselines.
+      </li>
+      <li>
+        The arithmetic subscript read shape gap is closed:
+        <code>{'$((a[i]))'}</code> went from 10.98× to 2.99× (rubash PR #1615).
+      </li>
+      <li>
+        Residual close-out (backfilled 2026-10-29; Linux same-machine
+        release builds, absolute values from same-window paired sampling):
+        associative-array element reads are fixed — an ordinary miss no
+        longer grows with table size (18.3 µs vs GNU 13.4 µs at 10,000
+        entries), and the length form <code>{'${#m[key]}'}</code> had its
+        growth factor cut from ×10.67 to ×1.08. The mechanism is a settled
+        read on the combined table (rubash PR #1919, merged; the length
+        legs in the residual batch), not a write-side change.
+      </li>
+      <li>
+        Command-completion candidate walks are cached: on a fat PATH
+        (~3,100 candidates) <code>compgen -c</code> fell from 110.6 ms to
+        13.6 ms per call (GNU: 277.6 ms in the same window); the walk
+        re-runs only when the PATH/cwd fingerprint changes.
+      </li>
+      <li>
+        Large grouped scripts read in faster: an 8,000-line
+        function-definition group (the shape heavy startup scripts like
+        nvm.sh present) fell from 3.248 s to 0.533 s.
+      </li>
+      <li>
+        The filed procsub-read magnitude (68×, procsub-specific) was
+        falsified by decomposition: draining a procsub costs 1.3 µs/line,
+        and the while-read residual prices the same across file and pipe
+        sources — it belongs to the general floor tax (~2.83–2.95× on the
+        A-table caliber, tracked), not to a procsub endpoint defect.
+      </li>
+      <li>
+        Still being optimized: parse throughput and declare/getopts
+        per-call constants — no numbers are published for these until the
+        fixes land and pass their gates.
+      </li>
+    </ul>
+    <p>
+      Loop scripts (Windows caliber): <strong>27.3s → 1.5s</strong> — a loop
+      script with 150 external command launches, measured on the same Windows
+      machine (niubash 1.4.4 vs Git Bash); original record in
+      <a href="https://github.com/unixwin/niubash/issues/567" target="_blank" rel="noopener noreferrer">niubash #567 ↗</a>.
+    </p>
+    <p class="src-line">
+      The full engine A-table and methodology live in rubash's
+      <a href="https://github.com/unixwin/rubash/blob/master/docs/performance.md" target="_blank" rel="noopener noreferrer">performance ledger ↗</a>;
+      the corpus and raw results are in the
+      <a href="https://github.com/unixwin/shellbench" target="_blank" rel="noopener noreferrer">shellbench repo ↗</a>.
+    </p>
   </section>
 
   <section>

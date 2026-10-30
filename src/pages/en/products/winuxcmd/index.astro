@@ -37,7 +37,7 @@ const categories = [
 
 const factRows = [
   { metric: 'Single-file size', value: '3.79 MB (carrying 176 commands / 1,924 options; statically linked, zero dependencies)', src: 'WinuxCmd README.md:74' },
-  { metric: 'Cold start', value: '~19 ms', src: 'WinuxCmd README.md:74' },
+  { metric: 'Cold start', value: '~19 ms (measured on Windows)', src: 'WinuxCmd README.md:74' },
   { metric: 'PGO gains', value: 'sort −18% · nl −17% (x64 release builds, trained on real workloads)', src: 'WinuxCmd README.md:74 · scripts/build-pgo.ps1' },
   { metric: 'Quality gates', value: '178-case differential 93% (165 pass / 13 platform deltas named on record) · 2,420 unit tests 99.6%', src: 'README.md · tests/differential/baseline.json' },
   { metric: 'Workload contrasts', value: 'cat 100 MB 0.8 s · sort 1M lines 2.1 s · grep 100 MB 1.2 s · find 10K files 0.3 s (~10–15% behind GNU/WSL2)', src: 'README.md Benchmarks (Win11 · i7-13700K · 32 GB · NVMe)' },
@@ -59,7 +59,7 @@ const productJsonLd = {
 
 <DocsLayout
   title="WinuxCmd — native Unix commands for Windows"
-  description="WinuxCmd: one native Win32 executable, 176 Unix commands / 1,924 options — 3.79 MB, ~19 ms cold start, 93% on a 178-case coreutils differential, built-in wpm."
+  description="WinuxCmd: one native Win32 executable, 176 Unix commands / 1,924 options — 3.79 MB, ~19 ms cold start (measured on Windows), 93% on a 178-case coreutils differential, built-in wpm."
   path="/en/products/winuxcmd/"
   lang="en"
   enPath="/products/winuxcmd/"
@@ -103,7 +103,7 @@ const productJsonLd = {
       <div lang="zh-CN">
         <ul>
           <li><strong>不是虚拟机</strong>（vs WSL）——WSL 给你 1 GB+ 安装与一道 VM 文件系统边界；WinuxCmd 是一个原生 Win32 可执行文件，直接操作你的真实文件。</li>
-          <li><strong>不是模拟层</strong>（vs Cygwin）——Cygwin 要你做路径翻译体操、付 2–5 秒启动；WinuxCmd 理解 C:\ 与 UNC 原生形态，冷启动约 19 ms，无运行时 DLL。</li>
+          <li><strong>不是模拟层</strong>（vs Cygwin）——Cygwin 要你做路径翻译体操、付 2–5 秒启动；WinuxCmd 理解 C:\ 与 UNC 原生形态，冷启动约 19 ms（Windows 实测），无运行时 DLL。</li>
           <li><strong>不是 2012 年的遗物</strong>（vs GnuWin32）——GnuWin32 停止维护于 2012 年、兼容度停在 60%；WinuxCmd 的差分语料 178 例对 GNU coreutils 9.7 oracle 实测 93% 通过。</li>
           <li><strong>不止 ~100 命令</strong>（vs uutils）——同为原生命令集的 uutils 覆盖约 100 命令 / ~600 选项；WinuxCmd 携带 176 命令 / 1,924 选项，单文件 3.79 MB。</li>
         </ul>
@@ -223,7 +223,7 @@ const productJsonLd = {
       </tbody>
     </table>
     <p>
-      More figures (git startup ~14 ms, one-shot execution 26.3 ms and other niubash-family numbers)
+      More figures (git startup ~14 ms, one-shot execution 26.3 ms and other niubash-family numbers — measured on Windows; Linux-caliber figures are listed in their own column on the benchmarks page)
       on the <a href="/en/benchmarks/">benchmarks page</a>.
     </p>
   </section>
@@ -249,7 +249,7 @@ const productJsonLd = {
         <span>
           wpm: <code>links verify</code> reports per-path links not pointing at the current
           winuxcmd.exe; the <code>winuxcmd-shim.exe</code> mini-forwarder cuts shim dispatch from
-          24.5 ms to 12.1 ms; <code>wpm update winuxcmd</code> no longer silently leaves command
+          24.5 ms to 12.1 ms (measured on Windows); <code>wpm update winuxcmd</code> no longer silently leaves command
           links on the old image; self-update rollback copies keep the newest two, auto-pruned.
         </span>
       </li>

@@ -386,10 +386,10 @@ const softwareAppJsonLd = {
           <h3 class="why-title">Fast</h3>
           <p class="why-body">
             <code>git --version</code> in about <strong>~14 ms</strong> where Git Bash needs
-            45–103 ms; the prompt reads <code>.git/HEAD</code> directly (≤29 ms) while the other
-            shell pays a 113–362 ms git tax on every single prompt.
+            45–103 ms; the prompt's git segment spawns at most once per pass (p50 26 ms in a
+            repo) while the other shell pays a 113–362 ms git tax on every single prompt.
           </p>
-          <code class="why-chip">git ~14ms · prompt ≤29ms</code>
+          <code class="why-chip">git ~14ms · prompt ≤1 spawn/pass</code>
         </article>
       </div>
 

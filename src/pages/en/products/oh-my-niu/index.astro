@@ -140,7 +140,7 @@ const productJsonLd = {
         <ul>
           <li><strong>主题画廊</strong>——27 款主题（plugins/theme-* 目录与 themes/*.toml 资产层一一对应）：Oh My Zsh 经典款、Powerlevel 风 p10 四款、Oh My Posh 风配色款与官方基础款。</li>
           <li><strong>主题即插件</strong>——每款主题是一个普通插件目录，与功能插件同一加载面。</li>
-          <li><strong>prompt-core</strong>——提示符 API 与 segment 注册表的拥有者，默认开启；git 段解析为 niubash 原生 Vcs 段（1.4.1+），零 git 子进程。</li>
+          <li><strong>prompt-core</strong>——提示符 API 与 segment 注册表的拥有者，默认开启；git 段解析为 niubash 原生 Vcs 段（1.4.1+），段值取自用户自己的 git（仓内每遍至多一次 spawn）。</li>
           <li><strong>Starship 接管模式</strong>——加载 starship 插件、留空 NIU_THEME，由 Starship 接管 PROMPT_COMMAND/PS1/PS2/PS0。</li>
           <li><strong>功能插件族</strong>——git、docker、kubectl、npm、jj、zoxide、direnv、dotenv、fzf、last-working-dir、thefuck、path-tools、extract、common-aliases、keybindings、command-not-found、winuxcmd-core……</li>
           <li><strong>2.0 新一方插件</strong>——command-timer、auto-env、dirmarks、git-fetch-reminder、env-sync。</li>
@@ -271,8 +271,8 @@ const productJsonLd = {
           Renamed oh-my-winuxsh → oh-my-niu (aligned with the niubash 1.0.0 branding); bundle/plugin
           API prefix <code>winuxsh:</code> → <code>niubash:</code>, env prefix now <code>NIU_*</code>;
           new first-party plugins command-timer / auto-env / dirmarks / git-fetch-reminder / env-sync;
-          the git prompt segment resolves to the native Vcs segment for niubash 1.4.1+ (in-process
-          rendering, zero git subprocesses).
+          the git prompt segment resolves to the native Vcs segment for niubash 1.4.1+ (values
+          come from the user's own git — at most one bounded spawn per prompt pass in a repo).
         </span>
       </li>
       <li>

@@ -76,7 +76,7 @@ const features: Feature[] = [
   },
   {
     title: 'git 感知的快速提示符',
-    body: '默认提示符读 .git/HEAD 文件（微秒级）渲染分支与脏标记，不再像 Git Bash 那样每条提示符 spawn git 子进程（Windows 实测 113–362ms）；仓库外连 stat 都省掉。视觉对齐 Git Bash 骨架，但明确不做 MINGW64 身份段。',
+    body: '默认提示符的分支与脏标记来自用户自己的 git：仓内每遍至多一次有界 spawn（status --porcelain=v2 --branch），同一遍的重绘复用本遍结果，仓库外零 spawn——对照 Git Bash 的 __git_ps1 每遍三到五次 fork（实测 113–362ms）。用真 git 是为保真：稀疏检出、子模块、链接工作树只有真 git 答得对。视觉对齐 Git Bash 骨架，但明确不做 MINGW64 身份段。',
   },
   {
     title: '输入管线做到字节级',
@@ -107,7 +107,7 @@ const bench: Row[] = [
   },
   {
     a: '提示符 git 段',
-    b: '读 .git/HEAD ≤29 ms（Windows 实测）',
+    b: '每遍至多 1 次 spawn · 仓内 p50 26 ms（Windows 实测）',
     c: '每条提示符 spawn git 113–362 ms',
     src: 'GITBASH-KILLER 面 3（真仓 min-of-20）',
   },
@@ -154,7 +154,7 @@ const news: News[] = [
     version: '1.4.0',
     date: '2026-10-10',
     summary:
-      'Git Bash 兼容默认提示符（读 .git/HEAD，不 spawn git）、--encoded-command 与 --cwd-state、vi 模式端到端、agent skill bundle、发布包预装 gawk/niu-git/ripgrep/fd。',
+      'Git Bash 兼容默认提示符、--encoded-command 与 --cwd-state、vi 模式端到端、agent skill bundle、发布包预装 gawk/niu-git/ripgrep/fd。',
   },
   {
     version: '1.3.4',
@@ -200,7 +200,7 @@ const productJsonLd = {
     <h1>niubash</h1>
     <p class="lead">
       AI-native 的真·Bash：真语法、真 Unix 命令、原生 Windows / Linux / macOS。
-      一个 <code>niu.exe</code> 打包语言引擎（rubash）、真实 Unix 命令（WinuxCmd）、git 感知提示符与带信任模型的插件系统；
+      一个 <code>niu.exe</code> 打包语言引擎（rubash）、真实 Unix 命令（WinuxCmd）、git 感知提示符与插件系统；
       不是 MSYS2、Cygwin、Git Bash，也不是 WSL——没有 POSIX 模拟层，没有路径转换启发式。
     </p>
     <div class="badges">
@@ -315,18 +315,22 @@ const productJsonLd = {
     </p>
     <h3>插件系统</h3>
     <p>
-      外部 bash 生态走「先装、后审、再信」：<code>niu plugin add</code> 克隆源（新源默认不受信，
-      add 后不执行任何内容），<code>niu plugin trust</code> 审阅校验和后放行，
+      外部 bash 生态的接入流程：<code>niu plugin add</code> 克隆源（add 本身不执行任何内容，
+      enable 前资产不生效；可选 <code>--checksum &lt;sha256&gt;</code> 在安装时对整棵源树做
+      一次性校验，不匹配即拒绝——这是目前唯一的完整性检查），
       <code>niu plugin enable</code> 在 rc 尾部维护托管块——块外内容永不改写。
       声明式 spec（<code>~/.niubash/plugins.toml</code>）是唯一事实源，
       sync / restore / rollback 一族动词带 lockfile 锁定，镜像（<code>niu plugin mirror</code>）
-      对国内网络友好。运行时信任层会复验 pin：树被改动后读 drift 而非撒谎的 unchanged。
+      对国内网络友好。
     </p>
     <h3>提示符</h3>
     <p>
       默认提示符是 Git Bash 骨架（绿 user@host、黄 POSIX 形态 cwd、青分支 + 脏星），
-      但分支段读 <code>.git/HEAD</code> 文件而不是 fork git——这是「提示符永不 spawn」红线的产物，
-      Windows 实测冷 39 ms / 暖 p50 2.5 ms，对照 Git Bash 每提示符 <code>__git_ps1</code> 的约 100–300 ms。
+      分支段跑用户自己的 git：仓内每遍至多一次有界的 <code>git status --porcelain=v2 --branch</code>
+      （2 秒超时、从不取 index.lock、stderr 丢弃），同一遍内的重绘复用本遍的段值，
+      仓库外零 spawn。用真 git 而非进程内库是保真裁定——稀疏检出、子模块、
+      链接工作树只有真 git 答得对。Windows 实测仓内 p50 26 ms，对照 Git Bash
+      每提示符 <code>__git_ps1</code> 三到五次 fork 的约 100–300 ms。
       PS1 / 主题声明照常接管，<code>set -o vi</code> 的编辑模式指示器保留。
     </p>
   </section>

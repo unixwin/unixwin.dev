@@ -109,11 +109,11 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
         <tr><th>Metric</th><th>niubash family</th><th>Contrast</th></tr>
       </thead>
       <tbody>
-        <tr><td>git startup (<code>git --version</code>, measured on Windows)</td><td><strong>~14 ms</strong> (niu-git: MSVC + schannel, no MSYS)</td><td>Git Bash 45–103 ms</td></tr>
+        <tr><td>git startup (<code>git --version</code>, measured on Windows)</td><td><strong>13.7 ms mean / 11.5 ms min</strong> (niu-git: MSVC + schannel, no MSYS)</td><td>Git Bash 45–103 ms</td></tr>
         <tr><td>One-shot execution <code>niu -c true</code> (measured on Windows)</td><td><strong>26.3 ms</strong></td><td>Git Bash 71 ms</td></tr>
         <tr><td>One-shot execution <code>niu -c 'true'</code> (Linux, re-measured 2026-10-28)</td><td><strong>4.14 ms</strong> (bare run p50 3.71 ms)</td><td>GNU bash 5.3.20: 2.67 ms (bare 2.60 ms) · Linux same-machine, release builds</td></tr>
         <tr><td>Shell startup (5 measured runs, on Windows)</td><td><strong>rubash 27–48 ms</strong></td><td>Git Bash 60–93 ms · WSL 202–278 ms</td></tr>
-        <tr><td>Prompt git segment (measured on Windows)</td><td><strong>reads <code>.git/HEAD</code>, ≤29 ms</strong></td><td>Git spawned per prompt: 113–362 ms</td></tr>
+        <tr><td>Prompt git segment (measured on Windows)</td><td><strong>at most one spawn per pass (p50 26 ms in a repo)</strong></td><td>Git spawned per prompt: 113–362 ms</td></tr>
         <tr><td>WinuxCmd tool layer</td><td>3.79 MB carrying 176 commands / 1,924 options, ~19 ms cold start (measured on Windows)</td><td>—</td></tr>
         <tr><td>Install size</td><td>niu ≈16 MB · zero DLLs</td><td>Git Bash 440 MB + 20 MB <code>msys-2.0.dll</code></td></tr>
       </tbody>
@@ -122,11 +122,15 @@ import DocsLayout from '../../../../components/DocsLayout.astro';
       <summary>中文原文 · Chinese original</summary>
       <div lang="zh-CN">
         <p>
-          提示符一项值得展开：Git Bash 兼容主题不 spawn git 子进程，而是直接读
-          <code>.git/HEAD</code> 文件（微秒级），把「每敲一条命令付一次 git 启动」变成
-          「不付」。一次性执行数字对 agent 与 CI 尤其重要——Windows 实测口径下，
-          <code>niu -c</code> 的冷启动地板从 105.6 ms 一路压到 26.3 ms（一次性
-          快路径六连 PR）。Linux 口径另行复测：2026-10-28 按统一口径（50 样本
+          提示符一项值得展开：Git Bash 兼容主题的分支段跑用户自己的 git——仓内每遍
+          至多一次有界的 <code>git status --porcelain=v2 --branch</code>（2 秒超时、
+          隔离运行），同一遍内的重绘复用本遍已算好的段值、不再 spawn；仓库外零
+          spawn（只向上找 <code>.git</code> 标记）。用真 git 是保真裁定：稀疏检出、
+          子模块、链接工作树与 partial clone 的状态只有用户实际在跑的 git 答得对，
+          进程内库曾在旧属主仓库上静默丢过分支段。代价是仓内每遍一次 git 启动
+          （Windows 实测 p50 26 ms），对照 <code>__git_ps1</code> 每遍三到五次 fork。一次性执行数字对 agent 与 CI 尤其重要——<code>niu -c</code> 的
+          冷启动地板从 105.6 ms 一路压到 26.3 ms（一次性快路径六连 PR）。
+          Linux 口径另行复测：2026-10-28 按统一口径（50 样本
           交错、release 构建、Linux 同机），niu 空跑 p50 3.71 ms、
           <code>niu -c 'true'</code> 4.14 ms，GNU bash 5.3.20 为 2.60 / 2.67 ms；
           两组数字分属不同平台，各自与同平台对照比较。

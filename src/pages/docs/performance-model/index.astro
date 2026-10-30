@@ -10,7 +10,7 @@ import DocsLayout from '../../../components/DocsLayout.astro';
 
 <DocsLayout
   title="性能特征：哪里快、哪里持平"
-  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（Win32 CreateProcess 地板）。同机实测：git 启动 13.7 ms 均值、一次性执行 26.3 ms、提示符 git 段每遍至多一次 spawn；Linux 口径数字另行分栏标注。"
+  description="niubash 零 fork 的收益落在命令替换、子壳与后台作业；外部进程与 GNU 持平（单次 spawn 为 WSL2 Linux 实测的 exec 地板）。同机实测：git 启动 13.7 ms 均值、一次性执行 26.3 ms、提示符 git 段每遍至多一次 spawn；Linux 口径数字另行分栏标注。"
   path="/docs/performance-model/"
 >
   <header class="doc-head">

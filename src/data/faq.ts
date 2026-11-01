@@ -146,9 +146,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'wpm-index',
     q: 'wpm 有多少包？安全吗？',
-    a: '官方索引 281 包，每条带 sha256/size/urls 三元组；缓存键 <pkg>-<version>-<sha8> 双校验，索引脚本拒绝为缺文件的档写条目。',
+    a: '官方索引 282 包，每条带 sha256/size/urls 三元组；缓存键 <pkg>-<version>-<sha8> 双校验，索引脚本拒绝为缺文件的档写条目。',
     qEn: 'How many packages does wpm have? Is it safe?',
-    aEn: 'The official index carries 281 packages, each with a sha256/size/urls triple; the cache key <pkg>-<version>-<sha8> double-checks, and the index tooling refuses to write entries for archives missing files.',
+    aEn: 'The official index carries 282 packages, each with a sha256/size/urls triple; the cache key <pkg>-<version>-<sha8> double-checks, and the index tooling refuses to write entries for archives missing files.',
   },
   {
     id: 'wpm-mirror',

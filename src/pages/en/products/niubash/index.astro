@@ -198,7 +198,7 @@ const productJsonLd = {
           <li><strong>git 感知的快速提示符</strong>——默认提示符的分支与脏标记来自用户自己的 git：仓内每遍至多一次有界 spawn，同一遍的重绘复用本遍结果，仓库外零 spawn（对照 Git Bash 每提示符三到五次 fork，实测 113–362ms）。</li>
           <li><strong>输入管线做到字节级</strong>——多行粘贴自动误执行 186 次 → 0，257 行载荷 300s 超时 → 4.6s；ConPTY 粘贴丢字符、typeahead 吃键、控制台 read 三面逐项与 GNU 行为对齐。</li>
           <li><strong>控制台设备重定向：Git Bash 报错的地方 niu 照跑</strong>——echo &gt;/dev/tty、exec 3&lt;&gt;/dev/tty、test -e /dev/tty 与 GNU 行为一致，同组命令在 Git Bash 的 MSYS 层报 Invalid argument；引擎把 CON 拆成 CONIN$/CONOUT$ 两端，git/ssh askpass 正依赖这条路。</li>
-          <li><strong>跨平台到 CI 腿：三个发布平台，六个发布目标</strong>——Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六目标每次发布冒烟四查；Android 双目标 incubating，OpenHarmony 仅 CI 编译检查。</li>
+          <li><strong>跨平台到 CI 腿：三个发布平台，六个发布目标</strong>——Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六目标每次发布冒烟四查；Android 自 v1.4.3 起随发布出 .zip（NDK 构建、暂无运行时冒烟），OpenHarmony 仅 CI 编译检查。</li>
         </ul>
       </div>
     </details>

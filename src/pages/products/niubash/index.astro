@@ -88,7 +88,7 @@ const features: Feature[] = [
   },
   {
     title: '跨平台到 CI 腿：三个发布平台，六个发布目标',
-    body: 'Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六个目标已发布且每次发布冒烟四查（--version、-c 执行、经原生 coreutils 的管道、离线插件栈）才允许上传；Android 双目标是 incubating 的 NDK 构建腿（zip 只随 CI workflow 产出、不入发布档、无运行时冒烟），OpenHarmony 仅 CI 编译检查。各平台的诚实状态矩阵见平台支持文档。',
+    body: 'Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六个目标已发布且每次发布冒烟四查（--version、-c 执行、经原生 coreutils 的管道、离线插件栈）才允许上传；Android 自 v1.4.3 起随发布出 .zip 发布档（NDK 构建，暂无运行时冒烟门），OpenHarmony 仅 CI 编译检查。各平台的诚实状态矩阵见平台支持文档。',
   },
 ];
 

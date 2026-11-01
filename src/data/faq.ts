@@ -46,9 +46,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'free-platforms',
     q: '免费吗？支持哪些平台？',
-    a: '全部开源免费。niubash 提供 Windows x64 / arm64 原生安装包（winget：Unixwin.Niubash）；引擎 rubash 另有 Linux（gnu/musl）、macOS、Android 与 OpenHarmony 五平台的 CI 门禁构建。',
+    a: '全部开源免费。niubash 本体正式发布四平台：Windows x64 / arm64（winget：Unixwin.Niubash）、Linux x86_64 / aarch64、macOS x86_64 / aarch64、Android（.zip 发布档，自 v1.4.3 起随发布）；musl 仅构建 + 冒烟，OpenHarmony 仅 CI 编译检查，两者不算正式发布。',
     qEn: 'Is it free? Which platforms are supported?',
-    aEn: 'Everything is open source and free. niubash ships native Windows x64 / arm64 installers (winget: Unixwin.Niubash); the rubash engine additionally has CI-gated builds for five platforms: Linux (gnu/musl), macOS, Android and OpenHarmony.',
+    aEn: 'Everything is open source and free. niubash itself officially releases on four platforms: Windows x64 / arm64 (winget: Unixwin.Niubash), Linux x86_64 / aarch64, macOS x86_64 / aarch64, and Android (a .zip release artifact since v1.4.3). musl is build + smoke only and OpenHarmony is a CI compile check only — neither counts as an official release.',
   },
   {
     id: 'perf',

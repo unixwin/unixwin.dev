@@ -18,7 +18,8 @@ import changelogs from '../../../data/changelogs.json';
 
 const meta = repoMeta.repos['oh-my-niu'];
 const stars = typeof meta?.stars === 'number' ? meta.stars : null;
-const latest = typeof meta?.latest === 'string' ? meta.latest : '';
+// 版本徽标不取 repo-meta 的 latest：该值是 2026-09 的陈旧 v2.0.0 release，
+// 按发布序 oh-my-niu 须切全新 release，徽标固定标注「即将发布」。
 
 // —— 安装与首跑命令 ——
 const rcBootstrap = [
@@ -191,7 +192,7 @@ const productJsonLd = {
     <div class="badge-row">
       <Badge text="Shell（.niu / bash）" tone="accent" />
       <Badge text="独立仓库 · 全平台" tone="info" />
-      <Badge text={latest || 'v2.0.0'} tone="warn" />
+      <Badge text="2.0.0 · 即将发布（全新切版）" tone="warn" />
       <Badge text="MIT" tone="muted" />
     </div>
     <p class="repo-line">

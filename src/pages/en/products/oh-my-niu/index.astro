@@ -14,7 +14,9 @@ import repoMeta from '../../../../data/repo-meta.json';
 
 const meta = repoMeta.repos['oh-my-niu'];
 const stars = typeof meta?.stars === 'number' ? meta.stars : null;
-const latest = typeof meta?.latest === 'string' ? meta.latest : '';
+// The version badge deliberately does not use repo-meta's latest: that
+// value is the stale Sep-2026 v2.0.0 release; oh-my-niu ships a fresh
+// cut per the release sequence, so the badge says "upcoming".
 
 const rcBootstrap = [
   '# Clone first, independently: git clone https://github.com/unixwin/oh-my-niu.git ~/.niubash/oh-my-niu',
@@ -100,7 +102,7 @@ const productJsonLd = {
     <div class="badge-row">
       <Badge text="Shell (.niu / bash)" tone="accent" />
       <Badge text="Independent repo · all platforms" tone="info" />
-      <Badge text={latest || 'v2.0.0'} tone="warn" />
+      <Badge text="2.0.0 · upcoming (fresh cut)" tone="warn" />
       <Badge text="MIT" tone="muted" />
     </div>
     <p class="repo-line">

@@ -88,7 +88,7 @@ const features: Feature[] = [
   },
   {
     title: '跨平台到 CI 腿：三个发布平台，六个发布目标',
-    body: 'Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六个目标已发布且每次发布冒烟四查（--version、-c 执行、经原生 coreutils 的管道、离线插件栈）才允许上传；Android 双目标是 incubating 的 NDK 构建腿（zip 只随 CI workflow 产出、不入发布档、无运行时冒烟），OpenHarmony 仅 CI 编译检查。各平台的诚实状态矩阵见平台支持文档。',
+    body: 'Windows x64/ARM64、Linux x86_64/aarch64、macOS aarch64/x86_64 六个目标已发布且每次发布冒烟四查（--version、-c 执行、经原生 coreutils 的管道、离线插件栈）才允许上传；Android 自 v1.4.3 起随发布出 .zip 发布档（NDK 构建，暂无运行时冒烟门），OpenHarmony 仅 CI 编译检查。各平台的诚实状态矩阵见平台支持文档。',
   },
 ];
 
@@ -319,7 +319,7 @@ const productJsonLd = {
       enable 前资产不生效；可选 <code>--checksum &lt;sha256&gt;</code> 在安装时对整棵源树做
       一次性校验，不匹配即拒绝——这是目前唯一的完整性检查），
       <code>niu plugin enable</code> 在 rc 尾部维护托管块——块外内容永不改写。
-      声明式 spec（<code>~/.niubash/plugins.toml</code>）是唯一事实源，
+      声明式 spec（<code>~/.niubash/plugins.json</code>）是唯一事实源，
       sync / restore / rollback 一族动词带 lockfile 锁定，镜像（<code>niu plugin mirror</code>）
       对国内网络友好。
     </p>

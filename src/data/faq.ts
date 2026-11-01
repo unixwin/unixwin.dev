@@ -46,9 +46,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'free-platforms',
     q: '免费吗？支持哪些平台？',
-    a: '全部开源免费。niubash 提供 Windows x64 / arm64 原生安装包（winget：Unixwin.Niubash）；引擎 rubash 另有 Linux（gnu/musl）、macOS、Android 与 OpenHarmony 五平台的 CI 门禁构建。',
+    a: '全部开源免费。niubash 本体正式发布四平台：Windows x64 / arm64（winget：Unixwin.Niubash）、Linux x86_64 / aarch64、macOS x86_64 / aarch64、Android（.zip 发布档，自 v1.4.3 起随发布）；musl 仅构建 + 冒烟，OpenHarmony 仅 CI 编译检查，两者不算正式发布。',
     qEn: 'Is it free? Which platforms are supported?',
-    aEn: 'Everything is open source and free. niubash ships native Windows x64 / arm64 installers (winget: Unixwin.Niubash); the rubash engine additionally has CI-gated builds for five platforms: Linux (gnu/musl), macOS, Android and OpenHarmony.',
+    aEn: 'Everything is open source and free. niubash itself officially releases on four platforms: Windows x64 / arm64 (winget: Unixwin.Niubash), Linux x86_64 / aarch64, macOS x86_64 / aarch64, and Android (a .zip release artifact since v1.4.3). musl is build + smoke only and OpenHarmony is a CI compile check only — neither counts as an official release.',
   },
   {
     id: 'perf',
@@ -146,9 +146,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'wpm-index',
     q: 'wpm 有多少包？安全吗？',
-    a: '官方索引 281 包，每条带 sha256/size/urls 三元组；缓存键 <pkg>-<version>-<sha8> 双校验，索引脚本拒绝为缺文件的档写条目。',
+    a: '官方索引 282 包，每条带 sha256/size/urls 三元组；缓存键 <pkg>-<version>-<sha8> 双校验，索引脚本拒绝为缺文件的档写条目。',
     qEn: 'How many packages does wpm have? Is it safe?',
-    aEn: 'The official index carries 281 packages, each with a sha256/size/urls triple; the cache key <pkg>-<version>-<sha8> double-checks, and the index tooling refuses to write entries for archives missing files.',
+    aEn: 'The official index carries 282 packages, each with a sha256/size/urls triple; the cache key <pkg>-<version>-<sha8> double-checks, and the index tooling refuses to write entries for archives missing files.',
   },
   {
     id: 'wpm-mirror',
@@ -167,9 +167,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'omn-enable',
     q: 'oh-my-niu 怎么启用？',
-    a: 'rc 三行：NIU_PLUGINS=(prompt-core git …) 选插件、NIU_THEME=… 选主题、source "$NIUBASH/oh-my-niu.niu" 加载框架。框架随 niubash 发行，入口可重入（source 两次是空操作，--reload 全量重载）。',
+    a: 'oh-my-niu 是独立仓库，不随 niubash 发行：先 git clone 到 ~/.niubash/oh-my-niu（或把 release zip 解压到该目录）；rc 里 NIUBASH 指向该目录，再三行启用：NIU_PLUGINS=(prompt-core git …) 选插件、NIU_THEME=… 选主题、source "$NIUBASH/oh-my-niu.niu" 加载框架。入口可重入（source 两次是空操作，--reload 全量重载）。',
     qEn: 'How do I enable oh-my-niu?',
-    aEn: 'Three rc lines: NIU_PLUGINS=(prompt-core git …) picks plugins, NIU_THEME=… picks the theme, source "$NIUBASH/oh-my-niu.niu" loads the framework. It ships with niubash; the entry is re-entrant (sourcing twice is a no-op, --reload forces a full reload).',
+    aEn: 'oh-my-niu is an independent repo and does not ship with niubash: clone it to ~/.niubash/oh-my-niu first (or unpack a release zip there). Then point NIUBASH at that directory in ~/.niubashrc and enable it with three lines: NIU_PLUGINS=(prompt-core git …) picks plugins, NIU_THEME=… picks the theme, source "$NIUBASH/oh-my-niu.niu" loads the framework. The entry is re-entrant (sourcing twice is a no-op, --reload forces a full reload).',
   },
   {
     id: 'omn-theme',
@@ -188,9 +188,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'omn-update',
     q: 'oh-my-niu 怎么更新？',
-    a: '捆绑基线随 niu self-update 推进。它不是 niu plugin source——niu plugin update oh-my-niu 报 unknown source（niubash 1.4.4 实测），spec+lockfile 机制管的是外部第三方源。',
+    a: '手动更新：在 clone 目录 git pull，或到 oh-my-niu 仓的 GitHub Releases 下载新版 zip 覆盖旧树。它不随 niubash 发行、也不经 niu self-update 推进。它不是 niu plugin source——niu plugin update oh-my-niu 报 unknown source（niubash 1.4.4 实测），spec+lockfile 机制管的是外部第三方源。',
     qEn: 'How do I update oh-my-niu?',
-    aEn: 'The bundled baseline advances with niu self-update. It is not a niu plugin source — niu plugin update oh-my-niu fails with "unknown source" (measured on niubash 1.4.4); the spec+lockfile mechanism governs external third-party sources.',
+    aEn: 'Updates are manual: git pull in the clone, or download a newer release zip from the oh-my-niu repo\'s GitHub Releases and unpack it over the old tree. It does not ship with niubash and does not advance via niu self-update. It is not a niu plugin source — niu plugin update oh-my-niu fails with "unknown source" (measured on niubash 1.4.4); the spec+lockfile mechanism governs external third-party sources.',
   },
 ];
 

@@ -17,19 +17,23 @@ const stars = typeof meta?.stars === 'number' ? meta.stars : null;
 const latest = typeof meta?.latest === 'string' ? meta.latest : '';
 
 const rcBootstrap = [
-  '# Three lines in ~/.niubashrc: pick plugins, pick a theme, source the framework',
+  '# Clone first, independently: git clone https://github.com/unixwin/oh-my-niu.git ~/.niubash/oh-my-niu',
+  '# Then in ~/.niubashrc: point at the clone, pick plugins, pick a theme, source the framework',
+  "NIUBASH=~/.niubash/oh-my-niu",
   "NIU_PLUGINS=(prompt-core git docker zoxide)",
   "NIU_THEME=minimal",
   'source "$NIUBASH/oh-my-niu.niu"',
 ].join('\n');
 // Day-to-day surface as measured on niubash 1.4.4 (`niu plugin themes/doctor`
 // are retired — niubash#145; theme selection IS NIU_THEME, diagnostics are the
-// top-level `niu doctor`, the bundled baseline moves with `niu self-update`)
+// top-level `niu doctor`; the framework is an independent repo with manual
+// updates — git pull / newer release zip — it does not ship with niubash and
+// never advances via `niu self-update`)
 const pluginOps = [
   '# Switch themes: edit NIU_THEME, reopen the terminal, or hot-reload the session',
   'source "$NIUBASH/oh-my-niu.niu" --reload',
-  '# The bundled baseline follows niubash releases',
-  'niu self-update',
+  '# Update the framework itself: pull in the clone (or unpack a newer release zip over it)',
+  'git -C ~/.niubash/oh-my-niu pull',
   '# Top-level health check (rc blocks, PATH consistency, ...)',
   'niu doctor',
 ].join('\n');
@@ -86,14 +90,16 @@ const productJsonLd = {
       niubash's <strong>official Oh-My-style plugin framework and bundled distribution</strong>:
       plugins are directories, themes are plugins, and the shell core only provides loading
       primitives. Out of the box you get <strong>27 themes</strong> and a family of feature plugins
-      (git / docker / kubectl / zoxide / fzf…); it ships with
-      <a href="/en/products/niubash/">niubash</a> as an offline baseline and then updates and rolls
-      back independently. It is not a zsh compatibility layer — the useful shape of Oh My Zsh, with a
-      bash body.
+      (git / docker / kubectl / zoxide / fzf…). It is an <strong>independent
+      repo</strong>: <code>git clone</code> it to <code>~/.niubash/oh-my-niu</code>, source it
+      from <code>~/.niubashrc</code>, and update it with <code>git pull</code> or a newer
+      release zip — it does not ship with
+      <a href="/en/products/niubash/">niubash</a>. It is not a zsh compatibility layer — the
+      useful shape of Oh My Zsh, with a bash body.
     </p>
     <div class="badge-row">
       <Badge text="Shell (.niu / bash)" tone="accent" />
-      <Badge text="Ships with niubash · all platforms" tone="info" />
+      <Badge text="Independent repo · all platforms" tone="info" />
       <Badge text={latest || 'v2.0.0'} tone="warn" />
       <Badge text="MIT" tone="muted" />
     </div>
@@ -154,10 +160,12 @@ const productJsonLd = {
   <section>
     <h2>Install &amp; quick start</h2>
     <p>
-      The bundle ships with niubash (the offline baseline, which advances with
-      <code>niu self-update</code>); enabling it takes three rc lines. The <code>niu plugin</code>
+      The bundle is an independent repo and <strong>does not ship with niubash</strong>:
+      clone it (<code>git clone https://github.com/unixwin/oh-my-niu.git
+      ~/.niubash/oh-my-niu</code>) or unpack a release zip there; enabling it then takes
+      three rc lines (point <code>NIUBASH</code> at the clone first). The <code>niu plugin</code>
       command family manages the <strong>external ecosystem</strong> (oh-my-bash, bash-it and other
-      third-party sources) — a separate track from the bundled oh-my-niu. The entry file
+      third-party sources) — a separate track from the independently installed oh-my-niu. The entry file
       <code>oh-my-niu.niu</code> is re-entrant — sourcing twice is a no-op; add <code>--reload</code>
       for a full reload.
     </p>
@@ -214,7 +222,7 @@ const productJsonLd = {
       <div lang="zh-CN">
         <p><strong>目录优先模型</strong>——行为本体在 plugins/&lt;name&gt;/；packs/、aliases/、completions/、prompts/、keybindings/、themes/ 是过渡期的 manifest 兼容与审阅元数据面。新行为先进插件目录，再暴露 TOML 元数据供审阅、托管安装、更新与回滚——设计全文见仓内 docs/design.md（framework-first）。</p>
         <p><strong>catalog 指向官方上游</strong>——niu plugin 的三个内置 bash 生态源不绑 oh-my-niu——origin 直指官方上游仓，上游资产一行不改原生运行（兼容性是被 rubash 引擎测出来的事实）。</p>
-        <p><strong>与 niu plugin 命令族的边界</strong>——bundle 契约：api = "niubash:plugin-bundle@0.1.0"、min_niubash = "1.0.0"（2.0 线自旧 winuxsh: 前缀迁至 niubash:）。发布档附 .sha256。更新模型：oh-my-niu 不是 niu plugin 的 source（niu plugin update oh-my-niu 报 unknown source，1.4.4 实测）——捆好的框架随 niubash 版本走（niu self-update 推进基线），update/rollback 的 spec+lockfile 机制管的是外部第三方源。旧的 niu plugin themes/doctor/review/search 内建面也已退役（niubash#145）：主题选择就是 NIU_THEME，诊断走顶层 niu doctor。</p>
+        <p><strong>与 niu plugin 命令族的边界</strong>——bundle 契约：api = "niubash:plugin-bundle@0.1.0"、min_niubash = "1.0.0"（2.0 线自旧 winuxsh: 前缀迁至 niubash:）。发布档附 .sha256。更新模型：oh-my-niu 不是 niu plugin 的 source（niu plugin update oh-my-niu 报 unknown source，1.4.4 实测）——框架本体只经手动更新（clone 目录 git pull，或解压新版 release zip 覆盖旧树），不随 niubash 版本走、也不经 niu self-update，update/rollback 的 spec+lockfile 机制管的是外部第三方源。旧的 niu plugin themes/doctor/review/search 内建面也已退役（niubash#145）：主题选择就是 NIU_THEME，诊断走顶层 niu doctor。</p>
       </div>
     </details>
     <h3>The catalog points at official upstreams</h3>

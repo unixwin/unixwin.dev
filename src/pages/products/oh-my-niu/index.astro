@@ -22,18 +22,21 @@ const latest = typeof meta?.latest === 'string' ? meta.latest : '';
 
 // —— 安装与首跑命令 ——
 const rcBootstrap = [
-  '# ~/.niubashrc 三行启用：选插件、选主题、source 框架',
+  '# 先独立 clone：git clone https://github.com/unixwin/oh-my-niu.git ~/.niubash/oh-my-niu',
+  '# ~/.niubashrc 启用：指向 clone 目录、选插件、选主题、source 框架',
+  "NIUBASH=~/.niubash/oh-my-niu",
   "NIU_PLUGINS=(prompt-core git docker zoxide)",
   "NIU_THEME=minimal",
   'source "$NIUBASH/oh-my-niu.niu"',
 ].join('\n');
 // 日常操作（niubash 1.4.4 实测 CLI 面；`niu plugin themes/doctor` 已退役——#145，
-// 主题选择就是 NIU_THEME，诊断走顶层 niu doctor，捆绑基线随 niu self-update 推进）
+// 主题选择就是 NIU_THEME，诊断走顶层 niu doctor；框架本体是独立仓库、独立
+// 更新（git pull / 新版 release zip），不随 niubash 发行、也不经 niu self-update）
 const pluginOps = [
   '# 换主题：改 NIU_THEME 后重开终端，或当前会话全量重载',
   'source "$NIUBASH/oh-my-niu.niu" --reload',
-  '# 捆绑基线随 niubash 版本推进',
-  'niu self-update',
+  '# 更新框架本体：在 clone 目录 git pull（或解压新版 release zip 覆盖旧树）',
+  'git -C ~/.niubash/oh-my-niu pull',
   '# 顶层健康检查（rc 块、PATH 一致性等）',
   'niu doctor',
 ].join('\n');
@@ -54,7 +57,7 @@ const whyCards: WhyCard[] = [
   {
     tag: '分工',
     title: 'shell 出原语，框架出组合',
-    body: 'niubash 拥有加载、生命周期钩子、权限审阅、更新回滚等原语；oh-my-niu 拥有框架库、插件目录、主题与默认组合。随 shell 发行，但 bundled 不等于 built in——与第三方插件走同一套系统。',
+    body: 'niubash 拥有加载、生命周期钩子、权限审阅、更新回滚等原语；oh-my-niu 拥有框架库、插件目录、主题与默认组合。框架独立成仓、独立安装与更新，bundled 不等于 built in——与第三方插件走同一套加载系统。',
   },
   {
     tag: '不绑死',
@@ -169,7 +172,7 @@ const productJsonLd = {
 
 <DocsLayout
   title="Oh My Niu — Niubash 官方主题与插件框架"
-  description="Oh My Niu 产品文档：niubash 的官方 Oh My 式插件框架与捆绑发行——27 款主题、51 个插件目录、175 个补全定义、环境包与 prompt-core；插件即目录、主题即插件，随 niubash 发行、独立更新，catalog 指向官方上游。"
+  description="Oh My Niu 产品文档：niubash 的官方 Oh My 式插件框架与捆绑发行——27 款主题、51 个插件目录、175 个补全定义、环境包与 prompt-core；插件即目录、主题即插件，独立仓库发行（clone + rc source、手动更新），catalog 指向官方上游。"
   path="/products/oh-my-niu/"
   jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'zh')]}
   ogImage="/og/oh-my-niu.png"
@@ -179,13 +182,15 @@ const productJsonLd = {
     <p class="lead">
       niubash 的<strong>官方 Oh My 式插件框架与捆绑发行</strong>：插件即目录、主题即插件，
       shell 核心只提供加载原语。装好即得 <strong>27 款主题</strong>与一族功能插件
-      （git / docker / kubectl / zoxide / fzf…），随
-      <a href="/products/niubash/">niubash</a> 发行做离线基线，之后独立更新与回滚。
+      （git / docker / kubectl / zoxide / fzf…）。它是<strong>独立仓库</strong>：
+      git clone 到 <code>~/.niubash/oh-my-niu</code>、在 <code>~/.niubashrc</code> 里
+      source 启用，更新走 git pull 或新版 release zip——不随
+      <a href="/products/niubash/">niubash</a> 发行。
       它不是 zsh 兼容层——是 Oh My Zsh 的有用形状、bash 的身体。
     </p>
     <div class="badge-row">
       <Badge text="Shell（.niu / bash）" tone="accent" />
-      <Badge text="随 niubash · 全平台" tone="info" />
+      <Badge text="独立仓库 · 全平台" tone="info" />
       <Badge text={latest || 'v2.0.0'} tone="warn" />
       <Badge text="MIT" tone="muted" />
     </div>
@@ -235,9 +240,11 @@ const productJsonLd = {
   <section>
     <h2>安装与快速上手</h2>
     <p>
-      bundle 随 niubash 发行（离线基线，随 <code>niu self-update</code> 一并推进），
-      启用只需 rc 三行。<code>niu plugin</code> 命令族管的是<strong>外部生态</strong>
-      （oh-my-bash、bash-it 等第三方源），与捆好的 oh-my-niu 是两条互不干扰的轨道。
+      bundle 是独立仓库，<strong>不随 niubash 发行</strong>：先
+      <code>git clone https://github.com/unixwin/oh-my-niu.git ~/.niubash/oh-my-niu</code>
+      （或把 release zip 解压到该目录），再在 rc 里把 <code>NIUBASH</code> 指向它、
+      选插件选主题、source 启用。<code>niu plugin</code> 命令族管的是<strong>外部生态</strong>
+      （oh-my-bash、bash-it 等第三方源），与独立安装的 oh-my-niu 是两条互不干扰的轨道。
       入口 <code>oh-my-niu.niu</code> 可重入——source 两次是空操作，
       全量重载加 <code>--reload</code>。
     </p>
@@ -331,8 +338,10 @@ const productJsonLd = {
     <p>
       更新模型一句话：<strong>oh-my-niu 不是 <code>niu plugin</code> 的 source</strong>——
       <code>niu plugin update oh-my-niu</code> 会报 unknown source（1.4.4 实测），
-      这是有意设计：捆好的框架随 niubash 版本走（<code>niu self-update</code> 推进基线），
-      <code>update/rollback</code> 那 spec+lockfile 机制管的是外部第三方源。
+      这是有意设计：框架本体只经手动更新——clone 目录里 <code>git pull</code>，
+      或解压新版 release zip 覆盖旧树；不随 niubash 版本走、也不经
+      <code>niu self-update</code>。<code>update/rollback</code> 那 spec+lockfile
+      机制管的是外部第三方源。
       旧的 <code>niu plugin themes/doctor/review/search</code> 内建面也已退役
       （niubash#145）：主题选择就是 <code>NIU_THEME</code>，主题总览看上方画廊或
       <code>plugins/theme-*/</code> 目录，诊断走顶层 <code>niu doctor</code>

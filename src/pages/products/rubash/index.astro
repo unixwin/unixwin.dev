@@ -3,13 +3,14 @@
  * /products/rubash/ — rubash 产品文档页（面向嵌入者）。
  * 事实来源：rubash 仓 README.md / docs/builtins.md / docs/design/1.5.0-workspace-and-engine-api.md、
  * portal-dump HIGHLIGHTS.md / CARDS.md / FACTS.json（2026-10-19）、src/data/{products,repo-meta,changelogs}.json、
- * crates.io 实测（rubash / niubash / niubash-runtime 均 1.4.0）。
+ * crates.io 实测（rubash 1.5.0，2026-11-03；niubash / niubash-runtime 两 crate 的 1.5.0 同日随发布推进）。
  * 口径纪律：nvm 720x→8x 是「与 GNU 差距收敛」的工程进度口径，不是「快 8x」。
  */
 import DocsLayout from '../../../components/DocsLayout.astro';
 import CopyButton from '../../../components/CopyButton.astro';
 import FaqSection from '../../../components/FaqSection.astro';
 import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../data/faq';
+import repoMeta from '../../../data/repo-meta.json';
 
 interface Row {
   a: string;
@@ -30,6 +31,10 @@ interface News {
 }
 
 const cargoAdd = 'cargo add rubash';
+const rbMeta = (repoMeta.repos as any)?.rubash;
+const latestV = rbMeta?.latest ?? 'v1.5.0';
+const starsN = rbMeta?.stars ?? 17;
+const metaDate = repoMeta.fetchedAt ? repoMeta.fetchedAt.slice(0, 10) : '';
 const buildFromSource = 'git clone https://github.com/unixwin/rubash.git && cd rubash && cargo build';
 const runScript = 'target/debug/rubash path/to/script.sh';
 
@@ -75,7 +80,7 @@ const features: Feature[] = [
   },
   {
     title: '跨平台 CI 硬门',
-    body: 'ubuntu / macOS / Windows x64 三个真 runner 跑测试，linux-gnu、aarch64-apple-darwin、aarch64-linux-android、armv7-linux-androideabi 四目标交叉检查进同一 CI；单测 698 通过 / 0 失败。跨平台缺口有公开台账（docs/cross-platform-gap-ledger.md），不假装没有。',
+    body: 'ubuntu / macOS / Windows x64 三个真 runner 跑测试，linux-gnu、aarch64-apple-darwin、aarch64-linux-android、armv7-linux-androideabi 四目标交叉检查进同一 CI；lib 单测 1031 通过 / 0 失败（1.5.0 冻结树，2026-11-03）。跨平台缺口有公开台账（docs/cross-platform-gap-ledger.md），不假装没有。',
   },
 ];
 
@@ -114,10 +119,10 @@ const bench: Row[] = [
 
 const news: News[] = [
   {
-    version: 'Unreleased（开发中）',
-    date: '—',
+    version: '1.5.0',
+    date: '2026-11-03',
     summary:
-      '函数级 profiler（#815）、标量赋值快路径切片（#609）、set -E ERR-trap 嵌套语义与活动控制台 read 三面对齐（#720/#806）、多项热路径去分配优化。',
+      '公开 Session 嵌入契约（rubash::api）落地；函数级 profiler（#815）；fd 机制族审计收口；标量赋值快路径切片（#609）；set -E ERR-trap 嵌套语义与活动控制台 read 三面对齐（#720/#806）；多项热路径去分配优化。',
   },
   {
     version: '1.4.0',
@@ -149,7 +154,7 @@ const productJsonLd = {
 
 <DocsLayout
   title="rubash — 可嵌入的 GNU Bash 5.3 兼容引擎"
-  description="rubash 产品文档：从零用 Rust 写的可嵌入 bash 引擎。crates.io 1.4.0（cargo add rubash）、零 fork 三层执行、62 内建全覆盖、83/83 GNU 上游语料台账、vendored GNU 源码方法论与 1.5.0 嵌入 API 蓝图。"
+  description="rubash 产品文档：从零用 Rust 写的可嵌入 bash 引擎。crates.io 1.5.0（cargo add rubash）、零 fork 三层执行、62 内建全覆盖、83/83 GNU 上游语料台账、vendored GNU 源码方法论与已落地的公开 Session 嵌入契约。"
   path="/products/rubash/"
   jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'zh')]}
   ogImage="/og/rubash.png"
@@ -164,13 +169,13 @@ const productJsonLd = {
     <div class="badges">
       <span class="p-badge">Rust</span>
       <span class="p-badge">Windows · Linux · macOS</span>
-      <span class="p-badge">beta · 嵌入 API 1.5.0</span>
-      <span class="p-badge">crates.io 1.4.0</span>
+      <span class="p-badge">公开 Session 契约 · 1.5.0</span>
+      <span class="p-badge">crates.io 1.5.0</span>
     </div>
     <p class="meta-line">
       <a href="https://github.com/unixwin/rubash" target="_blank" rel="noopener noreferrer">github.com/unixwin/rubash ↗</a>
-      <span class="dot">·</span> Star 11
-      <span class="dot">·</span> 最新版本 v1.4.0（repo-meta 2026-10-19 实测）
+      <span class="dot">·</span> Star {starsN}
+      <span class="dot">·</span> 最新版本 {latestV}（repo-meta{metaDate ? ` 实测 ${metaDate}` : ''}）
     </p>
   </header>
 
@@ -210,7 +215,7 @@ const productJsonLd = {
 
   <section>
     <h2 id="install">安装与快速上手</h2>
-    <p>作为依赖嵌入（引擎即库；组织在 crates.io 的三个 crate——rubash、niubash、niubash-runtime——当前均为 1.4.0）：</p>
+    <p>作为依赖嵌入（引擎即库；rubash 本体已发 1.5.0，niubash / niubash-runtime 两 crate 的 1.5.0 同日随 niubash 发布推进）：</p>
     <div class="cmd">
       <pre><code>{cargoAdd}</code></pre>
       <CopyButton copy={cargoAdd} />
@@ -233,16 +238,16 @@ const productJsonLd = {
 
   <section>
     <h2 id="deep">深入：嵌入、执行模型与兼容台账</h2>
-    <h3>嵌入方式与 1.5.0 蓝图</h3>
+    <h3>嵌入方式：公开 Session 契约（1.5.0 已落地）</h3>
     <p>
-      今天，<code>cargo add rubash</code> 拿到的 1.4.0 已经把引擎当依赖用——niubash 就是第一个完整消费者，
-      driver 级 API（run_stdin_script 等）已在生产。1.5.0 的蓝图（RFC 已合并，PR rubash#814）把这件事正式化：
-      四层 workspace 拆分（<code>rubash-core</code> 嵌入面 / <code>rubash-driver</code> 非交互驱动 /
-      <code>rubash-interactive</code> ConPTY 与主题 / <code>rubash</code> facade 重组出口），
-      Session 级稳定嵌入 API（输入注入、输出流、生命周期、事件回调、rc 策略钩子），
-      以及 846 处 env-IPC 形态的引擎/宿主边界逐族替换为 typed bridges。
-      验收标准一句话：外部编辑器（oh-my-pi、Zed）能嵌入引擎而不需要知道 Windows 的存在——
-      一个约 500 行的「编辑器内 REPL」演示件构建 <code>rubash-core + rubash-driver</code> 时不引入 ConPTY 或 Win32。
+      今天，<code>cargo add rubash</code> 拿到的 1.5.0 已经把引擎当依赖用——niubash 就是第一个完整消费者，
+      driver 级 API（run_stdin_script 等）已在生产。1.5.0 把嵌入面正式化（设计稿 PR rubash#814）：
+      公开 Session 契约落在 <code>rubash::api</code>——Session、<code>complete_detailed</code> 等公开面，
+      候选标记由引擎产出、宿主只消费。仍在后续演进、不属于 1.5.0 的部分：四层 workspace 拆分
+      （<code>rubash-core</code> / <code>rubash-driver</code> / <code>rubash-interactive</code> / facade）
+      与 846 处 env-IPC 形态的引擎/宿主边界逐族替换为 typed bridges；niubash 宿主侧接线正按
+      niubash#863 在 1.5.1 周期迁往新 API。验收标准一句话：外部编辑器（oh-my-pi、Zed）能嵌入引擎而
+      不需要知道 Windows 的存在。
     </p>
     <h3>三层执行模型</h3>
     <p>

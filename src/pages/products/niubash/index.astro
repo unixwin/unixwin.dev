@@ -124,7 +124,7 @@ const bench: Row[] = [
     src: 'niubash PR #252/#288 · paste_multiline_bench.py',
   },
   {
-    a: 'workspace 单测',
+    a: 'workspace 单测（2026-10-19 口径）',
     b: '1026 通过 / 0 失败',
     c: '—',
     src: 'CI run 39191023176（FACTS.json）',
@@ -132,6 +132,12 @@ const bench: Row[] = [
 ];
 
 const news: News[] = [
+  {
+    version: '1.5.0',
+    date: '2026-11-03',
+    summary:
+      '引擎换 rubash 1.5.0；行编辑器切换至 ruline（以 GNU readline 8.3 兼容为目标，一致性由门禁校验）；默认键位改为 GNU 映射；插件状态全面 JSON 化（plugins.json / setup-journal.json），产品 TOML 配置删除（niu config migrate 一次性迁移）；FFI 移除；随附 WinuxCmd 1.2.1 与 niu-git 2.56.0.3；六个发布目标 + Android 双架构发布档。',
+  },
   {
     version: '1.4.4',
     date: '2026-10-22',
@@ -172,8 +178,8 @@ const news: News[] = [
 
 // 构建期动态元数据（issue #10：版本号以 GitHub Releases 为单一事实源）
 const nbMeta = (repoMeta.repos as Record<string, { stars: number; latest: string | null }>).niubash;
-const latestV = nbMeta?.latest ?? 'v1.4.4';
-const starsN = nbMeta?.stars ?? 188;
+const latestV = nbMeta?.latest ?? 'v1.5.0';
+const starsN = nbMeta?.stars ?? 212;
 const metaDate = repoMeta.fetchedAt ? repoMeta.fetchedAt.slice(0, 10) : '';
 const productFaq = faqByIds(['gitbash-diff', 'no-wsl-msys', 'what-is-83', 'switch-agent', 'free-platforms', 'perf', 'naming']);
 
@@ -260,7 +266,7 @@ const productJsonLd = {
 
   <section>
     <h2 id="install">安装与快速上手</h2>
-    <p>Windows 首选 winget（微软官方源，清单自带 InstallerSha256 校验）：</p>
+    <p>Windows 两条安装路：winget（微软官方源，清单自带 InstallerSha256 校验）当前仍为 1.4.3——1.5.0 的 winget 更新尚未提交；装 1.5.0 请用下方 PowerShell 安装器或 GitHub Releases：</p>
     <div class="cmd">
       <pre><code>{installWinget}</code></pre>
       <CopyButton copy={installWinget} />
@@ -274,7 +280,7 @@ const productJsonLd = {
       Windows 装完即有完整命令层：安装器自带完整 WinuxCmd root（176 个 Unix 命令与内建包管理器
       wpm，落在 <code>&#123;app&#125;\winuxcmd\</code>，PATH 指向 <code>winuxcmd\bin</code>），发行包并按
       <code>preinstall.json</code> 预装 gawk（含 awk shim）、niu-git、ripgrep、fd——PATH 上的
-      git 即原生 git（Windows 实测 ~14 ms）；其中仅 gawk 为 x64 资产；ARM64 安装同样预装 niu-git / ripgrep / fd。
+      git 即原生 git（Windows 同机实测 ~14 ms）；其中仅 gawk 为 x64 资产；ARM64 安装同样预装 niu-git / ripgrep / fd。
     </p>
     <p>Linux / macOS 取可移植 tar.gz 解压即用：</p>
     <div class="cmd">

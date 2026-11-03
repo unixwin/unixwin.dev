@@ -33,7 +33,7 @@ const sources = [
 ];
 
 const factRows = [
-  { metric: 'Official index size', value: '281 packages (wpm-source index.json, version official-2026.10.17)', src: 'wpm-source/index.json packages[] counted 2026-10-19' },
+  { metric: 'Official index size', value: '282 packages (wpm-source index.json, version official-2026.11.02)', src: 'wpm-source/index.json packages[] counted 2026-11-03' },
   { metric: 'Shim dispatch hops', value: '12.1 ms (winuxcmd-shim.exe forwarder; the previous hard link to winuxcmd.exe cost 24.5 ms)', src: 'WinuxCmd CHANGELOG 1.1.14, measured' },
   { metric: 'In-use file upgrades', value: 'Forced upgrade succeeded with 28 fsmonitor--daemon processes holding the payload; packages intact', src: 'WinuxCmd CHANGELOG 1.1.13, verified on a real install' },
   { metric: 'Rollback copy governance', value: 'Newest two kept automatically and pruned (one machine had accumulated 61.8 MB)', src: 'WinuxCmd CHANGELOG 1.1.14' },
@@ -48,7 +48,7 @@ const productJsonLd = {
   name: 'wpm',
   applicationCategory: 'DeveloperTool',
   operatingSystem: 'Windows, Linux, macOS',
-  description: "Package manager built into WinuxCmd with the official 281-package index",
+  description: "Package manager built into WinuxCmd with the official 282-package index",
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
 };
@@ -56,7 +56,7 @@ const productJsonLd = {
 
 <DocsLayout
   title="wpm — the package manager built into WinuxCmd"
-  description="wpm: a C++ package manager built into winuxcmd.exe — zero runtime dependencies, 281-package index with sha256 integrity, flat/shim layouts and mirror sources."
+  description="wpm: a C++ package manager built into winuxcmd.exe — zero runtime dependencies, 282-package index with sha256 integrity, flat/shim layouts and mirror sources."
   path="/en/products/wpm/"
   lang="en"
   enPath="/products/wpm/"
@@ -112,7 +112,7 @@ const productJsonLd = {
   <section>
     <h2>Core features</h2>
     <p>
-      Official index of 281 packages; the sha256/size/urls triple contract; flat and shim layouts;
+      Official index of 282 packages; the sha256/size/urls triple contract; flat and shim layouts;
       hard-link entries (zero launch overhead); a schema:1 --json contract for GUI/TUI/agents; four
       mirror sources with fallback; two anti-poisoning locks; and self-update with rollback. Full
       eight-point list (Chinese):
@@ -121,7 +121,7 @@ const productJsonLd = {
       <summary>中文原文 · Chinese original（八条特性全文）</summary>
       <div lang="zh-CN">
         <ul>
-          <li><strong>官方索引 281 包</strong>——wpm-source 仓维护的官方索引（schema:1）覆盖 ripgrep、fd、jq、fzf、bat、neovim、curl、wget、make、openssh、goawk、bsdtar 等便携 CLI。</li>
+          <li><strong>官方索引 282 包</strong>——wpm-source 仓维护的官方索引（schema:1）覆盖 ripgrep、fd、jq、fzf、bat、neovim、curl、wget、make、openssh、goawk、bsdtar 等便携 CLI，以及把 niubash 做成一等 shell 的 Codex 分叉（codex 0.1.1）。</li>
           <li><strong>三元组契约</strong>——每个构件必须带 sha256（64 位小写十六进制）、size（字节数）与 urls（多个则顺序尝试）。</li>
           <li><strong>flat / shim 双布局</strong>——flat 单 exe 直接进 usr\bin\；shim 载荷自包含在 opt\&lt;pkg&gt;\，卸载即删目录。</li>
           <li><strong>硬链接入口</strong>——每个命令在 bin\ 下是「指向真二进制的硬链接」，入口零启动开销。</li>
@@ -173,7 +173,7 @@ const productJsonLd = {
     <details class="zh-fold">
       <summary>中文原文 · Chinese original（索引结构 / 三元组 / 双布局 / --json 契约 / wpm-artifacts 全文）</summary>
       <div lang="zh-CN">
-        <p><strong>索引结构</strong>：索引是一个 JSON 文件（wpm-source/index.json）：顶层 schema:1、version（如 official-2026.10.17）、updated、sources[] 与 packages[]。包记录含 name/version/description/kind/category/license/commands[] 与按平台分组的 artifacts（windows-x64 / windows-arm64）。</p>
+        <p><strong>索引结构</strong>：索引是一个 JSON 文件（wpm-source/index.json）：顶层 schema:1、version（如 official-2026.11.02）、updated、sources[] 与 packages[]。包记录含 name/version/description/kind/category/license/commands[] 与按平台分组的 artifacts（windows-x64 / windows-arm64）。</p>
         <p><strong>构件三元组与文件映射</strong>：每个构件必须携带 sha256（缺失即拒绝远程安装）、size 与 urls，外加显式 files 映射（from → to）。下载先算校验和再解压；缓存键 &lt;pkg&gt;-&lt;version&gt;-&lt;sha8&gt; 双校验（WinuxCmd#1154/#1157）。写侧同样严格：映射指向构件已不再携带的文件时以「extracted path not found」失败，不猜。</p>
         <p><strong>flat 与 shim 双布局</strong>：flat（默认）把映射文件直接装入 usr\bin\；shim 把载荷自包含装到 &lt;root&gt;\opt\&lt;pkg&gt;\，usr\bin\&lt;cmd&gt;.exe 是转发入口（winuxcmd-shim.exe 小转发器，分发跳数 24.5 ms → 12.1 ms）。无论哪种布局，bin\&lt;command&gt;.exe 都是指向真二进制的硬链接。</p>
         <p><strong>--json 契约</strong>：查询类子命令的输出是纯 JSON、不混人类可读文本，顶层带 schema:1 版本字段；完整契约见 wpm-source/docs/index-schema.md。</p>

@@ -3,12 +3,19 @@
  * /en/products/niu-git/ — English edition of the niu-git product page.
  * Skeleton English; prose-heavy Chinese folded into <details>; the speed table,
  * measured-numbers and release-feed tables fully translated.
- * Facts mirror the zh page (niu-git README, wpm/niugit.json, repo-meta 2026-10-19).
+ * Facts mirror the zh page (niu-git README, wpm/niugit.json, repo-meta refreshed 2026-11-03;
+ * niu-git has GitHub Releases since v2.56.0.1).
  */
 import DocsLayout from '../../../../components/DocsLayout.astro';
 import CopyButton from '../../../../components/CopyButton.astro';
 import FaqSection from '../../../../components/FaqSection.astro';
 import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../../data/faq';
+import repoMeta from '../../../../data/repo-meta.json';
+
+const ngMeta = (repoMeta.repos as any)?.['niu-git'];
+const latestV = ngMeta?.latest ?? 'v2.56.0.3';
+const starsN = ngMeta?.stars ?? 1;
+const metaDate = repoMeta.fetchedAt ? repoMeta.fetchedAt.slice(0, 10) : '';
 
 const verifyGit = 'git --version';
 const migrate1 = 'wpm update winuxcmd';
@@ -57,22 +64,22 @@ const bench = [
 
 const news = [
   {
+    version: 'v2.56.0.3',
+    date: '2026-10-26',
+    summary:
+      'Upstream baseline advanced to Git for Windows 2.56.0.windows.4 (brotli 1.2.1 security rebuild); dual x64 / ARM64 zip assets; git --version carries the 2.56.0.windows.4.niugit distro marker.',
+  },
+  {
     version: 'v2.56.0.1',
     date: '—',
     summary:
-      'Latest tag: upstream baseline advanced to git 2.56.0.windows.2; git --version carries the 2.56.0.windows.2.niugit distro marker (repo-meta, measured 2026-10-19; no releases page — the tag is the version).',
+      'Upstream baseline advanced to git 2.56.0.windows.2; git --version carries the 2.56.0.windows.2.niugit distro marker.',
   },
   {
     version: 'v2.55.0.5',
     date: '—',
     summary:
       'Dispatcher retired: patch #3 self-location maps the real mingw64/bin/git.exe straight onto usr\\bin\\git.exe — wpm flat measures 13.7 ms mean for git --version, 22.6 ms for git status; wpm/niugit.json is this version\'s index entry (sha256/size aligned with the local build).',
-  },
-  {
-    version: 'v2.55.0.windows.2',
-    date: '—',
-    summary:
-      'Phase 0 PoC finalized: git-for-windows v2.55.0.windows.2 built with MSVC + CMake + vcpkg, zlib/iconv static, bundle 29 MB; init/add/commit/log/status, schannel https clone, and hooks via the PATH sh all verified.',
   },
 ];
 
@@ -84,7 +91,7 @@ const productJsonLd = {
   name: 'niu-git',
   applicationCategory: 'DeveloperTool',
   operatingSystem: 'Windows, Linux, macOS',
-  description: "Native Windows Git distribution without MSYS, ~14 ms startup",
+  description: "Native Windows Git distribution without MSYS, ~14 ms git startup (Windows, same-machine)",
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
 };
@@ -92,7 +99,7 @@ const productJsonLd = {
 
 <DocsLayout
   title="niu-git — native Windows Git"
-  description="Real Git for Windows C sources, built natively with MSVC — no MSYS, no OpenSSL, no bundled shell/perl. git --version in ~14 ms vs Git Bash's 45–103 ms."
+  description="Real Git for Windows C sources, built natively with MSVC — no MSYS, no OpenSSL, no bundled shell/perl. git --version in ~14 ms vs Git Bash's 45–103 ms (Windows, same machine)."
   path="/en/products/niu-git/"
   lang="en"
   enPath="/products/niu-git/"
@@ -106,7 +113,7 @@ const productJsonLd = {
       Native Windows Git, no MSYS: the real git-for-windows C sources built with MSVC —
       no bundled bash, no bundled perl, no bundled OpenSSL; TLS goes through schannel and the
       Windows certificate store. The <code>git</code> on PATH is git itself, <code>git --version</code>
-      starts in about 14 ms, and the scripted parts (hooks, bisect, mergetool) run on niubash's
+      starts in about 14 ms (Windows, same-machine measurement), and the scripted parts (hooks, bisect, mergetool) run on niubash's
       <code>sh</code>.
     </p>
     <div class="badges">
@@ -116,8 +123,8 @@ const productJsonLd = {
     </div>
     <p class="meta-line">
       <a href="https://github.com/unixwin/niu-git" target="_blank" rel="noopener noreferrer">github.com/unixwin/niu-git ↗</a>
-      <span class="dot">·</span> Star 0
-      <span class="dot">·</span> latest v2.56.0.1 (repo-meta, measured 2026-10-19; no releases page — the tag is the version)
+      <span class="dot">·</span> Star {starsN}
+      <span class="dot">·</span> latest {latestV} (repo-meta{metaDate ? `, measured ${metaDate}` : ''})
     </p>
   </header>
 
@@ -146,7 +153,7 @@ const productJsonLd = {
   <section>
     <h2 id="features">Core features</h2>
     <p>
-      Real git C sources, natively built with MSVC; ~14 ms startup; schannel TLS with credential
+      Real git C sources, natively built with MSVC; ~14 ms git startup (Windows, same machine); schannel TLS with credential
       helpers untouched; a clean division of labor with niubash's sh; an upstream test baseline on
       record; and it arrives together with niubash. Full six-point list (Chinese):
     </p>
@@ -155,11 +162,11 @@ const productJsonLd = {
       <div lang="zh-CN">
         <ul>
           <li><strong>真 git C 源码，MSVC 原生构建</strong>——上游 git-for-windows 的 C 源码 + 仓内三枚补丁（#1 schannel 容忍 stale http.sslBackend；#2 POSIX 形路径参数 + 消息守卫；#3 system prefix 自定位），源码永不入仓，CI 拉上游 tarball 打补丁。</li>
-          <li><strong>~14 ms 启动</strong>——wpm flat 布局实测 git --version 13.7 ms 均值；v2.55.0.5 起根入口 launcher 退役，无包装 hop。</li>
+          <li><strong>~14 ms 启动</strong>——wpm flat 布局实测（Windows 同机）git --version 13.7 ms 均值；v2.55.0.5 起根入口 launcher 退役，无包装 hop。</li>
           <li><strong>schannel TLS 与凭据不越权</strong>——TLS 走 Windows 证书库；自配的任何凭据 helper 照常生效；系统 gitconfig 刻意不设默认 helper；自带 172 KB 的 wincred 小助手。</li>
           <li><strong>与 niubash sh 的分工</strong>——hooks、git bisect、git mergetool、git filter-branch、git submodule、git request-pull 跑在 niubash 提供的 sh 上。</li>
           <li><strong>上游测试基线在案</strong>——curated subset 2861 ok / 14 例 # TODO known breakage / 0 硬失败；t0001-init 102/103。</li>
-          <li><strong>随 niubash 一起到货</strong>——niubash 1.4.0 的 Windows 发行包经 wpm 预装 niu-git（ARM64 同样预装）。</li>
+          <li><strong>随 niubash 一起到货</strong>——niubash 1.5.0 的 Windows 发行包经 wpm 预装 niu-git v2.56.0.3（ARM64 同样预装）。</li>
         </ul>
       </div>
     </details>
@@ -169,8 +176,9 @@ const productJsonLd = {
     <h2 id="install">Install &amp; quick start</h2>
     <p>
       Windows: the niubash release package already preloads niu-git (the bundle list lives in
-      niubash's scripts/release/preinstall.json; niu-git and gawk are windows-x64 assets, the ARM64
-      leg ships only ripgrep and fd per the preinstall.json notes). Verify:
+      niubash's scripts/release/preinstall.json; only gawk is a windows-x64 asset — niu-git
+      (v2.56.0.3), ripgrep and fd all ship windows-arm64 assets, so the ARM64 leg preloads them
+      too, per preinstall.json). Verify:
     </p>
     <div class="cmd">
       <pre><code>{verifyGit}</code></pre>
@@ -183,7 +191,7 @@ const productJsonLd = {
     </div>
     <p class="first-run">
       One-line first-run check: <code>git --version</code> should print a version string of the
-      <code>2.56.0.windows.2.niugit</code> shape — upstream suffix and the niu-git distro marker both
+      <code>2.56.0.windows.4.niugit</code> shape — upstream suffix and the niu-git distro marker both
       present. niubash users can skip this: the Windows package already ships niu-git (x64 and ARM64).
     </p>
   </section>
@@ -278,7 +286,7 @@ const productJsonLd = {
     <ul>
       <li><a href="/en/products/niubash/">niubash product page</a> — the other half of the sh interplay; the Windows package ships niu-git</li>
       <li><a href="/en/products/winuxcmd/">WinuxCmd product page</a> — the provider of wpm and grep -P</li>
-      <li><a href="/en/docs/paths-and-msys/">Paths &amp; MSYS</a> · <a href="/en/benchmarks/">Benchmarks</a> (git startup ~14 ms vs 45–103 ms) · <a href="/en/changelog/">Changelog</a></li>
+      <li><a href="/en/docs/paths-and-msys/">Paths &amp; MSYS</a> · <a href="/en/benchmarks/">Benchmarks</a> (git startup ~14 ms vs 45–103 ms, Windows same machine) · <a href="/en/changelog/">Changelog</a></li>
     </ul>
     <h3>Off site</h3>
     <ul>

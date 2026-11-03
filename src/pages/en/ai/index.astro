@@ -27,7 +27,7 @@ const installPrompt = [
   'niubash — a bash implementation native to Windows, with no WSL and no MSYS. Work',
   'through the steps below in order, then report back:',
   '',
-  '1. Install niubash — prefer winget (`winget install --id Unixwin.Niubash --source winget`), or in PowerShell run:',
+  '1. Install the latest niubash (1.5.0) — in PowerShell run the one-liner below (winget works too, but its channel still serves 1.4.3):',
   '   irm https://unixwin.dev/install.ps1 | iex',
   '2. Point your own command shell at niu. Read the "The four mechanisms" section of',
   '   https://unixwin.github.io/niubash/agents.html and work out which detection',
@@ -400,7 +400,7 @@ const skillSummary = [
         <strong>Highlights at a glance:</strong> zero fork (<code>( )</code> and <code>$( )</code>
         spawn no processes) · four path dialects (<code>C:\</code>, <code>/d/</code>,
         <code>/mnt/d</code>, <code>/cygdrive/d</code> — all fold correctly) · 83/83 GNU bash
-        suites passing · git startup ~14 ms · a 3.79 MB single binary — the numbers live in
+        suites passing · git startup ~14 ms (niu-git, Windows, same machine) · a 3.79 MB single binary — the numbers live in
         <a href="/en/benchmarks/">/benchmarks/</a> and <a href="/en/docs/">/docs/</a>.
       </p>
     </Section>

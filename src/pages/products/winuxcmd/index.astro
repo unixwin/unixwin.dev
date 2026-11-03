@@ -123,7 +123,7 @@ const factRows: FactRow[] = [
   { metric: '单文件体积', value: '3.79 MB（携带 176 命令 / 1,924 选项，静态链接、零依赖）', src: 'WinuxCmd README.md:74' },
   { metric: '冷启动', value: '~19 ms（Windows 实测）', src: 'WinuxCmd README.md:74' },
   { metric: 'PGO 收益', value: 'sort −18% · nl −17%（x64 发布档，真实负载训练）', src: 'WinuxCmd README.md:74 · scripts/build-pgo.ps1' },
-  { metric: '质量门', value: '差分 178 例 93%（165 通过 / 13 例平台差异实名在册）· 2,420 单元测试 99.6%', src: 'README.md · tests/differential/baseline.json' },
+  { metric: '质量门', value: '差分 178 例 93%（165 通过 / 13 例平台差异实名在册）· 3,659 单元测试 99.6%', src: 'README.md · tests/differential/baseline.json' },
   { metric: '负载对照', value: 'cat 100 MB 0.8 s · sort 1M 行 2.1 s · grep 100 MB 1.2 s · find 10K 文件 0.3 s（与 GNU/WSL2 差距 ~10–15%）', src: 'README.md Benchmarks（Win11 · i7-13700K · 32 GB · NVMe）' },
 ];
 
@@ -173,7 +173,7 @@ const productJsonLd = {
     <div class="badge-row">
       <Badge text="C++23" tone="accent" />
       <Badge text="Windows x64 · ARM64" tone="info" />
-      <Badge text={latest || 'v1.1.15'} tone="warn" />
+      <Badge text={latest || 'v1.2.1'} tone="warn" />
       <Badge text="MIT" tone="muted" />
     </div>
     <p class="repo-line">
@@ -181,7 +181,7 @@ const productJsonLd = {
         github.com/unixwin/WinuxCmd ↗
       </a>
       {stars !== null && <span class="stars">{stars} stars</span>}
-      <span class="src">（repo-meta.json 实测 2026-10-19）</span>
+      <span class="src">（repo-meta.json{repoMeta.fetchedAt ? ` 实测 ${repoMeta.fetchedAt.slice(0, 10)}` : ''}）</span>
     </p>
   </header>
 
@@ -341,7 +341,7 @@ const productJsonLd = {
       </tbody>
     </table>
     <p>
-      更多口径（git 启动 ~14 ms、一次性执行 26.3 ms 等 niubash 家族数字，Windows 实测；Linux 口径数字在基准页分栏单列）见
+      更多口径（git 启动 ~14 ms——niu-git，Windows 同机实测；一次性执行 26.3 ms 等 niubash 家族数字，Windows 实测；Linux 口径数字在基准页分栏单列）见
       <a href="/benchmarks/">基准页</a>。
     </p>
   </section>
@@ -349,33 +349,29 @@ const productJsonLd = {
   <section>
     <h2>更新动态</h2>
     <p class="src-line">
-      最新 3 版（changelogs.json，抓取 2026-10-19；完整流水见
+      最新 3 版（changelogs.json{repoMeta.fetchedAt ? `，抓取 ${repoMeta.fetchedAt.slice(0, 10)}` : ''}；完整流水见
       <a href="/changelog/">更新日志</a>）：
     </p>
     <ul class="changelog-list">
       <li>
-        <strong>{wcVersions[0]?.version ?? 'Unreleased'}（发布线，日期未标）</strong>
+        <strong>{wcVersions[0]?.version ?? '1.2.1'}（{wcVersions[0]?.date ?? '2026-11-02'}）</strong>
         <span>
-          WSL interop 路径：<code>/mnt/X/…</code> 操作数与 <code>/X/…</code>、<code>X:\…</code>
-          同形折叠（#1172，与 rubash 的 <code>windows_mnt_drive_argument</code> 逐字节对齐）；
-          当前最新发布 tag 为 v1.1.15（repo-meta.json 2026-10-19 实测；Releases 提供
-          x64/ARM64 setup.exe 与免安装 zip，README Install 表）。
+          29 条修复收口：以 sed 嵌套量词挂死根修为首（#1495，portable_regex 重复收集指数爆炸）；
+          完整条目见更新日志。
         </span>
       </li>
       <li>
-        <strong>{wcVersions[1]?.version ?? 'v1.1.14'}（{wcVersions[1]?.date ?? '2026-10-17'}）</strong>
+        <strong>{wcVersions[1]?.version ?? '1.2.0'}（{wcVersions[1]?.date ?? '2026-11-01'}）</strong>
         <span>
-          wpm：<code>links verify</code> 逐路径报告不指向当前 winuxcmd.exe 的命令链接；
-          <code>winuxcmd-shim.exe</code> 小转发器把 shim 包的分发跳数从 24.5 ms 降到 12.1 ms（Windows 实测）；
-          <code>wpm update winuxcmd</code> 不再把命令链接静默留在旧镜像上；自更新回滚副本保留最新两份自动修剪。
+          版本拆分（#1438）：default 版不再为 <code>[</code> / env / false / kill / test / time / true
+          生成入口链接（语义归宿主内建）；发布载荷移除 PCRE2 SDK 树（约 7.8 MB）；共 11 改 + 5 删。
         </span>
       </li>
       <li>
-        <strong>{wcVersions[2]?.version ?? 'v1.1.13'}（{wcVersions[2]?.date ?? '2026-10-17'}）</strong>
+        <strong>{wcVersions[2]?.version ?? '1.1.20'}（{wcVersions[2]?.date ?? '2026-10-22'}）</strong>
         <span>
-          wpm：被运行中进程占用的文件以 rename-aside 方式升级——要么完成、要么原样不动；
-          28 个 <code>fsmonitor--daemon</code> 持有载荷的真实安装上强制升级验证通过；
-          <code>wpm clean staging/all</code> 一并清理 parked 的 <code>.wpm-old-&lt;pid&gt;</code>。
+          裸盘根操作数（<code>ls /e</code> 等）在 applet 面经共享 argv 边界解析（#1274 家族）；
+          每个 applet 的 <code>--help</code> 结尾带 unixwin.dev 门户链接（#1273）；25 修复 + 4 新增。
         </span>
       </li>
     </ul>

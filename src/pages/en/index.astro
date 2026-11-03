@@ -33,7 +33,7 @@ const ordered = [...products].sort((a, b) => a.order - b.order);
 const stats = [
   { label: 'GNU bash suites', value: facts.bashSuites },
   { label: 'Unix commands', value: facts.commands },
-  { label: 'git startup', value: facts.gitStartup },
+  { label: 'git startup · Windows same-machine', value: facts.gitStartup },
   { label: 'AI agents covered', value: facts.aiAgents },
   { label: 'native platforms', value: facts.platforms },
   { label: 'installed family', value: facts.familySize },
@@ -44,7 +44,7 @@ const stats = [
 // same source as the JSON-LD softwareVersion below, refreshed by fetch:github)
 // instead of a hand-pinned tag — these tabs sat at v1.4.3 while v1.4.4 was out.
 // The fallback only guards a missing repo-meta value.
-const niuLatest = repoMeta.repos?.niubash?.latest ?? 'v1.4.4';
+const niuLatest = repoMeta.repos?.niubash?.latest ?? 'v1.5.0';
 const installTabs = [
   { label: 'winget', code: 'winget install --id Unixwin.Niubash --source winget' },
   { label: 'PowerShell', code: 'irm https://unixwin.dev/install.ps1 | iex' },
@@ -170,7 +170,7 @@ const softwareAppJsonLd = {
               GitHub ↗
             </a>
           </div>
-          <p class="hero-trust">83/83 GNU suites · 82 byte-identical · 176+ Unix commands · ~14 ms git startup</p>
+          <p class="hero-trust">83/83 GNU suites · 82 byte-identical · 176+ Unix commands · ~14 ms git startup (Windows, same machine)</p>
         </div>
 
         <div class="hero-term">
@@ -188,22 +188,22 @@ const softwareAppJsonLd = {
                     <p class="sl sl-cmt"># install · session 1/3</p>
                     <p class="sl"><span class="p-user">PS C:\&gt;</span> irm https://unixwin.dev/install.ps1 | iex</p>
                     <p class="sl"><span class="spin" aria-hidden="true">⠿</span> downloading niubash-win-x64-setup.exe …</p>
-                    <p class="sl"><span class="ok">✓</span> Niubash 1.4.3 installed</p>
+                    <p class="sl"><span class="ok">✓</span> Niubash 1.5.0 installed</p>
                     <p class="sl"><span class="p-user">PS C:\&gt;</span> niu --version</p>
-                    <p class="sl sl-out">Niubash 1.4.3 — bash-compatible shell for Windows</p>
+                    <p class="sl sl-out">Niubash 1.5.0 — bash-compatible shell for Windows</p>
                   </div>
                   <div class="session">
                     <p class="sl sl-cmt"># agent takeover · session 2/3</p>
                     <p class="sl"><span class="p-user">cmx@unixwin:~$</span> claude</p>
                     <p class="sl"><span class="ok">✓</span> shell: niubash (rubash engine) — $SHELL auto-detected</p>
                     <p class="sl"><span class="p-agent">agent&gt;</span> niu -c 'git log --oneline -1'</p>
-                    <p class="sl sl-out">f0c0ffe niubash 1.4.3 — real syntax, real commands, native on three platforms</p>
+                    <p class="sl sl-out">f0c0ffe niubash 1.5.0 — real syntax, real commands, native on three platforms</p>
                     <p class="sl"><span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span></p>
                   </div>
                   <div class="session">
                     <p class="sl sl-cmt"># speed · session 3/3</p>
                     <p class="sl"><span class="p-user">cmx@unixwin:~$</span> time git --version</p>
-                    <p class="sl sl-out">git version 2.56.0.windows.2.niugit</p>
+                    <p class="sl sl-out">git version 2.56.0.windows.4.niugit</p>
                     <p class="sl"><span class="ok">✓</span> real 0m0.014s ← niu-git</p>
                     <p class="sl sl-out">user 0m0.006s · sys 0m0.002s</p>
                     <p class="sl sl-cmt"># Git Bash on the same machine: real 0.045s – 0.103s (3–7× slower)</p>
@@ -386,10 +386,10 @@ const softwareAppJsonLd = {
           <h3 class="why-title">Fast</h3>
           <p class="why-body">
             <code>git --version</code> in about <strong>~14 ms</strong> where Git Bash needs
-            45–103 ms; the prompt's git segment spawns at most once per pass (p50 26 ms in a
-            repo) while the other shell pays a 113–362 ms git tax on every single prompt.
+            45–103 ms (both Windows, same machine, niu-git measurement); the prompt's git segment spawns at most once per pass (p50 26 ms in a
+            repo, measured on Windows) while the other shell pays a 113–362 ms git tax on every single prompt.
           </p>
-          <code class="why-chip">git ~14ms · prompt ≤1 spawn/pass</code>
+          <code class="why-chip">git ~14ms (Windows, same machine) · prompt ≤1 spawn/pass</code>
         </article>
       </div>
 
@@ -453,6 +453,11 @@ const softwareAppJsonLd = {
       <InstallTabs id="install" tabs={installTabs} />
       <ul class="install-notes">
         <li>
+          <strong>winget currently still serves 1.4.3</strong>: the 1.5.0 winget update has not been
+          submitted yet — for 1.5.0 use the PowerShell one-liner or GitHub Releases (the
+          Linux / macOS bundles below are 1.5.0).
+        </li>
+        <li>
           <strong>Linux / macOS</strong>: grab the portable bundle from GitHub Releases and unpack
           it (pick the aarch64 asset on ARM machines); the Windows installer bundles WinuxCmd
           (wpm included) plus niu-git / ripgrep / fd / gawk —
@@ -477,7 +482,7 @@ const softwareAppJsonLd = {
           <span class="p-user">$</span> claude <span class="c-mute"># launched from a niu session; $SHELL already points at niubash</span>
         </p>
         <p class="al">
-          <span class="c-ok">✓</span> shell: niubash (rubash engine) — 14ms git, 176+ unix commands
+          <span class="c-ok">✓</span> shell: niubash (rubash engine) — git ~14 ms (Windows, same machine), 176+ unix commands
         </p>
         <p class="al">
           <span class="p-agent">agent&gt;</span> niu -c 'ls | grep src'
@@ -486,7 +491,7 @@ const softwareAppJsonLd = {
         <p class="al">
           <span class="p-agent">agent&gt;</span> niu -c 'git log --oneline -1'
         </p>
-        <p class="al al-out">f0c0ffe niubash 1.4.3 — real syntax, real commands, native on three platforms</p>
+        <p class="al al-out">f0c0ffe niubash 1.5.0 — real syntax, real commands, native on three platforms</p>
         <p class="al">
           <span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span>
         </p>

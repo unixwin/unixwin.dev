@@ -3,7 +3,7 @@
  * /en/products/winuxcmd/ — English edition of the WinuxCmd product page.
  * Skeleton English; prose-heavy Chinese folded into <details>; the command-coverage
  * and measured-numbers tables fully translated (cells are names/numbers/short phrases).
- * Facts mirror the zh page (WinuxCmd README, repo-meta 2026-10-19).
+ * Facts mirror the zh page (WinuxCmd README, repo-meta refreshed 2026-11-03).
  */
 import DocsLayout from '../../../../components/DocsLayout.astro';
 import Badge from '../../../../components/Badge.astro';
@@ -39,7 +39,7 @@ const factRows = [
   { metric: 'Single-file size', value: '3.79 MB (carrying 176 commands / 1,924 options; statically linked, zero dependencies)', src: 'WinuxCmd README.md:74' },
   { metric: 'Cold start', value: '~19 ms (measured on Windows)', src: 'WinuxCmd README.md:74' },
   { metric: 'PGO gains', value: 'sort −18% · nl −17% (x64 release builds, trained on real workloads)', src: 'WinuxCmd README.md:74 · scripts/build-pgo.ps1' },
-  { metric: 'Quality gates', value: '178-case differential 93% (165 pass / 13 platform deltas named on record) · 2,420 unit tests 99.6%', src: 'README.md · tests/differential/baseline.json' },
+  { metric: 'Quality gates', value: '178-case differential 93% (165 pass / 13 platform deltas named on record) · 3,659 unit tests 99.6%', src: 'README.md · tests/differential/baseline.json' },
   { metric: 'Workload contrasts', value: 'cat 100 MB 0.8 s · sort 1M lines 2.1 s · grep 100 MB 1.2 s · find 10K files 0.3 s (~10–15% behind GNU/WSL2)', src: 'README.md Benchmarks (Win11 · i7-13700K · 32 GB · NVMe)' },
 ];
 
@@ -79,7 +79,7 @@ const productJsonLd = {
     <div class="badge-row">
       <Badge text="C++23" tone="accent" />
       <Badge text="Windows x64 · ARM64" tone="info" />
-      <Badge text={latest || 'v1.1.15'} tone="warn" />
+      <Badge text={latest || 'v1.2.1'} tone="warn" />
       <Badge text="MIT" tone="muted" />
     </div>
     <p class="repo-line">
@@ -87,7 +87,7 @@ const productJsonLd = {
         github.com/unixwin/WinuxCmd ↗
       </a>
       {stars !== null && <span class="stars">{stars} stars</span>}
-      <span class="src">(repo-meta.json, measured 2026-10-19)</span>
+      <span class="src">(repo-meta.json{repoMeta.fetchedAt ? `, measured ${repoMeta.fetchedAt.slice(0, 10)}` : ''})</span>
     </p>
   </header>
 
@@ -223,7 +223,7 @@ const productJsonLd = {
       </tbody>
     </table>
     <p>
-      More figures (git startup ~14 ms, one-shot execution 26.3 ms and other niubash-family numbers — measured on Windows; Linux-caliber figures are listed in their own column on the benchmarks page)
+      More figures (niu-git startup ~14 ms — Windows, same machine; one-shot execution 26.3 ms and other niubash-family numbers — measured on Windows; Linux-caliber figures are listed in their own column on the benchmarks page)
       on the <a href="/en/benchmarks/">benchmarks page</a>.
     </p>
   </section>
@@ -231,35 +231,31 @@ const productJsonLd = {
   <section>
     <h2>Release feed</h2>
     <p class="src-line">
-      Latest 3 versions (changelogs.json, fetched 2026-10-19; the full feed lives on the
+      Latest 3 versions (changelogs.json{repoMeta.fetchedAt ? `, fetched ${repoMeta.fetchedAt.slice(0, 10)}` : ''}; the full feed lives on the
       <a href="/en/changelog/">changelog</a>):
     </p>
     <ul class="changelog-list">
       <li>
-        <strong>Unreleased (release line, no date stamped)</strong>
+        <strong>1.2.1 (2026-11-02)</strong>
         <span>
-          WSL interop paths: <code>/mnt/X/…</code> operands fold in the same shape as <code>/X/…</code>
-          and <code>X:\…</code> (#1172, byte-aligned with rubash's
-          <code>windows_mnt_drive_argument</code>); latest release tag is v1.1.15 (repo-meta.json,
-          measured 2026-10-19; Releases ship x64/ARM64 setup.exe plus a portable zip).
+          29 fixes, headlined by the root fix for the sed nested-quantifier hang (#1495,
+          exponential blow-up in portable_regex repeated collection); full entries in the changelog.
         </span>
       </li>
       <li>
-        <strong>v1.1.14 (2026-10-17)</strong>
+        <strong>1.2.0 (2026-11-01)</strong>
         <span>
-          wpm: <code>links verify</code> reports per-path links not pointing at the current
-          winuxcmd.exe; the <code>winuxcmd-shim.exe</code> mini-forwarder cuts shim dispatch from
-          24.5 ms to 12.1 ms (measured on Windows); <code>wpm update winuxcmd</code> no longer silently leaves command
-          links on the old image; self-update rollback copies keep the newest two, auto-pruned.
+          Edition split (#1438): the default edition no longer creates entry links for
+          <code>[</code> / env / false / kill / test / time / true (semantics belong to the host's
+          builtins); the release payload drops the PCRE2 SDK tree (~7.8 MB); 11 changes + 5 removals.
         </span>
       </li>
       <li>
-        <strong>v1.1.13 (2026-10-17)</strong>
+        <strong>1.1.20 (2026-10-22)</strong>
         <span>
-          wpm: files held by running processes upgrade via rename-aside — either complete or
-          untouched; forced-upgrade verified on a real install with 28 <code>fsmonitor--daemon</code>
-          payload holders; <code>wpm clean staging/all</code> also clears parked
-          <code>.wpm-old-&lt;pid&gt;</code> directories.
+          Bare drive-root operands (<code>ls /e</code> and friends) resolve across the applet
+          surface via the shared argv boundary (#1274 family); every applet's <code>--help</code>
+          ends with a unixwin.dev portal link (#1273); 25 fixes + 4 additions.
         </span>
       </li>
     </ul>

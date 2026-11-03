@@ -1,20 +1,20 @@
 {
   "repos": {
     "niubash": {
-      "stars": 188,
-      "latest": "v1.4.4"
+      "stars": 212,
+      "latest": "v1.5.0"
     },
     "winuxcmd": {
-      "stars": 274,
-      "latest": "v1.1.20"
+      "stars": 276,
+      "latest": "v1.2.1"
     },
     "rubash": {
-      "stars": 12,
-      "latest": "v1.4.3"
+      "stars": 17,
+      "latest": "v1.5.0"
     },
     "niu-git": {
       "stars": 1,
-      "latest": "v2.56.0.1"
+      "latest": "v2.56.0.3"
     },
     "wpm": {
       "stars": 0,
@@ -22,8 +22,8 @@
     },
     "oh-my-niu": {
       "stars": 1,
-      "latest": "v2.0.0"
+      "latest": "v2.1.0"
     }
   },
-  "fetchedAt": "2026-10-24T03:45:05.412Z"
+  "fetchedAt": "2026-11-03T08:53:13.897Z"
 }

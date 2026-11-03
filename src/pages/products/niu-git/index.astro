@@ -4,12 +4,18 @@
  * 事实来源：niu-git 仓 README.md / wpm/niugit.json、portal-dump HIGHLIGHTS.md / CARDS.md / FACTS.json
  * （2026-10-19 总控审计）、src/data/{products,repo-meta}.json。
  * 口径纪律：速度数字为 README 记载的 2026-10 实测（warm cache、15 轮、Python subprocess 计时）；
- * niu-git 无 release 页与 CHANGELOG（tag 即版本），更新动态一节如实标注、不造日期。
+ * niu-git 自 v2.56.0.1 起有 GitHub Releases 页（仍无 CHANGELOG 文件），更新动态按 release 标注。
  */
 import DocsLayout from '../../../components/DocsLayout.astro';
 import CopyButton from '../../../components/CopyButton.astro';
 import FaqSection from '../../../components/FaqSection.astro';
 import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../data/faq';
+import repoMeta from '../../../data/repo-meta.json';
+
+const ngMeta = (repoMeta.repos as any)?.['niu-git'];
+const latestV = ngMeta?.latest ?? 'v2.56.0.3';
+const starsN = ngMeta?.stars ?? 1;
+const metaDate = repoMeta.fetchedAt ? repoMeta.fetchedAt.slice(0, 10) : '';
 
 interface Row {
   a: string;
@@ -56,7 +62,7 @@ const whyCards: Feature[] = [
   },
   {
     title: '边界诚实：不带的说清楚',
-    body: 'perl 命令（send-email、svn、cvs*）不提供而不是运行时才失败；git-gui / gitk（Tcl/Tk）不随发；git grep -P（PCRE2）没有——用 WinuxCmd 的 grep -P。git --version 携带 2.56.0.windows.2.niugit 分布标记，bug 报告能同时定位发行版与上游基线。',
+    body: 'perl 命令（send-email、svn、cvs*）不提供而不是运行时才失败；git-gui / gitk（Tcl/Tk）不随发；git grep -P（PCRE2）没有——用 WinuxCmd 的 grep -P。git --version 携带 2.56.0.windows.4.niugit 分布标记，bug 报告能同时定位发行版与上游基线。',
   },
 ];
 
@@ -67,7 +73,7 @@ const features: Feature[] = [
   },
   {
     title: '~14 ms 启动',
-    body: 'wpm flat 布局实测 git --version 13.7 ms 均值 / 11.5 ms 最小值，git status 22.6 ms 均值——对照 Git Bash 侧 45–103 ms。v2.55.0.5 起根入口 launcher 退役：patch #3 让裸 git.exe 自己找到 payload，无包装 hop、无 winuxcmd 分发跳转。',
+    body: 'wpm flat 布局实测（Windows 同机）git --version 13.7 ms 均值 / 11.5 ms 最小值，git status 22.6 ms 均值——对照 Git Bash 侧 45–103 ms。v2.55.0.5 起根入口 launcher 退役：patch #3 让裸 git.exe 自己找到 payload，无包装 hop、无 winuxcmd 分发跳转。',
   },
   {
     title: 'schannel TLS 与凭据不越权',
@@ -83,7 +89,7 @@ const features: Feature[] = [
   },
   {
     title: '随 niubash 一起到货',
-    body: 'niubash 1.4.0 的 Windows 发行包经 wpm 预装 niu-git（同批 gawk、ripgrep、fd；ARM64 安装同样预装 niu-git / ripgrep / fd，仅 gawk 限 x64）——装完 niubash，PATH 上的 git 就是原生 git。',
+    body: 'niubash 1.5.0 的 Windows 发行包经 wpm 预装 niu-git v2.56.0.3（同批 gawk 5.4.1、ripgrep 15.2.0、fd 10.4.2；ARM64 安装同样预装 niu-git / ripgrep / fd，仅 gawk 限 x64）——装完 niubash，PATH 上的 git 就是原生 git。',
   },
 ];
 
@@ -129,22 +135,22 @@ const bench: Row[] = [
 
 const news: News[] = [
   {
+    version: 'v2.56.0.3',
+    date: '2026-10-26',
+    summary:
+      '上游基线推进到 Git for Windows 2.56.0.windows.4（brotli 1.2.1 安全重建）；x64 / ARM64 双资产 zip 发布；git --version 携带 2.56.0.windows.4.niugit 分布标记。',
+  },
+  {
     version: 'v2.56.0.1',
     date: '—',
     summary:
-      '最新 tag：上游基线推进到 git 2.56.0.windows.2，git --version 携带 2.56.0.windows.2.niugit 分布标记（repo-meta 2026-10-19 实测；无 release 页，tag 即版本）。',
+      '上游基线推进到 git 2.56.0.windows.2，git --version 携带 2.56.0.windows.2.niugit 分布标记。',
   },
   {
     version: 'v2.55.0.5',
     date: '—',
     summary:
       'dispatcher 退役：patch #3 自定位让真 mingw64/bin/git.exe 直映 usr\\bin\\git.exe，wpm flat 实测 git --version 13.7 ms 均值、git status 22.6 ms；wpm/niugit.json 即此版索引条目（sha256/size 与本地构建对齐）。',
-  },
-  {
-    version: 'v2.55.0.windows.2',
-    date: '—',
-    summary:
-      'Phase 0 PoC 定稿：MSVC + CMake + vcpkg 构建 git-for-windows v2.55.0.windows.2，zlib/iconv 静态链接，bundle 29 MB；init/add/commit/log/status、schannel https clone、经 PATH 上 sh 执行 hooks 全部验证。',
   },
 ];
 
@@ -156,7 +162,7 @@ const productJsonLd = {
   name: 'niu-git',
   applicationCategory: 'DeveloperTool',
   operatingSystem: 'Windows, Linux, macOS',
-  description: "Native Windows Git distribution without MSYS, ~14 ms startup",
+  description: "Native Windows Git distribution without MSYS, ~14 ms git startup (Windows, same-machine)",
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   author: { '@type': 'Organization', name: 'UNIXWIN', url: 'https://unixwin.dev' },
 };
@@ -164,7 +170,7 @@ const productJsonLd = {
 
 <DocsLayout
   title="niu-git — 原生 Windows Git"
-  description="niu-git 产品文档：Git for Windows 真实 C 源码的 MSVC 原生构建——无 MSYS、无 OpenSSL、无捆绑 shell/perl；git --version 约 14 ms，对照 Git Bash 45–103 ms。"
+  description="niu-git 产品文档：Git for Windows 真实 C 源码的 MSVC 原生构建——无 MSYS、无 OpenSSL、无捆绑 shell/perl；git --version 约 14 ms（Windows 同机实测），对照 Git Bash 45–103 ms。"
   path="/products/niu-git/"
   jsonLdExtra={[productJsonLd, faqJsonLd(productFaq, 'zh')]}
   ogImage="/og/niu-git.png"
@@ -174,7 +180,7 @@ const productJsonLd = {
     <p class="lead">
       原生 Windows Git，无 MSYS：git-for-windows 的真实 C 源码用 MSVC 构建，
       不捆 bash、不捆 perl、不捆 OpenSSL——TLS 走 schannel 与 Windows 证书库。
-      PATH 上的 <code>git</code> 就是 git 本体，<code>git --version</code> 约 14 ms 启动，
+      PATH 上的 <code>git</code> 就是 git 本体，<code>git --version</code> 约 14 ms 启动（Windows 同机实测），
       脚本部分（hooks、bisect、mergetool）跑在 niubash 的 <code>sh</code> 上。
     </p>
     <div class="badges">
@@ -184,8 +190,8 @@ const productJsonLd = {
     </div>
     <p class="meta-line">
       <a href="https://github.com/unixwin/niu-git" target="_blank" rel="noopener noreferrer">github.com/unixwin/niu-git ↗</a>
-      <span class="dot">·</span> Star 0
-      <span class="dot">·</span> 最新版本 v2.56.0.1（repo-meta 2026-10-19 实测；无 release 页，tag 即版本）
+      <span class="dot">·</span> Star {starsN}
+      <span class="dot">·</span> 最新版本 {latestV}（repo-meta{metaDate ? ` 实测 ${metaDate}` : ''}）
     </p>
   </header>
 
@@ -225,7 +231,7 @@ const productJsonLd = {
 
   <section>
     <h2 id="install">安装与快速上手</h2>
-    <p>Windows：niubash 发行包已预装 niu-git（捆绑清单见 niubash 的 scripts/release/preinstall.json；niu-git 与 gawk 为 windows-x64 资产，ARM64 腿只随 ripgrep 与 fd——preinstall.json notes），验证：</p>
+    <p>Windows：niubash 发行包已预装 niu-git（捆绑清单见 niubash 的 scripts/release/preinstall.json；仅 gawk 为 windows-x64 资产，niu-git（v2.56.0.3）/ ripgrep / fd 均有 windows-arm64 资产，ARM64 腿同样预装——preinstall.json），验证：</p>
     <div class="cmd">
       <pre><code>{verifyGit}</code></pre>
       <CopyButton copy={verifyGit} />
@@ -236,7 +242,7 @@ const productJsonLd = {
       <CopyButton copy={migrateBoth} />
     </div>
     <p class="first-run">
-      首跑验证一句：<code>git --version</code> 应输出 <code>2.56.0.windows.2.niugit</code> 形态的版本串——
+      首跑验证一句：<code>git --version</code> 应输出 <code>2.56.0.windows.4.niugit</code> 形态的版本串——
       上游后缀与 niu-git 分布标记都在；装 niubash 的用户无需此步，Windows 发行包已随附 niu-git（x64 与 ARM64）。
     </p>
   </section>
@@ -327,8 +333,7 @@ const productJsonLd = {
       </table>
     </div>
     <p class="src-line">
-      niu-git 不在 changelogs.json 的抓取范围（无 release 页、无 CHANGELOG，tag 即版本——FACTS.json
-      products 裁决）；上表摘自仓内 README、wpm/niugit.json 与 portal repo-meta 实测 tag。
+      niu-git 不在 changelogs.json 的抓取范围（无 CHANGELOG 文件，版本以 GitHub Releases / tag 为准）；上表摘自仓内 README、wpm/niugit.json 与 portal repo-meta 实测 tag。
      其余仓库的完整流水见 <a href="/changelog/">更新日志</a>。
     </p>
   </section>
@@ -339,7 +344,7 @@ const productJsonLd = {
     <ul>
       <li><a href="/products/niubash/">niubash 产品文档</a>——sh 联动的另一半，Windows 发行包随附 niu-git</li>
       <li><a href="/products/winuxcmd/">WinuxCmd 产品文档</a>——wpm 与 grep -P 的提供方</li>
-      <li><a href="/docs/paths-and-msys/">路径与 MSYS：最大的行为差异</a> · <a href="/benchmarks/">基准页</a>（git 启动 ~14 ms 对照 45–103 ms）· <a href="/changelog/">更新日志</a></li>
+      <li><a href="/docs/paths-and-msys/">路径与 MSYS：最大的行为差异</a> · <a href="/benchmarks/">基准页</a>（git 启动 ~14 ms 对照 45–103 ms，Windows 同机）· <a href="/changelog/">更新日志</a></li>
     </ul>
     <h3>站外</h3>
     <ul>

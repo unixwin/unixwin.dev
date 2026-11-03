@@ -18,8 +18,7 @@ import changelogs from '../../../data/changelogs.json';
 
 const meta = repoMeta.repos['oh-my-niu'];
 const stars = typeof meta?.stars === 'number' ? meta.stars : null;
-// 版本徽标不取 repo-meta 的 latest：该值是 2026-09 的陈旧 v2.0.0 release，
-// 按发布序 oh-my-niu 须切全新 release，徽标固定标注「即将发布」。
+// 版本徽标取 repo-meta 的 latest（v2.1.0 已于 2026-11-02 发布；2026-11-03 fetch 刷新）。
 
 // —— 安装与首跑命令 ——
 const rcBootstrap = [
@@ -91,7 +90,7 @@ const features: Feature[] = [
   },
   {
     title: '功能插件族',
-    body: 'git、docker、kubectl、npm、jj、zoxide、direnv、dotenv、fzf、last-working-dir、thefuck、path-tools、extract、common-aliases、keybindings、command-not-found、winuxcmd-core（WinuxCmd 命令补全）……',
+    body: 'git、docker、kubectl、npm、jj、zoxide、direnv、dotenv、fzf、last-working-dir、thefuck、path-tools、extract、common-aliases、keybindings、command-not-found……',
   },
   {
     title: '2.0 新一方插件',
@@ -139,7 +138,7 @@ const factRows: FactRow[] = [
   { metric: '主题', value: '27 款（theme-* 插件目录 27、themes/*.toml 27，两集合逐名一致）', src: '仓内 plugins/ 与 themes/ 实测计数 2026-10-19' },
   { metric: '插件目录', value: '50 个（27 主题 + 23 功能插件）', src: '仓内 plugins/ 实测计数 2026-10-19' },
   { metric: '补全定义', value: '174 个 TOML', src: '仓内 completions/ 实测计数 2026-10-19' },
-  { metric: '索引 pack 条目', value: '22 个（bundle 2.0.0，min_niubash 1.0.0）', src: 'oh-my-niu/index.toml' },
+  { metric: '索引 pack 条目', value: '22 个（bundle 2.1.0，min_niubash 1.0.0）', src: 'oh-my-niu/index.toml' },
   { metric: '别名包 / 环境包', value: '5 组 TOML · 2 个官方 env（git / cicd）', src: '仓内 aliases/ · envs/ 实测计数' },
 ];
 
@@ -192,7 +191,7 @@ const productJsonLd = {
     <div class="badge-row">
       <Badge text="Shell（.niu / bash）" tone="accent" />
       <Badge text="独立仓库 · 全平台" tone="info" />
-      <Badge text="2.0.0 · 即将发布（全新切版）" tone="warn" />
+      <Badge text={`${meta?.latest ?? 'v2.1.0'} · 已发布`} tone="accent" />
       <Badge text="MIT" tone="muted" />
     </div>
     <p class="repo-line">
@@ -200,7 +199,7 @@ const productJsonLd = {
         github.com/unixwin/oh-my-niu ↗
       </a>
       {stars !== null && <span class="stars">{stars} stars</span>}
-      <span class="src">（repo-meta.json 实测 2026-10-19）</span>
+      <span class="src">（repo-meta.json{repoMeta.fetchedAt ? ` 实测 ${repoMeta.fetchedAt.slice(0, 10)}` : ''}）</span>
     </p>
   </header>
 
@@ -374,17 +373,16 @@ const productJsonLd = {
   <section>
     <h2>更新动态</h2>
     <p class="src-line">
-      oh-my-niu 有自身 CHANGELOG。最新 3 版（changelogs.json，抓取 2026-10-19；
+      oh-my-niu 有自身 CHANGELOG。最新 3 版（changelogs.json{repoMeta.fetchedAt ? `，抓取 ${repoMeta.fetchedAt.slice(0, 10)}` : ''}；
       完整流水见 <a href="/changelog/">更新日志</a>）：
     </p>
     <ul class="changelog-list">
       <li>
-        <strong>{omVersions[0]?.version ?? '2.0.0'}（{omDate(omVersions[0])}）</strong>
+        <strong>{omVersions[0]?.version ?? '2.1.0'}（{omDate(omVersions[0])}）</strong>
         <span>
-          更名 oh-my-winuxsh → oh-my-niu（对齐 niubash 1.0.0 品牌）；bundle/plugin API 前缀
-          <code>winuxsh:</code> → <code>niubash:</code>，环境前缀改 <code>NIU_*</code>；
-          新一方插件 command-timer / auto-env / dirmarks / git-fetch-reminder / env-sync；
-          git 提示符段面向 niubash 1.4.1+ 解析为原生 Vcs 段（段值取自用户自己的 git，仓内每遍至多一次有界 spawn）。
+          新增 jj（Jujutsu）一方 pack；框架改为把自身接线挂到宿主 PROMPT_COMMAND 链上（不再依赖
+          prompt-core 垫片）；插件状态文档全面改 JSON 口径（plugins.json）；键位元数据对齐 ruline
+          （niubash 1.5.0 的行编辑器）；winuxcmd-core 目录行移除（仓内并无此插件目录）。
         </span>
       </li>
       <li>
@@ -414,7 +412,7 @@ const productJsonLd = {
         <ul>
           <li><a href="/products/niubash/">Niubash 产品文档</a> — 宿主 shell 与 plugin 原语</li>
           <li><a href="/products/rubash/">Rubash 产品文档</a> — 上游插件直接跑的引擎侧</li>
-          <li><a href="/products/winuxcmd/">WinuxCmd 产品文档</a> — winuxcmd-core 补全的对象</li>
+          <li><a href="/products/winuxcmd/">WinuxCmd 产品文档</a> — 随 niubash 到货的命令层</li>
           <li><a href="/products/wpm/">wpm 产品文档</a> — 环境包的包安装通道</li>
           <li><a href="/docs/cli/">CLI 与旗标参考</a> — niu plugin / niu env 全录</li>
           <li><a href="/docs/">文档区首页</a> · <a href="/changelog/">更新日志</a></li>

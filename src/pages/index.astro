@@ -457,11 +457,22 @@ const softwareAppJsonLd = {
           <span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span>
         </p>
       </div>
+      <div class="codeblock agent-block" role="img" aria-label="niu --ec：命令 base64 直通，零引号穿越">
+        <p class="al"><span class="c-mute"># 引号地狱终结者：整条命令编成一个 base64 词，任何宿主层都改不动</span></p>
+        <p class="al">
+          <span class="p-agent">agent&gt;</span> niu --ec "Z2l0IGxvZyAtMSAtLWZvcm1hdD0iY29tbWl0ICVoIG9uICVjZCIgLS1kYXRlPSJmb3JtYXQ6JVktJW0tJWQ="
+        </p>
+        <p class="al al-out">commit a08e7afd on 2026-11-02</p>
+        <p class="al">
+          <span class="c-ok">✓</span> 没有引号，就没有可被弄坏的东西——嵌套引号、$ 展开、heredoc、反斜杠塌缩，整类失败免疫
+        </p>
+      </div>
       <p class="agent-note">
         agent 用上 niubash 后，每一条命令都跑在真 bash
         语法上——输出确定、启动够快，长会话也不掉链子。各家 agent
         的启动方式与配置细节见
-        <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">探测机制文档</a>。
+        <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">探测机制文档</a>；命令递交的终极形态是
+        <code>--ec</code>——base64 直通、零引号穿越，cookbook 同在文档内。
       </p>
     </Section>
 

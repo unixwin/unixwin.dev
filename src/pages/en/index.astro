@@ -491,11 +491,23 @@ const softwareAppJsonLd = {
           <span class="p-agent">agent&gt;</span> <span class="cursor" aria-hidden="true">▊</span>
         </p>
       </div>
+      <div class="codeblock agent-block" role="img" aria-label="niu --ec: the command travels as base64, zero quoting">
+        <p class="al"><span class="c-mute"># the quoting-hell terminator: the whole command becomes one base64 word no host layer can touch</span></p>
+        <p class="al">
+          <span class="p-agent">agent&gt;</span> niu --ec "Z2l0IGxvZyAtMSAtLWZvcm1hdD0iY29tbWl0ICVoIG9uICVjZCIgLS1kYXRlPSJmb3JtYXQ6JVktJW0tJWQ="
+        </p>
+        <p class="al al-out">commit a08e7afd on 2026-11-02</p>
+        <p class="al">
+          <span class="c-ok">✓</span> no quotes, nothing to break — nested quoting, $ expansion, heredocs, backslash collapse: the whole failure class, gone
+        </p>
+      </div>
       <p class="agent-note">
         Once your agent runs on niubash, every command executes with real bash syntax —
         deterministic output, fast startup, nothing falling over in long sessions. How each agent
         is launched and wired is covered in the
-        <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">detection-mechanism docs</a>.
+        <a href="https://unixwin.github.io/niubash/agents.html" target="_blank" rel="noopener noreferrer">detection-mechanism docs</a>; and the way commands
+        reach the shell has a terminal form too — <code>--ec</code> takes base64 in, real bash
+        out, with the cookbook in the same doc.
       </p>
     </Section>
 

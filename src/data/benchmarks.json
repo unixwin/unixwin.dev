@@ -1,8 +1,8 @@
 {
   "_meta": {
     "principle": "每个上页的数字必须有可指认的产物或 PR/issue 锚；未实测不写；输赢都展示。",
-    "asOf": "2026-10-22",
-    "authority": "FACTS.json / HIGHLIGHTS.md / CARDS.md（unixwin.dev 仓库 portal-dump 分支，2026-10-19 总控审计）；2026-10-21 刷新：Android 基线（niubash#352/#349）与引擎热路径修复族（rubash#607-609 → 落地 PR、#884、#913、#958-#974），逐条核对过 merged/closed 状态；2026-10-22 增补：rubash#984/#985/#986/#987（均 merged，落地 0aeffe99）+ #990（OPEN 待合，pending 单列）。Windows 同场与 fork 专项仍为 2026-10-18 快照（基线 commit 见各自 provenance），修后复测前不转正",
+    "asOf": "2026-11-03",
+    "authority": "FACTS.json / HIGHLIGHTS.md / CARDS.md（unixwin.dev 仓库 portal-dump 分支，2026-10-19 总控审计）；2026-10-21 刷新：Android 基线（niubash#352/#349）与引擎热路径修复族（rubash#607-609 → 落地 PR、#884、#913、#958-#974），逐条核对过 merged/closed 状态；2026-10-22 增补：rubash#984/#985/#986/#987（均 merged，落地 0aeffe99）+ #990（OPEN 待合，pending 单列）。Windows 同场与 fork 专项仍为 2026-10-18 快照（基线 commit 见各自 provenance），修后复测前不转正；2026-11-03 随 1.5.0 发布复核：各行保留原始出处与版本/平台口径（快照数字不冒充现行版本），未新增任何未实测数字；shellbench A 表从未实测，不在本页出现",
     "benchArtifacts": "data/bench/（原样拷贝：results.tsv / startup.tsv / run_bench.sh / PERF-TABLE.md 等 15 份 + BENCH-README.md 环境与方法）",
     "env": "Intel Xeon w5-3435 · Windows 10 19045 · 同机 WSL2 Ubuntu（GNU Bash 5.3.0 对照）· Git Bash 5.3.0 (msys)；Android 节另有 Termux aarch64 口径",
     "forkSuite": {

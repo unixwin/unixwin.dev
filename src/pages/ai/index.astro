@@ -22,7 +22,7 @@ const pageFaq = faqByIds(['switch-agent', 'no-wsl-msys', 'naming', 'free-platfor
 const installPrompt = [
   '请把这台 Windows 机器上你（AI agent）执行命令所用的 shell 换成 niubash——Windows 原生的 bash 实现，无 WSL、无 MSYS。按顺序执行并汇报：',
   '',
-  '1. 安装 niubash（首选 winget：`winget install --id Unixwin.Niubash --source winget`；或 PowerShell 中执行）：',
+  '1. 安装 niubash 最新版 1.5.0（在 PowerShell 中执行下方一行命令；winget 亦可，但其渠道当前仍为 1.4.3）：',
   '   irm https://unixwin.dev/install.ps1 | iex',
   '2. 把你自己的执行 shell 指到 niu：读 https://unixwin.github.io/niubash/agents.html 的',
   '   「The four mechanisms」一节，判断你属于哪种探测机制（1 = $SHELL 环境变量；',
@@ -367,7 +367,7 @@ const skillSummary = [
       <p class="hl-line">
         <strong>亮点速览：</strong>零 fork（<code>( )</code> 与 <code>$( )</code> 不建进程）·
         四方言路径（<code>C:\</code> / <code>/d/</code> / <code>/mnt/d</code> / <code>/cygdrive/d</code> 全收）·
-        GNU 套件 83/83 全过 · git 启动 ~14ms · 3.79MB 单文件——
+        GNU 套件 83/83 全过 · git 启动 ~14ms（niu-git，Windows 同机实测）· 3.79MB 单文件——
         数字细节见 <a href="/benchmarks/">/benchmarks/</a> 与 <a href="/docs/">/docs/</a>。
       </p>
     </Section>

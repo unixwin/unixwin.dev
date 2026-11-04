@@ -46,7 +46,7 @@ const productBlocks = ordered
     }
     if (p.id === 'wpm') {
       lines.push(
-        '- Bundled with WinuxCmd: `wpm` prints help, `wpm list` browses the 281-package official index, `wpm install <pkg>` installs.'
+        '- Bundled with WinuxCmd: `wpm` prints help, `wpm list` browses the 282-package official index, `wpm install <pkg>` installs.'
       );
     }
     return lines.join('\n');
@@ -84,11 +84,11 @@ echo "SHELL=$SHELL"; uname -s
 
 - GNU Bash upstream test suites: ${facts.bashSuites} passing, ${facts.byteIdentical}
 - Unix commands bundled: ${facts.commands} (${facts.options} options)
-- git startup (niu-git, Windows): ${facts.gitStartup} vs Git Bash 45–103 ms
+- git startup (niu-git, Windows, same-machine): ${facts.gitStartup} vs Git Bash 45–103 ms
 - One-shot execution \`niu -c true\`: 19.8 ms (was 105.6 ms) — measured on Windows
 - One-shot execution \`niu -c 'true'\` (Linux caliber, re-measured 2026-10-28): 4.14 ms (bare run p50 3.71 ms; GNU bash 5.3.20 2.67 / 2.60 ms — Linux same-machine, release builds)
 - Installed family size: ${facts.familySize}, zero DLL dependencies
-- Native platforms: ${facts.platforms} (Windows x64/arm64, Linux gnu/musl, macOS, Android, OpenHarmony CI gates)
+- Native platform builds: ${facts.platforms} (released: Windows x64/arm64, Linux x86_64/aarch64 glibc, macOS aarch64/x86_64, Android .zip; musl is built + smoke-tested but not released, OpenHarmony is a CI compile check only)
 - Unit tests: ${facts.unitTests}
 - AI agents wired: ${facts.aiAgents} (${agents.filter((a) => a.status === 'ready').length} work out of the box)
 
@@ -128,7 +128,7 @@ ${faqLines}
 
 ## Optional
 
-- [wpm index](https://github.com/unixwin/wpm-source): the 281-package official index consumed by \`wpm\`.
+- [wpm index](https://github.com/unixwin/wpm-source): the 282-package official index consumed by \`wpm\`.
 - [Privacy](https://unixwin.dev/privacy/): zero-collection policy — the shell phones no server home.
 `;
 

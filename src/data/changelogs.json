@@ -1,92 +1,33 @@
 {
-  "fetchedAt": "2026-10-24T03:45:00.022Z",
+  "fetchedAt": "2026-11-03T08:53:09.598Z",
   "repos": [
     {
       "repo": "niubash",
       "source": "https://raw.githubusercontent.com/unixwin/niubash/master/CHANGELOG.md",
       "versions": [
         {
-          "version": "1.4.4",
-          "date": "2026-10-22",
+          "version": "1.5.0",
+          "date": "2026-11-03",
           "sections": {
-            "": [
-              "Release carrying the rubash 1.4.3 engine (command-stem case fold — `ping`/`netstat`/`tracert` reachable again — plus the interactive `${v^^}` crash fix), the WinuxCmd v1.1.20 pin, and the MSIX foreign-env hardening."
-            ],
-            "Fixed": [
-              "`ping`/`netstat`/`tracert` were `command not found` (rubash#998/#1000): System32 ships these applets with UPPERCASE on-disk names (`PING.EXE`, `NETSTAT.EXE`, `TRACERT.EXE` — `HOSTNAME.EXE` too), and the engine's byte-exact stem contract (#799) rejected every lowercase invocation. The PATH fold arm now compares the stem ASCII-case-insensitively (byte-equal spellings still win; the resolved spelling is always the on-disk one) — parity with CMD, PowerShell and msys bash. The interactive crash on `${v^^}`/`${v:1:3}` input (niubash#503) ships in the same engine.",
-              "MSIX Store 版静默降级（#504/#505）：旧 NSIS 安装残留的 `WINUXCMD_PATH`/`WINUXSH_ROOT` 环境变量会让 packaged 进程解析到旧安装树；package identity 下现按外来安装忽略。",
-              "Upgrades now reconcile the bundled package shims (`winuxcmd\\usr\\bin\\gawk.exe`, `awk.exe`): `wpm links rebuild` cannot reach them on a bundled install because the product ships no `.wpm` state, so replacing `winuxcmd.exe` left those names on the previous image — the 1.4.1 stale `awk.exe`/`gawk.exe` residue of #468. The installer runs `niu --relink-bundled-shims --force` after the wpm rebuild, and shell-startup activation runs the same reconcile: missing or stale declared names are parked and relinked to the current `winuxcmd.exe`, extracted copies are upgraded to real hardlinks, and names owned"
-            ],
-            "Changed": [
-              "WinuxCmd pin v1.1.19 → v1.1.20（#507，双 SHA-256 取自官方 release 资产 digest）：裸 MSYS 盘根操作数（`ls /e`）跨 applet 面经共享 argv 边界解析（#1274）；`env --file`（#1277）与 `csplit -f/--prefix`（#1278）同族折叠；每个 applet 的 `--help` 结尾带 unixwin.dev 门户链接（#1273）；unity 构建在含正则元字符的检出路径下不再中止（#1281）。"
-            ]
-          }
-        },
-        {
-          "version": "1.4.3",
-          "date": "2026-10-21",
-          "sections": {
-            "": [
-              "Release fixing the interactive gather wedge (P1), converging bare-drive behavior, hardening installer guards, and upgrading the vendored bash engine to patch 20. Carries WinuxCmd v1.1.19 (gawk BINMODE argv-prefix adapter) and the rubash 1.4.2 engine."
-            ],
-            "Fixed": [
-              "Interactive multi-line groups no longer wedge the REPL: a stray `)` inside an open group now ends the gather with a single GNU-style diagnostic and rc 2, returning to the prompt (engine reader rubash#955 + host repl niubash#484; #482).",
-              "Bare drive designators (`D:`, `cd D:`) now converge on the engine dispatch across the host fast path, grouped route, and piped `niu -i` (rubash#953; #481, #483).",
-              "`unset` of an inherited environment name now clears the process-env copy (9-probe matrix realigned to GNU; #943 rework of #917).",
-              "Marker-zone literals in `-c` operands pass through verbatim — the respawn exclusion is double-escape only (rubash#952; #948).",
-              "`find_user_command`'s Windows listing negative cache now invalidates when candidate files appear, so newly installed commands are immediately visible (rubash#951)."
-            ],
             "Added": [
-              "Launcher accepts `-EncodedCommand` and `--ec` spellings for the verbatim base64 handoff, with `v1:` rewrite-guard semantics preserved across all spellings (niubash#477).",
-              "`niu --help` and `--version` close with the unixwin portal lines (niubash#490)."
+              "GNU `possible-completions` defaults (`M-?`, `M-=`): both keys now print the candidate list without editing `rl_line_buffer` or moving point, matching readline's `rl_possible_completions`. The GNU menu distinguishes the engine's list-only activation from a TAB, so a queued list event can no longer splice the common prefix. TAB completion itself is unchanged: the default stays zsh-style (first TAB opens the candidate grid), per the owner ruling on niubash#342.",
+              "Native script debugger: `niu --debug script` opens the interactive debugger on the controlling terminal and `niu --dap script` serves the Debug Adapter Protocol on stdio (`niu --dap` alone is a pure server whose `launch` request names the program; `niu --debug --dap script` is the spelled-out editor form). Both imply `extdebug` internally without changing the observable `shopt extdebug` setting; `--debug` with `-c`, `-s`, or `-i` keeps the legacy extdebug-arming behavior. The frontend now presents the host word `niu` — prompt `(niu-dbg)` and `niu: …` diagnostics — instead of the engine's `ruba",
+              "DAP hover evaluation of bare names: a `hover`/`clipboard` request for an identifier now renders the variable's value from the stop snapshot (the same rendering as `print` and watch), instead of returning the literal word."
             ],
-            "Security / hardening": [
-              "Installer-surface guards: constant-fold coverage for `{syswow64}`/`{sysnative}`/`{autocf}`, `{sys}` name-boundary enforcement, and mutation vectors pinned by test (niubash#472).",
-              "The staged gawk pipeline gate now asserts raw output bytes — LF contract is enforced by the gate once WinuxCmd ships the BINMODE adapter (niubash#479)."
-            ],
-            "Engine": [
-              "Vendored bash upgraded from Bash-5.3 patch 15 to patch 20 (rubash#957): readline multibyte prompt redraw (17), long-prompt crash fix (18), high-byte identifier guard (19), SIGWINCH prompt recompute (20), macOS pipe sizing (16).",
-              "Marker-boundary divergences closed: E400-aware sentinel decode family for marker output (rubash#947, #840) and catalogue batches with an exhaustiveness gate (rubash#944, #746).",
-              "Environment: `export`/`unset` per-op cost reduction (rubash#943 env fast-path family)."
-            ]
-          }
-        },
-        {
-          "version": "1.4.2",
-          "date": "2026-10-20",
-          "sections": {
-            "": [
-              "Release addressing P0 transient console window pop-ups across WinuxCmd shims, rubash child spawns, and niubash runtime helpers, plus the v1.4.1 golden-journey release audit fixes."
-            ],
-            "Fixed": [
-              "No more transient console windows when spawning external commands from a windowless or ConPTY host: the bundled WinuxCmd v1.1.18 `winuxcmd-shim` launcher suppresses orphan console creation when the parent has no visible console (#466, WinuxCmd#1282), rubash suppresses console windows on child process spawns from windowless parents (rubash#909), and niubash allocates at most one hidden console per session while adopting/suppressing orphan consoles across `fd::spawn_whitelisted`, `git_prompt`, completion helpers, plugin source git clones, and setup wizard probes (#462, #455).",
-              "`argv[0]`-marked login shells (`-bash`, `-niu`) preserve `shopt login_shell` as `on` across `reset_shell_options` (#465, rubash#911).",
-              "Unix platform shell discovery resolves the installed shell binary by platform binary name (`niu` on Unix vs `niu.exe` on Windows) (#463).",
-              "Golden-journey release audit fixes: ConPTY gallery pseudo-console window preservation (#455), sandbox hygiene and deterministic test gates (#442, #447, #449).",
-              "Release packaging: the product zip now carries `winuxcmd-shim.exe` beside `winuxcmd.exe` so upgrades replace a stale package-shim forwarder (the actual #466 fix payload) instead of leaving the 1.1.x buggy binary in place, and the x64 preinstall leg is fail-closed — a failed pin check, package install, or shim materialization stops the release instead of silently shipping a reduced bundle (#468). The gawk `unixwin2` artifact 404 that silently skipped the 1.4.1 gawk preinstall is fixed at the source (wpm-artifacts asset name)."
+            "Removed": [
+              "`~/.niubash/config.toml` is gone (1.5.0, breaking): the runtime no longer reads or writes a user TOML config. GNU-shaped knobs come from rc `bind`/`set`/`shopt` and `$INPUTRC`/`~/.inputrc`; niu-proprietary knobs come from `NIU_COMPLETION_STYLE`, `NIU_COMPLETION_INTERACTION`, `NIU_COMMAND_NOT_FOUND_HINT`, and `NIU_RC_POLICY` (exported from the rc or the environment). The `[keymap].bind`/`[keymap].unbind` TOML channel is removed — bindings use rc `bind` and inputrc only. `niu config set` is removed with an actionable error.",
+              "One-time migration: `niu config migrate` translates an existing `~/.niubash/config.toml` into rc lines (`bind '<spec>'`, `bind -r '<key>'`, `export NIU_*`), appends a marked block to `~/.niubashrc` idempotently, and renames the old file to `config.toml.migrated-<UTC timestamp>`. A leftover file prints a one-line startup notice until migrated."
             ],
             "Changed": [
-              "Release chain: the bundled rubash engine pin moves to `a83a09d32b4a4f953d29af0acc0e781b542206b8` (`1.4.1`) and the bundled WinuxCmd pin moves to `v1.1.18` (#466)."
-            ]
-          }
-        },
-        {
-          "version": "1.4.1",
-          "date": "2026-10-19",
-          "sections": {
-            "": [
-              "Healthy re-release on the pinned release chain (the bundled engine is now locked to an exact verified commit). Details in the linked issues/PRs — entries here are deliberately short."
+              "`niu config` is read-only: `niu config` / `niu config get <key>` print the effective value and its source (`env`, `inputrc`, or `default`). `editing-mode` and `keyseq-timeout` are now surfaced from readline/inputrc.",
+              "inputrc is read after the rc: `Shell::load_engine_bindings()` initializes readline after startup files, so `$INPUTRC` / `~/.inputrc` variables and bindings override rc `bind` lines in the mirrored keymaps, and `set editing-mode` seeds the editor mode.",
+              "Setup minimal preset completion style `gnu` → `column`: the minimal preset — the one non-interactive / scripted `niu setup` applies — now pins the product-default `column` completion style (owner ruling 2026-10-14) instead of `gnu`. This is a behavior change for scripted installs: they move from the no-menu GNU shape, where Enter always executes the line, into the menu family, where Enter with the completion menu open commits the highlighted candidate. Users who picked a completion style explicitly are unaffected. (#342 follow-up sweep, 2026-10-26.)"
             ],
             "Fixed": [
-              "Pasted multi-line scripts no longer swallow the typeahead that follows them: the Enter-signature probe re-injects parked keys to the console queue head, so an engine `read` after a paste-submit sees the remaining input (#417, #420, #426, #433).",
-              "`niu -c` and stdin scripts reject a stray `)` exactly like GNU bash (rc 2, same diagnostics/line numbers) instead of silently running the subshell body (#431).",
-              "`rbash` startup semantics match GNU: the restricted face activates after startup files in every invocation form (#413); POSIX `$ENV` `exit` now exits silently without the greeting tail (#422).",
-              "A DSR-silent terminal keeps its shell; TAB completion commits (#418)."
-            ],
-            "Changed": [
-              "Release chain: the bundled rubash engine is pinned to an exact commit (fail-hard on mismatch) and dirty builds self-identify in `niu --version` (#424); the WinuxCmd bundle moves to v1.1.16 (POSIX drive-dialect fixes for mkdir/ln/stat/realpath/readlink) (#427).",
-              "CI: the VCS prompt timing budget is relative to an interleaved spawn baseline — immune to shared-runner noise, still catches real render regressions (#423/#436).",
-              "Engine: rubash 1.4.1 — ERR-trap nested-context semantics, patsub replacement-text escaping, subscript ANSI-C double-state law, pushd/popd readonly + message forms, `${var@P}` status-leak fix, and a package guard against build-variant directories."
+              "Upgrades left a standalone `awk.exe` at the bundled shim name (#810): the #468 reconcile skipped every name the machine's own `.wpm` state declared, but a flat `wpm install awk` receipt claims `usr\\bin\\awk.exe` with the standalone GNU binary — a dead zone, because `wpm links rebuild` never links flat payloads either, so nothing ever healed the name. `awk` then bypassed the forwarder's `-v BINMODE=3` argv adapter and kept emitting CRLF while `gawk` worked. The reconcile now owns bundled shim names on legs that carry the payload: a standalone binary at such a name is replaced with a `winuxcmd.ex",
+              "The in-process readline ABI now drives the live editor (#775): the exported `rl_line_buffer`/`rl_point`/`rl_end`/`rl_mark` are mirrored from the interactive Reedline buffer at every host boundary and copied back (UTF-8 clamped) after `bind -x`, widgets, and loadable-builtin callbacks. Plugin registrations through `rl_add_defun`/`rl_bind_key*`/`rl_unbind_*` join the host keymap, so a binding installed by an `enable -f` builtin fires in the interactive editor.",
+              "The readline ABI is live in both directions (#775): rc/inputrc `bind`, `bind -x`, macros and `bind -r` tombstones are mirrored into the exported keymap arrays, so `rl_function_of_keyseq`/`_len` see the host keymap; plugin `rl_macro_bind` macros join the engine macro/chord registry (and `bind -s`); `rl_pending_input` injects its key on resume and `rl_done` submits the line; `rl_startup_hook` runs once before the first prompt and `rl_pre_input_hook` before every line; and an active `rl_mark` survives a host-command resume. The plugin probe matrix (11/11) and keyboard oracle (50/50) cover the new",
+              "Bundled WinuxCmd applets lost the shell tree on installed layouts (#746): the winux purge pair (niubash#715, rubash#2206) stopped the engine from exporting the shell root to children, and only the MSIX layout published `NIU_ROOT`, so an installed layout derived the root for Rubash but never handed it to the applets. `ls.exe /usr/bin` / `stat /usr/bin` failed with ENOENT, while `realpath /etc` and `readlink -f /tmp` leaked drive-relative native paths — even though a foreign child such as `eza` kept working through the engine's argument translation. Startup now publishes the derived root as `NIU"
             ]
           }
         },
@@ -227,6 +168,91 @@
               "(unixwin/niubash#346).",
               "`(A;B);)` is a syntax error on every non-interactive route, like GNU (unixwin/niubash#431). `niu -c '(printf a; printf b);)'` ran the subshell and exited 0 — and so did script files, `--encoded-command`, and piped/redirected stdin — where GNU bash 5.3.0 rejects the shape in every mode (`syntax error near unexpected token ')'`, rc 2, subshell unexecuted; the earlier \"msys GNU tolerates the tail\" record came from the `winuxcmd/usr/bin/bash.exe` launcher shim echoing niu back — rubash#852). The host fast path now parses with the engine's stray-close guard armed (`ParseLoopOptions::stray_close_is_",
               "Bundled gawk's CRLF output gets a byte-level release gate (unixwin/niubash#467). The `opt\\gawk` payload is a text-mode mingw build — its CRT rewrote every `\\n` as `\\r\\n` on write and folded `\\r\\n` into `\\n` on read, while every other bundled applet does binary stdio, so `awk '{print}' > f` landed CRLF files and `ORS=\"\\r\\n\"` doubled the CR. The fix ships in the bundled WinuxCmd forwarder (winuxcmd.exe / winuxcmd-shim.exe splice `-v BINMODE=3` ahead of the forwarded argv for `awk`/`gawk` — the build ignores the `BINMODE` environment variable, the `-v` assignment is its only lever, and a caller's"
+            ]
+          }
+        },
+        {
+          "version": "1.4.4",
+          "date": "2026-10-22",
+          "sections": {
+            "": [
+              "Release carrying the rubash 1.4.3 engine (command-stem case fold — `ping`/`netstat`/`tracert` reachable again — plus the interactive `${v^^}` crash fix), the WinuxCmd v1.1.20 pin, and the MSIX foreign-env hardening."
+            ],
+            "Fixed": [
+              "`ping`/`netstat`/`tracert` were `command not found` (rubash#998/#1000): System32 ships these applets with UPPERCASE on-disk names (`PING.EXE`, `NETSTAT.EXE`, `TRACERT.EXE` — `HOSTNAME.EXE` too), and the engine's byte-exact stem contract (#799) rejected every lowercase invocation. The PATH fold arm now compares the stem ASCII-case-insensitively (byte-equal spellings still win; the resolved spelling is always the on-disk one) — parity with CMD, PowerShell and msys bash. The interactive crash on `${v^^}`/`${v:1:3}` input (niubash#503) ships in the same engine.",
+              "MSIX Store 版静默降级（#504/#505）：旧 NSIS 安装残留的 `WINUXCMD_PATH`/`WINUXSH_ROOT` 环境变量会让 packaged 进程解析到旧安装树；package identity 下现按外来安装忽略。",
+              "Upgrades now reconcile the bundled package shims (`winuxcmd\\usr\\bin\\gawk.exe`, `awk.exe`): `wpm links rebuild` cannot reach them on a bundled install because the product ships no `.wpm` state, so replacing `winuxcmd.exe` left those names on the previous image — the 1.4.1 stale `awk.exe`/`gawk.exe` residue of #468. The installer runs `niu --relink-bundled-shims --force` after the wpm rebuild, and shell-startup activation runs the same reconcile: missing or stale declared names are parked and relinked to the current `winuxcmd.exe`, extracted copies are upgraded to real hardlinks, and names owned"
+            ],
+            "Changed": [
+              "WinuxCmd pin v1.1.19 → v1.1.20（#507，双 SHA-256 取自官方 release 资产 digest）：裸 MSYS 盘根操作数（`ls /e`）跨 applet 面经共享 argv 边界解析（#1274）；`env --file`（#1277）与 `csplit -f/--prefix`（#1278）同族折叠；每个 applet 的 `--help` 结尾带 unixwin.dev 门户链接（#1273）；unity 构建在含正则元字符的检出路径下不再中止（#1281）。"
+            ]
+          }
+        },
+        {
+          "version": "1.4.3",
+          "date": "2026-10-21",
+          "sections": {
+            "": [
+              "Release fixing the interactive gather wedge (P1), converging bare-drive behavior, hardening installer guards, and upgrading the vendored bash engine to patch 20. Carries WinuxCmd v1.1.19 (gawk BINMODE argv-prefix adapter) and the rubash 1.4.2 engine."
+            ],
+            "Fixed": [
+              "Interactive multi-line groups no longer wedge the REPL: a stray `)` inside an open group now ends the gather with a single GNU-style diagnostic and rc 2, returning to the prompt (engine reader rubash#955 + host repl niubash#484; #482).",
+              "Bare drive designators (`D:`, `cd D:`) now converge on the engine dispatch across the host fast path, grouped route, and piped `niu -i` (rubash#953; #481, #483).",
+              "`unset` of an inherited environment name now clears the process-env copy (9-probe matrix realigned to GNU; #943 rework of #917).",
+              "Marker-zone literals in `-c` operands pass through verbatim — the respawn exclusion is double-escape only (rubash#952; #948).",
+              "`find_user_command`'s Windows listing negative cache now invalidates when candidate files appear, so newly installed commands are immediately visible (rubash#951)."
+            ],
+            "Added": [
+              "Launcher accepts `-EncodedCommand` and `--ec` spellings for the verbatim base64 handoff, with `v1:` rewrite-guard semantics preserved across all spellings (niubash#477).",
+              "`niu --help` and `--version` close with the unixwin portal lines (niubash#490)."
+            ],
+            "Security / hardening": [
+              "Installer-surface guards: constant-fold coverage for `{syswow64}`/`{sysnative}`/`{autocf}`, `{sys}` name-boundary enforcement, and mutation vectors pinned by test (niubash#472).",
+              "The staged gawk pipeline gate now asserts raw output bytes — LF contract is enforced by the gate once WinuxCmd ships the BINMODE adapter (niubash#479)."
+            ],
+            "Engine": [
+              "Vendored bash upgraded from Bash-5.3 patch 15 to patch 20 (rubash#957): readline multibyte prompt redraw (17), long-prompt crash fix (18), high-byte identifier guard (19), SIGWINCH prompt recompute (20), macOS pipe sizing (16).",
+              "Marker-boundary divergences closed: E400-aware sentinel decode family for marker output (rubash#947, #840) and catalogue batches with an exhaustiveness gate (rubash#944, #746).",
+              "Environment: `export`/`unset` per-op cost reduction (rubash#943 env fast-path family)."
+            ]
+          }
+        },
+        {
+          "version": "1.4.2",
+          "date": "2026-10-20",
+          "sections": {
+            "": [
+              "Release addressing P0 transient console window pop-ups across WinuxCmd shims, rubash child spawns, and niubash runtime helpers, plus the v1.4.1 golden-journey release audit fixes."
+            ],
+            "Fixed": [
+              "No more transient console windows when spawning external commands from a windowless or ConPTY host: the bundled WinuxCmd v1.1.18 `winuxcmd-shim` launcher suppresses orphan console creation when the parent has no visible console (#466, WinuxCmd#1282), rubash suppresses console windows on child process spawns from windowless parents (rubash#909), and niubash allocates at most one hidden console per session while adopting/suppressing orphan consoles across `fd::spawn_whitelisted`, `git_prompt`, completion helpers, plugin source git clones, and setup wizard probes (#462, #455).",
+              "`argv[0]`-marked login shells (`-bash`, `-niu`) preserve `shopt login_shell` as `on` across `reset_shell_options` (#465, rubash#911).",
+              "Unix platform shell discovery resolves the installed shell binary by platform binary name (`niu` on Unix vs `niu.exe` on Windows) (#463).",
+              "Golden-journey release audit fixes: ConPTY gallery pseudo-console window preservation (#455), sandbox hygiene and deterministic test gates (#442, #447, #449).",
+              "Release packaging: the product zip now carries `winuxcmd-shim.exe` beside `winuxcmd.exe` so upgrades replace a stale package-shim forwarder (the actual #466 fix payload) instead of leaving the 1.1.x buggy binary in place, and the x64 preinstall leg is fail-closed — a failed pin check, package install, or shim materialization stops the release instead of silently shipping a reduced bundle (#468). The gawk `unixwin2` artifact 404 that silently skipped the 1.4.1 gawk preinstall is fixed at the source (wpm-artifacts asset name)."
+            ],
+            "Changed": [
+              "Release chain: the bundled rubash engine pin moves to `a83a09d32b4a4f953d29af0acc0e781b542206b8` (`1.4.1`) and the bundled WinuxCmd pin moves to `v1.1.18` (#466)."
+            ]
+          }
+        },
+        {
+          "version": "1.4.1",
+          "date": "2026-10-19",
+          "sections": {
+            "": [
+              "Healthy re-release on the pinned release chain (the bundled engine is now locked to an exact verified commit). Details in the linked issues/PRs — entries here are deliberately short."
+            ],
+            "Fixed": [
+              "Pasted multi-line scripts no longer swallow the typeahead that follows them: the Enter-signature probe re-injects parked keys to the console queue head, so an engine `read` after a paste-submit sees the remaining input (#417, #420, #426, #433).",
+              "`niu -c` and stdin scripts reject a stray `)` exactly like GNU bash (rc 2, same diagnostics/line numbers) instead of silently running the subshell body (#431).",
+              "`rbash` startup semantics match GNU: the restricted face activates after startup files in every invocation form (#413); POSIX `$ENV` `exit` now exits silently without the greeting tail (#422).",
+              "A DSR-silent terminal keeps its shell; TAB completion commits (#418)."
+            ],
+            "Changed": [
+              "Release chain: the bundled rubash engine is pinned to an exact commit (fail-hard on mismatch) and dirty builds self-identify in `niu --version` (#424); the WinuxCmd bundle moves to v1.1.16 (POSIX drive-dialect fixes for mkdir/ln/stat/realpath/readlink) (#427).",
+              "CI: the VCS prompt timing budget is relative to an interleaved spawn baseline — immune to shared-runner noise, still catches real render regressions (#423/#436).",
+              "Engine: rubash 1.4.1 — ERR-trap nested-context semantics, patsub replacement-text escaping, subscript ANSI-C double-state law, pushd/popd readonly + message forms, `${var@P}` status-leak fix, and a package guard against build-variant directories."
             ]
           }
         },
@@ -872,36 +898,6 @@
               "new terminals -> daily battery) now runs as a required release gate."
             ]
           }
-        },
-        {
-          "version": "1.3.1",
-          "date": "2026-10-03",
-          "sections": {
-            "Fixed": [
-              "Interactive arithmetic corruption (engine rubash 1.3.1): aliases no",
-              "longer expand inside compound array assignments. Under oh-my-bash, the",
-              "convenience alias `1='cd -'` leaked into the literal",
-              "`OMB_VERSINFO=(1 0 0 0 ...)` and corrupted it to",
-              "`(_omb_directories_cd - 0 ...)`, killing version arithmetic with",
-              "`-: arithmetic syntax error` in interactive sessions (any theme,",
-              "powerbash10k included). GNU parity: assignment words are never",
-              "alias-expanded (parse.y parse_compound_assignment keeps the whole",
-              "`( ... )` in one ASSIGNMENT_WORD token).",
-              "Plugin sync state machine: the startup \"installed but not declared\"",
-              "nag now prints only when a spec exists (imperative mode is silent);",
-              "`niu plugin sync --adopt` declares installed sources with a",
-              "round-trip-stable snapshot (enablement + theme); the setup wizard ends",
-              "spec-managed; `niu plugin add` adopts an already-installed source",
-              "instead of erroring \"remove it first\".",
-              "No re-download loop: the startup bootstrap memoizes failed installs",
-              "(per origin+ref ledger); retries happen only on an explicit",
-              "`niu plugin sync`. The bash-it fingerprint now matches the real",
-              "upstream layout (its `lib/composure.bash` was removed upstream).",
-              "`niu plugin source remove` also drops the spec declaration (no",
-              "resurrection), and duplicate spec declarations of one source merge",
-              "instead of flipping the rc block every sync."
-            ]
-          }
         }
       ]
     },
@@ -909,6 +905,69 @@
       "repo": "WinuxCmd",
       "source": "https://raw.githubusercontent.com/unixwin/WinuxCmd/master/CHANGELOG.md",
       "versions": [
+        {
+          "version": "1.2.1",
+          "date": "2026-11-02",
+          "sections": {
+            "Fixed": [
+              "sed nested-quantifier hang (#1495): the `portable_regex` engine's",
+              "`collect_repeat` enumerated every parse of a repetition recursively with no",
+              "memoization, so a nested quantifier such as `s/^\\(.*\\)*$/X/` over a 32-char",
+              "line split it into every ordered chunk decomposition (exponential). Repeat",
+              "exploration is now memoized, and nested quantifiers no longer backtrack",
+              "catastrophically (Refs rubash#2481).",
+              "sed POSIX subexpression capture rules (#1496): capture groups were",
+              "numbered in closing order instead of the opening order POSIX.1-2017 XBD 9.1",
+              "prescribes (glibc numbers by the opening delimiter), and empty loop",
+              "iterations were discarded instead of being counted toward `\\{m,n\\}` lower",
+              "bounds. Both are fixed in `src/utils/regex.cppm`; `s/^\\(\\(x\\)*\\)*$/[\\1|[\\2]]/`",
+              "over `xxxx` now matches GNU sed (`[xxxx|[x]]`).",
+              "readlink `/` separators and unprivileged `ln -s` (#1491):",
+              "`readlink -f/-e/-m` now print `/`-separated canonical names (GNU",
+              "`canonicalize_filename_mode` assembles them with `/` by construction); the",
+              "drive spelling the resolver chose is kept, and the no-mode form still prints",
+              "the stored target verbatim. `ln -s` now tries `CreateSymbolicLinkW` with",
+              "`SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE` first, so Developer Mode",
+              "creates real symlinks without elevation; the silent copy downgrade stays",
+              "opt-in (GNU `ln` has no downgrade to mirror).",
+              "wpm `--force` shims.map refresh and local MSVC build break (#1492,",
+              "#1497): `wpm --force` now refreshes the stale shims.map entries reported by",
+              "#1492, and the missing `<ctime>` / `<string_view>` includes that broke",
+              "local MSVC 14.51 source builds are added.",
+              "FIFO marker read-side bridge (#1493): reader applets that opened",
+              "operands through a raw `std::ifstream` bypassed the `!<fifo>` marker bridge",
+              "and read the marker bytes as content; those operand opens now route through",
+              "`file_io::open_binary_file`, so `od -c p` and friends rendezvous with the",
+              "writer like the shared readers do."
+            ]
+          }
+        },
+        {
+          "version": "1.2.0",
+          "date": "2026-11-01",
+          "sections": {
+            "Changed": [
+              "edition split (default vs full, #1438): the default edition no longer",
+              "materializes entry links for `[`, `env`, `false`, `kill`, `test`, `time`,",
+              "`true` — commands whose user-facing semantics the host shell's builtins",
+              "define. The commands stay fully implemented and dispatchable through the",
+              "multicall binary (`winuxcmd kill ...`); `echo`, `printf`, `pwd` keep their",
+              "entries. A `wpm links rebuild` on a default-edition install also sweeps",
+              "stale hardlinks of these names left by a 1.1.x install. The name list is",
+              "defined once in `src/core/package_edition.h`; `WINUXCMD_PACKAGE_EDITION=full`",
+              "builds the full edition, which materializes all 178 entries under the",
+              "`-full` asset names (`WinuxCmd-<version>-win-<arch>-full.*`) and is not",
+              "distributed through wpm."
+            ],
+            "Removed": [
+              "PCRE2 SDK tree from release payloads: PCRE2's unconditional install",
+              "rules shipped headers, static import libs, CMake/pkgconfig metadata, man",
+              "pages and HTML docs (~7.8 MB) inside every standalone archive and the",
+              "installer stage. The runtime-only strip runs in the install tree now, so",
+              "archives carry `usr/bin` plus the project docs and nothing else (#1438)."
+            ]
+          }
+        },
         {
           "version": "1.1.20",
           "date": "2026-10-22",
@@ -1261,69 +1320,6 @@
               "both share the payload inode, and `.wpm/staging` is pruned."
             ]
           }
-        },
-        {
-          "version": "1.1.12",
-          "date": "2026-10-16",
-          "sections": {
-            "Fixed": [
-              "wpm: an install is refused up front when a destination is held open by",
-              "a running program, instead of failing halfway through. A file held by another",
-              "process cannot be replaced on Windows at all — delete and overwrite both",
-              "return *Access denied* — so the old behaviour could leave a package",
-              "half-updated; an upgrade of niugit was observed with `opt/niugit` on the new",
-              "version while the PATH entry still ran the old one. WPM now probes every",
-              "destination before writing anything, lists the files and the programs running",
-              "from them, and leaves the installation exactly as it was. Close the listed",
-              "programs and retry.",
-              "wpm: flat-layout file mappings are copied from the package's payload",
-              "rather than the extraction directory, so a mapping that duplicates a path",
-              "already covered by a directory mapping no longer produces a second copy of",
-              "the package and a PATH entry pointing into `.wpm/staging` (the two",
-              "destinations now share one inode). The staging tree is pruned after a",
-              "successful install."
-            ],
-            "Added": [
-              "wpm: every package command gets a PATH entry link at",
-              "`<root>/bin/<cmd>.exe` — a hardlink to the real binary (the payload under",
-              "`opt/<pkg>/` for shim packages, the mapped binary in `usr/bin/` for flat",
-              "ones), never a launcher, so nothing extra runs per invocation. The links are",
-              "recorded in the package receipt and kept in sync by install, update,",
-              "`wpm links rebuild` and uninstall."
-            ]
-          }
-        },
-        {
-          "version": "1.1.11",
-          "date": "2026-10-16",
-          "sections": {
-            "Fixed": [
-              "wpm: `wpm update winuxcmd` swaps the image by unlinking the old name",
-              "and moving the staged binary into place instead of overwriting a",
-              "running/mapped image in place. The in-place write fails with \"being used by",
-              "another process\" whenever any process holds the file (observed on a live",
-              "install, where the update silently kept the old version), and writing under",
-              "a mapped image is unsafe for the processes already running from it. The",
-              "in-place path remains the fallback when the unlink itself fails.",
-              "wpm: installing a package reconciles its own previous install first -",
-              "destinations the new artifact no longer maps are removed and, on a version",
-              "change, files inside still-mapped directories that the new payload dropped",
-              "are pruned. Before, a layout change left inert leftovers behind (the retired",
-              "shim launcher `opt\\<pkg>\\<cmd>.exe` after a move to `layout: flat`, or a",
-              "stale DLL in a PATH directory from older flat packaging). Only paths",
-              "recorded in the package's own receipt are touched, they must resolve inside",
-              "the root, and the winuxcmd image and the running executable are never",
-              "deleted.",
-              "wpm: `outdated` orders versions instead of comparing strings, so a stale",
-              "mirror advertising an older version no longer reports a",
-              "`update available: 2.55.0.5 -> 2.55.0.4` downgrade. The order is the",
-              "dotted-numeric core plus, when present, a Debian-style packaging revision",
-              "(`5.4.1-unixwin2` > `5.4.1-unixwin1` > `5.4.1`) - what a repackaged artifact",
-              "needs, since the upstream version stays and our rebuild gets a revision.",
-              "Vendor spellings (`9.5.0.0p1`, `r42`, ...) keep the conservative \"any",
-              "difference is an update\" rule."
-            ]
-          }
         }
       ]
     },
@@ -1332,30 +1328,8 @@
       "source": "https://raw.githubusercontent.com/unixwin/rubash/master/CHANGELOG.md",
       "versions": [
         {
-          "version": "1.4.3",
-          "date": "2026-10-22",
-          "sections": {
-            "修复": [
-              "命令词干大小写折叠（#998/#1000）：System32 的盘上真名全大写（`PING.EXE`/`NETSTAT.EXE`/`TRACERT.EXE`/`HOSTNAME.EXE`），#799 的词干字节精确契约使小写 `ping`/`netstat`/`tracert` 全部 `command not found`（`PING` 大写反而能跑、`which`/`command -v` 两张脸不一致）。fold 臂改为 stem ASCII 大小写折叠（字节相等仍优先；无扩展名盘名保持字节精确；解析拼写恒报盘上真名）——与 CMD/PowerShell/msys 全生态一致；#799 的 harvest 误抬面（小写 `r` 抬 `R.exe`）按 Windows 生态惯例重新接受。tests/issue799 套件改写为新契约并新增 System32 大写盘名回归。",
-              "行编辑器 `${v^^}`/`${v:1:3}` 崩溃（niubash#503，c143699c）：下标 walker 里不可达的 `LEX_WASDOL` `${` 臂被以裸 `{` 语义消费，交互输入含上述序列触发 6 GiB 分配失败（MSIX 与 NSIS 1.4.1 双复现）。删除该臂。",
-              "cli_tests 与宿主 Winuxsh 安装面隔离（#996）：测试 spawn 不再被宿主安装的环境变量污染。"
-            ],
-            "性能": [
-              "splits_unquoted no-IFS 短路重落地（#995/#1002）：#992 门因空展开折叠语义回退（无引号空展开把一个字段折叠为零、词消失），重落地版加入 `!expanded.is_empty()` 准入；splits_gate 4 万对抗输入 × 5 IFS 态差分网兜底，Linux 13/13 upstream 套件与基线逐字节一致。",
-              "assoc 交错访问固定成本（#914）：`k[i]`/`k$i` 交错写读尾部的每操作固定开销削减；export/unset 交错循环二段身体削减（#984/#986/#920 后续）。",
-              "信号提示事件每 8 个命令边界采样（#682）：信号 hint event 从每命令一次降频。",
-              "`[ $VAR -op N ]` 整数比较快展开：测试面热路径。",
-              "裸 `` 全局排序、mapfile 批量拆分/存储、数组元素 quote 单分配等 #607-#609/#661-#680 系列切片全部落定（详见下方各条）。"
-            ],
-            "新增": [
-              "仓库 logo（#988）：青色 rotor-r 引擎标识。"
-            ]
-          }
-        },
-        {
-          "version": "Unreleased",
-          "date": "",
-          "unreleased": true,
+          "version": "1.5.0",
+          "date": "2026-11-03",
           "sections": {
             "新增": [
               "脚本级函数级性能剖析器（#815）：`niu --profile <script> [--profile-output <base>]`——解释器确定性插桩（非采样），在函数入口/出口（`execute_cmd.c:5200 execute_function` 家族）、简单命令分发点（`execute_cmd.c:624`，试探帧由真实分发自分类：函数/外部派发取消、其余确认为内建——无第二准入表）、外部 spawn 面、`( )` 子壳与 `$()` 命令替换独立栈帧（subst.c:7143）挂 Drop 守卫；return/exit/展开失败等中止形态经栈展开正确归因。运行时为 thread_local 调用树（self=elapsed−children，唯一 collapsed 路径聚合 count/self/total），归因三分离（内建/外部 spawn/子壳，self-time 切分面总和=100%）。输出文本调用树（self/children/calls 排序）+ collapsed-stack（flamegraph/speedscope 可渲染）；报告只写文件（默认进程 temp 目录，绝不 stdout/stderr）——profile 开启时 stdout/stderr/rc 与关闭逐字节一致。关闭路径开销=每缝一次 relaxed AtomicBool lo"
@@ -1417,6 +1391,27 @@
             "构建": [
               "发行来源戳记补 dirty 工作树摘要（#827 建议 3）：`--version` 的 `build:` 指纹此前只铸 `git rev-parse --short HEAD`——哈希诚实但不担保内容，v1.4.0 事故正是\"banner 报某 commit、二进制实际编译了该 commit 加未提交改动\"（#488 家族盲区：哈希可见、工作树内容不可验证）。现携带未提交改动的树铸 `<rev>-dirty-<8 hex>`，digest 为 `git diff HEAD --binary` 的 SHA-256 前 4 字节（暂存/未暂存改动皆入；未跟踪文件不置 dirty，同 `git describe --dirty`/`diff-index --quiet HEAD` 语义）：同内容同 digest，任何改动必改 banner，两个不同脏树不再可能印出同一戳。`RUBASH_BUILD_HASH` 显式钉值不能洗白脏树——钉值由 crate 侧 `option_env!` 直读（rustc dep-info 自带失效跟踪，改钉即重编），build.rs 把 git 派生戳发在独立变量 `RUBASH_GIT_STAMP`、脏半段单发 `RUBASH_GIT_DIRTY_SUFFIX`；钉值只赢修订半段，仓库在场时 `-dirty[-<digest>]` 仍追加。build.",
               "命令替换 pipeline-filter 死链删除（#710）：`command_substitution_pipeline_filter` 的 8 条 filter 臂（sort/sed/tr/head/grep/wc/tail/uniq）连同其唯一调用链——`command_substitution_pipeline_output`、`timed_command_substitution_inner` 的 `|` 臂、`command_substitution_pipeline_first_stage`、孤儿助手 `split_pipeline_words`/`echo_raw_output`——自 rubash#117 平凡性 gate 之后不可达：gate 字节白名单拒绝 `|`，能抵达 filter 的替换体不可能含管线；且该链还只住在 `time` 前缀快捷方式内，进一步收窄。运行时复核：入口探针在 producer×filter 电池（含反引号、嵌套 comsub、alias 注入 `|`、`cat`/generic 首段、`time` 前缀形）上零命中；阳性对照（gate 临时放行 `|`）全部探针命中并复现休眠特征（`$(…|wc)` 默认单列 `1`，而活跃路径是三列）。`$( … | … )` 的可观测行为本就由真执行器管线（pipeline_exec）与外部"
+            ]
+          }
+        },
+        {
+          "version": "1.4.3",
+          "date": "2026-10-22",
+          "sections": {
+            "修复": [
+              "命令词干大小写折叠（#998/#1000）：System32 的盘上真名全大写（`PING.EXE`/`NETSTAT.EXE`/`TRACERT.EXE`/`HOSTNAME.EXE`），#799 的词干字节精确契约使小写 `ping`/`netstat`/`tracert` 全部 `command not found`（`PING` 大写反而能跑、`which`/`command -v` 两张脸不一致）。fold 臂改为 stem ASCII 大小写折叠（字节相等仍优先；无扩展名盘名保持字节精确；解析拼写恒报盘上真名）——与 CMD/PowerShell/msys 全生态一致；#799 的 harvest 误抬面（小写 `r` 抬 `R.exe`）按 Windows 生态惯例重新接受。tests/issue799 套件改写为新契约并新增 System32 大写盘名回归。",
+              "行编辑器 `${v^^}`/`${v:1:3}` 崩溃（niubash#503，c143699c）：下标 walker 里不可达的 `LEX_WASDOL` `${` 臂被以裸 `{` 语义消费，交互输入含上述序列触发 6 GiB 分配失败（MSIX 与 NSIS 1.4.1 双复现）。删除该臂。",
+              "cli_tests 与宿主 Winuxsh 安装面隔离（#996）：测试 spawn 不再被宿主安装的环境变量污染。"
+            ],
+            "性能": [
+              "splits_unquoted no-IFS 短路重落地（#995/#1002）：#992 门因空展开折叠语义回退（无引号空展开把一个字段折叠为零、词消失），重落地版加入 `!expanded.is_empty()` 准入；splits_gate 4 万对抗输入 × 5 IFS 态差分网兜底，Linux 13/13 upstream 套件与基线逐字节一致。",
+              "assoc 交错访问固定成本（#914）：`k[i]`/`k$i` 交错写读尾部的每操作固定开销削减；export/unset 交错循环二段身体削减（#984/#986/#920 后续）。",
+              "信号提示事件每 8 个命令边界采样（#682）：信号 hint event 从每命令一次降频。",
+              "`[ $VAR -op N ]` 整数比较快展开：测试面热路径。",
+              "裸 `` 全局排序、mapfile 批量拆分/存储、数组元素 quote 单分配等 #607-#609/#661-#680 系列切片全部落定（详见下方各条）。"
+            ],
+            "新增": [
+              "仓库 logo（#988）：青色 rotor-r 引擎标识。"
             ]
           }
         },
@@ -1814,6 +1809,16 @@
       "source": "api.github.com/repos/unixwin/niu-git/tags",
       "versions": [
         {
+          "version": "v2.56.0.3",
+          "date": "",
+          "sections": {}
+        },
+        {
+          "version": "v2.56.0.2",
+          "date": "",
+          "sections": {}
+        },
+        {
           "version": "v2.56.0.1",
           "date": "",
           "sections": {}
@@ -1845,12 +1850,16 @@
       "source": "https://raw.githubusercontent.com/unixwin/oh-my-niu/master/CHANGELOG.md",
       "versions": [
         {
-          "version": "2.0.0",
-          "date": "",
-          "unreleased": true,
+          "version": "2.1.0",
+          "date": "2026-11-02",
           "sections": {
             "": [
-              "Release artifact: `oh-my-niu-2.0.0.zip` (`api = \"niubash:plugin-bundle@0.1.0\"`,",
+              "> Release state: a `v2.0.0` GitHub release dated 2026-09-12 already",
+              "> exists, but it predates the framework-first code in this tree and",
+              "> does not contain it. This section ships as v2.1.0, cut from",
+              "> current master (in the Niubash 1.5.0 release sequence); do not",
+              "> treat the 2026-09-12 artifact as this changelog's release.",
+              "Release artifact: `oh-my-niu-2.1.0.zip` (`api = \"niubash:plugin-bundle@0.1.0\"`,",
               "`min_niubash = \"1.0.0\"`).",
               "Host compatibility: the `git` prompt segment (`[segments.git] id = \"vcs\"`",
               "in `prompts/segments.toml`) now resolves to niubash's native",
@@ -1858,14 +1867,33 @@
               "themed `[git_clean]` cyan / `[git_dirty]` yellow, rendered in-process with",
               "zero child git processes. No bundle format change: every shipped preset",
               "already carries the segment (the `lean` preset is the documented showcase).",
+              "Compatibility audit against niubash master (post-1.4.4, 2026-10-25):",
+              "the built-in plugin/theme stack this bundle was originally designed",
+              "against was retired by Niubash (niubash#145), so the framework now",
+              "wires its own lifecycle onto the bash prompt surface — `precmd` and",
+              "`chpwd` dispatch from `PROMPT_COMMAND`, `preexec` from the DEBUG",
+              "trap — and `prompt-core` publishes the rendered prompt to `PS1`",
+              "itself instead of relying on a host bridge consuming",
+              "`NIU_PROMPT_LEFT`. The entry point no longer derives bundle paths",
+              "from an unset `HOME` (niubash#546). Documentation (README,",
+              "compatibility, migration, authoring, design notes) was aligned with",
+              "the current host: rc is `~/.niubashrc`-only (legacy winshrc files",
+              "are never read), plugin CLI state lives in `~/.niubash/plugins.json`",
+              "(a pre-1.5.0 `plugins.toml` is converted once by `niu plugin migrate`),",
+              "bundle updates are manual, and the retired `niu plugin` bundle verbs",
+              "were removed from the guides. The framework smoke harness now",
+              "reloads the entry point explicitly (`--reload`) and asserts the",
+              "hook wiring end to end.",
               "Renamed the bundle from `oh-my-winuxsh` to `oh-my-niu` to match the",
               "niubash 1.0.0 brand. Installed `~/.oh-my-winuxsh` directories keep",
-              "working: niubash discovers the pre-rename layout as a fallback.",
+              "working as bundle roots — point `NIUBASH` at the old tree and source",
+              "its entry point. Current Niubash has no bundle discovery of its own",
+              "and reads neither layout.",
               "Bundle/plugin API identifiers move from the `winuxsh:` prefix to",
               "`niubash:` (`niubash:plugin-bundle@0.1.0`, `niubash:plugin@0.1.0`,",
               "`niubash:plugin-index@0.1.0`). Manifests may declare either",
               "`min_niubash` or the legacy `min_winuxsh` field.",
-              "Entry point renamed to `oh-my-niu.winux`; scripts now use the `NIU_*`",
+              "Entry point renamed to `oh-my-niu.niu`; scripts now use the `NIU_*`",
               "environment prefix (`NIU_PLUGINS`, `NIU_THEME`, `NIU_THEME_PLUGIN`)",
               "and the `NIUBASH` bundle-root variable.",
               "New first-party plugins: `command-timer` (per-command duration and exit",
@@ -1874,7 +1902,16 @@
               "divergence notices), and `env-sync` (push/pull shell config and the WPM",
               "package manifest through any rclone remote).",
               "All first-party pack manifests move to version 2.0.0 to match the",
-              "bundle release."
+              "bundle release.",
+              "Framework fixes from the 2026-11-01 viability audit against Niubash",
+              "master: `prompt-core` now maintains the `NIU_PROMPT_GIT` snapshot",
+              "itself under the default `native` backend (the `{git}` segment was",
+              "silently empty in framework sessions, where no host renderer runs),",
+              "and the `keybindings` plugin installs its all-keymap preset through",
+              "the `NIU_BINDKEYS` rc variable instead of claiming a",
+              "`reedline-keybindings` host bridge that does not exist — the",
+              "mode-scoped emacs/vi presets are reference data, because",
+              "`NIU_BINDKEYS` has no per-keymap scoping."
             ]
           }
         },

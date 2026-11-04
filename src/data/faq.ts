@@ -53,9 +53,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'perf',
     q: '性能怎么样？',
-    a: '一次性执行（niu -c true）经专项优化后 19.8ms（Windows 实测）；Linux 口径复测（2026-10-28，release 构建、50 样本交错、Linux 同机）：niu -c \'true\' 4.14ms（空跑 p50 3.71ms），GNU bash 5.3.20 为 2.67 / 2.60ms；niu-git 启动约 14ms（Windows 实测，Git Bash 45–103ms）；命令替换与子壳类负载比 GNU bash 快 13–62x。全部数字按平台分开标注、附实测方法与复现产物，见「基准测试」（/benchmarks/）。',
+    a: '一次性执行（niu -c true）经专项优化后 19.8ms（Windows 实测）；Linux 口径复测（2026-10-28，release 构建、50 样本交错、Linux 同机）：niu -c \'true\' 4.14ms（空跑 p50 3.71ms），GNU bash 5.3.20 为 2.67 / 2.60ms；niu-git 启动约 14ms（Windows 同机实测，Git Bash 同机 45–103ms）；命令替换与子壳类负载比 GNU bash 快 13–62x。全部数字按平台分开标注、附实测方法与复现产物，见「基准测试」（/benchmarks/）。',
     qEn: 'How is the performance?',
-    aEn: 'One-shot execution (niu -c true) is 19.8 ms after dedicated optimization (measured on Windows); re-measured under the Linux caliber (2026-10-28, release builds, 50-sample interleaved, Linux same-machine): niu -c \'true\' 4.14 ms (bare run p50 3.71 ms), GNU bash 5.3.20 at 2.67 / 2.60 ms; niu-git starts in ~14 ms (measured on Windows; Git Bash: 45–103 ms); command-substitution and subshell workloads run 13–62x faster than GNU bash. Every figure is labeled by platform and ships with its measurement method and reproducible artifacts — see Benchmarks (/benchmarks/).',
+    aEn: 'One-shot execution (niu -c true) is 19.8 ms after dedicated optimization (measured on Windows); re-measured under the Linux caliber (2026-10-28, release builds, 50-sample interleaved, Linux same-machine): niu -c \'true\' 4.14 ms (bare run p50 3.71 ms), GNU bash 5.3.20 at 2.67 / 2.60 ms; niu-git starts in ~14 ms (measured on Windows, same machine; Git Bash on the same machine: 45–103 ms); command-substitution and subshell workloads run 13–62x faster than GNU bash. Every figure is labeled by platform and ships with its measurement method and reproducible artifacts — see Benchmarks (/benchmarks/).',
   },
   {
     id: 'naming',
@@ -69,16 +69,16 @@ export const faqItems: FaqItem[] = [
   {
     id: 'what-is-rubash',
     q: 'rubash 和 niubash 是什么关系？',
-    a: 'rubash 是 niubash 的语言引擎——bash 语法由它执行；同时它可独立使用：已上架 crates.io（1.4.0，cargo add rubash），是一个可嵌入的 GNU Bash 5.3 兼容引擎。',
+    a: 'rubash 是 niubash 的语言引擎——bash 语法由它执行；同时它可独立使用：已上架 crates.io（1.5.0，cargo add rubash），是一个可嵌入的 GNU Bash 5.3 兼容引擎。',
     qEn: 'What is the relation between rubash and niubash?',
-    aEn: 'rubash is the language engine of niubash — it is what executes the bash syntax. It also stands alone: published on crates.io (1.4.0, cargo add rubash) as an embeddable GNU Bash 5.3-compatible engine.',
+    aEn: 'rubash is the language engine of niubash — it is what executes the bash syntax. It also stands alone: published on crates.io (1.5.0, cargo add rubash) as an embeddable GNU Bash 5.3-compatible engine.',
   },
   {
     id: 'embed-api',
     q: '怎么把 rubash 嵌入到自己的程序里？',
-    a: 'cargo add rubash 即作依赖使用。稳定嵌入 API 与四层 workspace 拆分（core/driver/interactive/facade）是 1.5.0 的目标，设计稿已合并（PR rubash#814），846 处 env-IPC 将迁为 typed bridges。',
+    a: 'cargo add rubash（1.5.0）即作依赖使用。公开 Session 契约（rubash::api——Session、补全与能力 trait）已随 rubash 1.5.0 落地，宿主经公开面消费引擎；四层 workspace 拆分与 846 处 env-IPC 迁 typed bridges 是后续演进（设计稿 PR rubash#814），niubash 宿主侧接线正按 niubash#863 在 1.5.1 周期迁往新 API。',
     qEn: 'How do I embed rubash in my own program?',
-    aEn: 'cargo add rubash and use it as a library. The stable embedding API and the four-tier workspace split (core/driver/interactive/facade) target 1.5.0 — the design doc is merged (rubash#814), moving 846 env-IPC sites to typed bridges.',
+    aEn: 'cargo add rubash (1.5.0) and use it as a library. The public Session contract (rubash::api — Session, completion and capability traits) shipped in rubash 1.5.0, so hosts consume the engine through the public surface; the four-tier workspace split and the move of 846 env-IPC sites to typed bridges remain follow-up work (design doc: rubash PR #814), and niubash is migrating its host wiring to the new API in the 1.5.1 cycle (niubash#863).',
   },
   {
     id: 'builtins-62',
@@ -97,9 +97,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'winuxcmd-perf',
     q: 'WinuxCmd 性能如何？',
-    a: '约 19 ms 冷启动；PGO 构建下 sort 快 18%、nl 快 17%（README 实测口径）。',
+    a: '约 19 ms 冷启动（Windows 实测）；PGO 构建下 sort 快 18%、nl 快 17%（README 实测口径）。',
     qEn: 'How fast is WinuxCmd?',
-    aEn: 'About 19 ms cold start; with PGO builds sort is 18% faster and nl 17% (measured, per the README).',
+    aEn: 'About 19 ms cold start (measured on Windows); with PGO builds sort is 18% faster and nl 17% (measured, per the README).',
   },
   {
     id: 'winuxcmd-diff',
@@ -125,9 +125,9 @@ export const faqItems: FaqItem[] = [
   {
     id: 'niugit-fast',
     q: 'niu-git 为什么快？',
-    a: 'git 启动约 14 ms（Git Bash 实测 45–103 ms）；无 DLL 装载与 MSYS 初始化链，进程直接起步。',
+    a: 'git 启动约 14 ms（Windows 同机实测；Git Bash 45–103 ms）；无 DLL 装载与 MSYS 初始化链，进程直接起步。',
     qEn: 'Why is niu-git fast?',
-    aEn: 'git starts in about 14 ms (Git Bash measures 45–103 ms) — no DLL loading or MSYS init chain, the process starts directly.',
+    aEn: 'git starts in about 14 ms (Windows, same-machine measurement; Git Bash measures 45–103 ms) — no DLL loading or MSYS init chain, the process starts directly.',
   },
   {
     id: 'niugit-install',

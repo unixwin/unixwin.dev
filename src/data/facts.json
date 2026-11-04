@@ -7,7 +7,7 @@
   "promptGit": "≤29 ms",
   "familySize": "≈16 MB",
   "aiAgents": 24,
-  "unitTests": "rubash 698 · niubash 1026 · 0 失败",
+  "unitTests": "rubash lib 1031 通过 / 0 失败（1.5.0 冻结树，2026-11-03）· niubash 1026 通过 / 0 失败（1.4.x 口径，2026-10-19）",
   "platforms": 5,
-  "note": "口径与证据：FACTS.json（portal-dump 分支 2026-10-19 总控审计）；数字随版本更新，构建期由 fetch:github 刷新版本号"
+  "note": "口径与证据：FACTS.json（portal-dump 分支 2026-10-19 总控审计）；2026-11-03 随 1.5.0 发布复核：版本号由 fetch:github 刷新（repo-meta.json），单测数字按各自口径标注版本；gitStartup 的 ~14 ms 专指 niu-git 的 git 启动（Windows 同机实测，niu-git#12），不是 niubash 壳启动——后者无此口径数字"
 }

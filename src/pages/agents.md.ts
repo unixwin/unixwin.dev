@@ -13,8 +13,8 @@ import type { APIRoute } from 'astro';
 const installPromptEn = [
   'Switch the shell that you (the AI agent) use to run commands on this Windows machine to niubash — the native bash implementation for Windows, no WSL, no MSYS. Execute the steps in order and report back:',
   '',
-  '1. Install niubash: in PowerShell, run',
-  '   winget install --id Unixwin.Niubash --source winget  (or: irm https://unixwin.dev/install.ps1 | iex)',
+  '1. Install niubash (latest, 1.5.0): in PowerShell, run',
+  '   irm https://unixwin.dev/install.ps1 | iex  (or winget install --id Unixwin.Niubash --source winget — that channel still serves 1.4.3)',
   '2. Point your own execution shell at niu: read the "The four mechanisms" section of',
   '   https://unixwin.github.io/niubash/agents.html and work out which detection mechanism you use',
   '   (1 = the $SHELL environment variable; 2 = your own explicit configuration;',
@@ -37,8 +37,8 @@ const installPromptEn = [
 const installPromptZh = [
   '请把这台 Windows 机器上你（AI agent）执行命令所用的 shell 换成 niubash——Windows 原生的 bash 实现，无 WSL、无 MSYS。按顺序执行并汇报：',
   '',
-  '1. 安装 niubash：在 PowerShell 中执行',
-  '   winget install --id Unixwin.Niubash --source winget  (or: irm https://unixwin.dev/install.ps1 | iex)',
+  '1. 安装 niubash 最新版（1.5.0）：在 PowerShell 中执行',
+  '   irm https://unixwin.dev/install.ps1 | iex（或 winget install --id Unixwin.Niubash --source winget，但其渠道当前仍为 1.4.3）',
   '2. 把你自己的执行 shell 指到 niu：读 https://unixwin.github.io/niubash/agents.html 的',
   '   「The four mechanisms」一节，判断你属于哪种探测机制（1 = $SHELL 环境变量；',
   '   2 = agent 自身的显式配置；3 = Git for Windows 探针 C:\\Program Files\\Git\\bin\\bash.exe；',
@@ -153,7 +153,7 @@ echo "SHELL=$SHELL"; uname -s; uname -a
 
 ## Highlights at a glance（亮点速览）
 
-Zero fork (\`( )\` and \`$( )\` create no process) · four path dialects (\`C:\\\` / \`/d/\` / \`/mnt/d\` / \`/cygdrive/d\` all accepted) · 83/83 GNU upstream suites pass · git startup ~14ms · one 3.79MB file. For the numbers see the [benchmarks](https://unixwin.dev/en/benchmarks/) and [docs](https://unixwin.dev/en/docs/)（数字细节见[基准页](https://unixwin.dev/benchmarks/)与[文档](https://unixwin.dev/docs/)）.
+Zero fork (\`( )\` and \`$( )\` create no process) · four path dialects (\`C:\\\` / \`/d/\` / \`/mnt/d\` / \`/cygdrive/d\` all accepted) · 83/83 GNU upstream suites pass · git startup ~14ms (niu-git, Windows, same machine) · one 3.79MB file. For the numbers see the [benchmarks](https://unixwin.dev/en/benchmarks/) and [docs](https://unixwin.dev/en/docs/)（数字细节见[基准页](https://unixwin.dev/benchmarks/)与[文档](https://unixwin.dev/docs/)）.
 
 ## Related links（相关链接）
 

@@ -2,12 +2,18 @@
 /**
  * /en/products/rubash/ — English edition of the rubash product page (embedders).
  * Skeleton English; prose-heavy Chinese folded into <details>; bench/news tables
- * fully translated. Facts mirror the zh page (rubash README/docs, crates.io 1.4.0).
+ * fully translated. Facts mirror the zh page (rubash README/docs, crates.io rubash 1.5.0, measured 2026-11-03).
  */
 import DocsLayout from '../../../../components/DocsLayout.astro';
 import CopyButton from '../../../../components/CopyButton.astro';
 import FaqSection from '../../../../components/FaqSection.astro';
 import { PRODUCT_FAQ_IDS, faqByIds, faqJsonLd } from '../../../../data/faq';
+import repoMeta from '../../../../data/repo-meta.json';
+
+const rbMeta = (repoMeta.repos as any)?.rubash;
+const latestV = rbMeta?.latest ?? 'v1.5.0';
+const starsN = rbMeta?.stars ?? 17;
+const metaDate = repoMeta.fetchedAt ? repoMeta.fetchedAt.slice(0, 10) : '';
 
 const cargoAdd = 'cargo add rubash';
 const buildFromSource = 'git clone https://github.com/unixwin/rubash.git && cd rubash && cargo build';
@@ -48,10 +54,10 @@ const bench = [
 
 const news = [
   {
-    version: 'Unreleased (in development)',
-    date: '—',
+    version: '1.5.0',
+    date: '2026-11-03',
     summary:
-      'Function-level profiler (#815), scalar-assignment fast-path slicing (#609), set -E ERR-trap nesting semantics and active-console read three-way alignment (#720/#806), multiple hot-path de-allocation optimizations.',
+      'Public Session embedding contract (rubash::api) shipped; function-level profiler (#815); fd-mechanism family audit closed; scalar-assignment fast-path slicing (#609); set -E ERR-trap nesting semantics and active-console read three-way alignment (#720/#806); multiple hot-path de-allocation optimizations.',
   },
   {
     version: '1.4.0',
@@ -83,7 +89,7 @@ const productJsonLd = {
 
 <DocsLayout
   title="rubash — the embeddable GNU Bash 5.3-compatible engine"
-  description="rubash: an embeddable bash engine in Rust — zero-fork execution, full builtin coverage, 83/83 GNU ledger and the 1.5.0 embedding-API blueprint. cargo add rubash."
+  description="rubash: an embeddable bash engine in Rust — zero-fork execution, full builtin coverage, 83/83 GNU ledger and the public Session embedding contract shipped in 1.5.0. cargo add rubash."
   path="/en/products/rubash/"
   lang="en"
   enPath="/products/rubash/"
@@ -102,13 +108,13 @@ const productJsonLd = {
     <div class="badges">
       <span class="p-badge">Rust</span>
       <span class="p-badge">Windows · Linux · macOS</span>
-      <span class="p-badge">beta · embedding API 1.5.0</span>
-      <span class="p-badge">crates.io 1.4.0</span>
+      <span class="p-badge">public Session contract · 1.5.0</span>
+      <span class="p-badge">crates.io 1.5.0</span>
     </div>
     <p class="meta-line">
       <a href="https://github.com/unixwin/rubash" target="_blank" rel="noopener noreferrer">github.com/unixwin/rubash ↗</a>
-      <span class="dot">·</span> Star 11
-      <span class="dot">·</span> latest v1.4.0 (repo-meta, measured 2026-10-19)
+      <span class="dot">·</span> Star {starsN}
+      <span class="dot">·</span> latest {latestV} (repo-meta{metaDate ? `, measured ${metaDate}` : ''})
     </p>
   </header>
 
@@ -152,7 +158,7 @@ const productJsonLd = {
           <li><strong>12 个内联文件命令 + 管道内联臂</strong>——pwd、printf、mkdir、touch、chmod、cp、rm、rmdir、cat、sed、mkfifo、tty 引擎内联执行，echo | cat 这类管道一整个零 fork。</li>
           <li><strong>可选择的平台身份</strong>——Windows 默认 MSYS2 兼容 persona，RUBASH_IDENTITY=native 切到诚实原生身份；persona 在 --help、--identity 与 README 处处披露，永不静默。</li>
           <li><strong>为 agent 与调试准备的工程面</strong>——脚本级函数级 profiler（确定性插桩）已合并；DAP-first 调试器设计定稿；引擎跑得动 bashdb 核心调试循环。</li>
-          <li><strong>跨平台 CI 硬门</strong>——ubuntu / macOS / Windows x64 三个真 runner，四目标交叉检查；单测 698 通过 / 0 失败；跨平台缺口有公开台账。</li>
+          <li><strong>跨平台 CI 硬门</strong>——ubuntu / macOS / Windows x64 三个真 runner，四目标交叉检查；lib 单测 1031 通过 / 0 失败（1.5.0 冻结树，2026-11-03）；跨平台缺口有公开台账。</li>
         </ul>
       </div>
     </details>
@@ -160,7 +166,7 @@ const productJsonLd = {
 
   <section>
     <h2 id="install">Install &amp; quick start</h2>
-    <p>Embed as a dependency (the engine is a library; the org's three crates on crates.io — rubash, niubash, niubash-runtime — are all at 1.4.0):</p>
+    <p>Embed as a dependency (the engine is a library; rubash itself is at 1.5.0, and the niubash / niubash-runtime crates' 1.5.0 publishes ride along with today's niubash release):</p>
     <div class="cmd">
       <pre><code>{cargoAdd}</code></pre>
       <CopyButton copy={cargoAdd} label="Copy" title="Copy to clipboard" />
@@ -187,7 +193,7 @@ const productJsonLd = {
     <details class="zh-fold">
       <summary>中文原文 · Chinese original（嵌入 / 执行模型 / 兼容台账 三节全文）</summary>
       <div lang="zh-CN">
-        <p><strong>嵌入方式与 1.5.0 蓝图</strong>：今天的 1.4.0 已经把引擎当依赖用——niubash 是第一个完整消费者，driver 级 API 已在生产。1.5.0 蓝图（RFC 已合并，PR rubash#814）：四层 workspace 拆分（rubash-core / rubash-driver / rubash-interactive / rubash facade）、Session 级稳定嵌入 API、846 处 env-IPC 形态逐族替换为 typed bridges。验收标准：外部编辑器能嵌入引擎而不需要知道 Windows 的存在。</p>
+        <p><strong>嵌入方式：公开 Session 契约（1.5.0 已落地）</strong>：今天的 1.5.0 已经把引擎当依赖用——niubash 是第一个完整消费者，driver 级 API 已在生产。公开 Session 契约落在 rubash::api（Session、complete_detailed 等公开面；候选标记由引擎产出、宿主只消费，设计稿 PR rubash#814）。仍在后续演进：四层 workspace 拆分（rubash-core / rubash-driver / rubash-interactive / facade）、846 处 env-IPC 形态逐族替换为 typed bridges；niubash 宿主侧接线按 niubash#863 在 1.5.1 周期迁往新 API。验收标准：外部编辑器能嵌入引擎而不需要知道 Windows 的存在。</p>
         <p><strong>三层执行模型</strong>：POSIX fork() 在 Win32 没有等价物；rubash 复刻 fork 的语义而非机制——进程内子壳复制变量与 fd 表、真句柄 fd 表实现 POSIX dup 语义、真进程只在真进程边界出现。细读见 <a href="/en/docs/execution-model/">执行模型：零 fork 三层</a>；性能见 <a href="/en/docs/performance-model/">性能特征</a>与 <a href="/en/benchmarks/">基准页</a>。</p>
         <p><strong>兼容台账与 vendored 源码方法论</strong>：语义判定的一手依据是仓内 vendored 的 GNU bash-5.3 源码（third_party/bash）：每个行为主张必须给 file:line 坐标；GPL 代码零拷贝红线成文于 docs/PROVENANCE.md；发布包不携带 third_party。台账见 <a href="/en/docs/compatibility/">兼容总览</a>；超出 GNU 套件的部分同样钉成 CI 夹具。</p>
       </div>

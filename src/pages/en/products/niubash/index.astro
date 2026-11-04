@@ -48,7 +48,7 @@ const bench = [
     src: 'niubash PR #252/#288 · paste_multiline_bench.py',
   },
   {
-    a: 'Workspace unit tests',
+    a: 'Workspace unit tests (as of 2026-10-19)',
     b: '1026 passed / 0 failed',
     c: '—',
     src: 'CI run 39191023176 (FACTS.json)',
@@ -56,6 +56,12 @@ const bench = [
 ];
 
 const news = [
+  {
+    version: '1.5.0',
+    date: '2026-11-03',
+    summary:
+      'Engine upgraded to rubash 1.5.0; the line editor moves to ruline (GNU readline 8.3 compatibility is the target, conformance is gate-checked); GNU keymap becomes the default; plugin state is JSON throughout (plugins.json / setup-journal.json) and product TOML config is removed (one-shot `niu config migrate`); FFI removed; bundles WinuxCmd 1.2.1 and niu-git 2.56.0.3; six release targets plus dual-arch Android .zip assets.',
+  },
   {
     version: '1.4.4',
     date: '2026-10-22',
@@ -96,8 +102,8 @@ const news = [
 
 // Build-time dynamic meta (issue #10: versions come from GitHub Releases)
 const nbMeta = (repoMeta.repos as Record<string, { stars: number; latest: string | null }>).niubash;
-const latestV = nbMeta?.latest ?? 'v1.4.4';
-const starsN = nbMeta?.stars ?? 188;
+const latestV = nbMeta?.latest ?? 'v1.5.0';
+const starsN = nbMeta?.stars ?? 212;
 const metaDate = repoMeta.fetchedAt ? repoMeta.fetchedAt.slice(0, 10) : '';
 const productFaq = faqByIds(['gitbash-diff', 'no-wsl-msys', 'what-is-83', 'switch-agent', 'free-platforms', 'perf', 'naming']);
 
@@ -206,7 +212,7 @@ const productJsonLd = {
 
   <section>
     <h2 id="install">Install &amp; quick start</h2>
-    <p>Windows prefers winget (the official Microsoft source; the manifest carries an InstallerSha256 check):</p>
+    <p>Two Windows install routes: winget (the official Microsoft source; the manifest carries an InstallerSha256 check) currently still serves 1.4.3 — the 1.5.0 winget update has not been submitted yet; for 1.5.0 use the PowerShell installer below or GitHub Releases:</p>
     <div class="cmd">
       <pre><code>{installWinget}</code></pre>
       <CopyButton copy={installWinget} label="Copy" title="Copy to clipboard" />
@@ -220,7 +226,7 @@ const productJsonLd = {
       On Windows the install ships a complete command layer: the full WinuxCmd root (176 Unix commands
       plus the built-in wpm package manager, under <code>&#123;app&#125;\winuxcmd\</code>, PATH pointed at
       <code>winuxcmd\bin</code>), and per <code>preinstall.json</code> preloads gawk (with an awk shim),
-      niu-git, ripgrep and fd — git on PATH is native git (~14 ms on Windows, measured). Only gawk is x64-only; ARM64
+      niu-git, ripgrep and fd — git on PATH is native git (~14 ms, Windows same-machine measurement). Only gawk is x64-only; ARM64
       installs likewise preload niu-git / ripgrep / fd.
     </p>
     <p>Linux / macOS: grab the portable tar.gz and unpack:</p>

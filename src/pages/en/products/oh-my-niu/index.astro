@@ -14,9 +14,8 @@ import repoMeta from '../../../../data/repo-meta.json';
 
 const meta = repoMeta.repos['oh-my-niu'];
 const stars = typeof meta?.stars === 'number' ? meta.stars : null;
-// The version badge deliberately does not use repo-meta's latest: that
-// value is the stale Sep-2026 v2.0.0 release; oh-my-niu ships a fresh
-// cut per the release sequence, so the badge says "upcoming".
+// The version badge uses repo-meta's latest: v2.1.0 shipped 2026-11-02
+// (repo-meta refreshed 2026-11-03).
 
 const rcBootstrap = [
   '# Clone first, independently: git clone https://github.com/unixwin/oh-my-niu.git ~/.niubash/oh-my-niu',
@@ -58,7 +57,7 @@ const factRows = [
   { metric: 'Themes', value: '27 (27 theme-* plugin directories and 27 themes/*.toml assets, name-for-name identical)', src: 'in-repo plugins/ and themes/ counts, measured 2026-10-19' },
   { metric: 'Plugin directories', value: '50 (27 themes + 23 feature plugins)', src: 'in-repo plugins/ count, measured 2026-10-19' },
   { metric: 'Completion definitions', value: '174 TOML files', src: 'in-repo completions/ count, measured 2026-10-19' },
-  { metric: 'Index pack entries', value: '22 (bundle 2.0.0, min_niubash 1.0.0)', src: 'oh-my-niu/index.toml' },
+  { metric: 'Index pack entries', value: '22 (bundle 2.1.0, min_niubash 1.0.0)', src: 'oh-my-niu/index.toml' },
   { metric: 'Alias packs / env packages', value: '5 TOML packs · 2 official envs (git / cicd)', src: 'in-repo aliases/ · envs/ counts' },
 ];
 
@@ -102,7 +101,7 @@ const productJsonLd = {
     <div class="badge-row">
       <Badge text="Shell (.niu / bash)" tone="accent" />
       <Badge text="Independent repo · all platforms" tone="info" />
-      <Badge text="2.0.0 · upcoming (fresh cut)" tone="warn" />
+      <Badge text={`${meta?.latest ?? 'v2.1.0'} · released`} tone="accent" />
       <Badge text="MIT" tone="muted" />
     </div>
     <p class="repo-line">
@@ -110,7 +109,7 @@ const productJsonLd = {
         github.com/unixwin/oh-my-niu ↗
       </a>
       {stars !== null && <span class="stars">{stars} stars</span>}
-      <span class="src">(repo-meta.json, measured 2026-10-19)</span>
+      <span class="src">(repo-meta.json{repoMeta.fetchedAt ? `, measured ${repoMeta.fetchedAt.slice(0, 10)}` : ''})</span>
     </p>
   </header>
 
@@ -150,7 +149,7 @@ const productJsonLd = {
           <li><strong>主题即插件</strong>——每款主题是一个普通插件目录，与功能插件同一加载面。</li>
           <li><strong>prompt-core</strong>——提示符 API 与 segment 注册表的拥有者，默认开启；git 段解析为 niubash 原生 Vcs 段（1.4.1+），段值取自用户自己的 git（仓内每遍至多一次 spawn）。</li>
           <li><strong>Starship 接管模式</strong>——加载 starship 插件、留空 NIU_THEME，由 Starship 接管 PROMPT_COMMAND/PS1/PS2/PS0。</li>
-          <li><strong>功能插件族</strong>——git、docker、kubectl、npm、jj、zoxide、direnv、dotenv、fzf、last-working-dir、thefuck、path-tools、extract、common-aliases、keybindings、command-not-found、winuxcmd-core……</li>
+          <li><strong>功能插件族</strong>——git、docker、kubectl、npm、jj、zoxide、direnv、dotenv、fzf、last-working-dir、thefuck、path-tools、extract、common-aliases、keybindings、command-not-found……</li>
           <li><strong>2.0 新一方插件</strong>——command-timer、auto-env、dirmarks、git-fetch-reminder、env-sync。</li>
           <li><strong>别名 / 补全 / 键位资产</strong>——aliases/ 五组 TOML；completions/ 174 个 TOML 补全定义；keybindings/ emacs 与 vi 预设。</li>
           <li><strong>环境包（envs）</strong>——一个小 TOML 声明装哪些 wpm 包、启用哪些插件：niu env use git 一键配好原生 Git 工具链。</li>
@@ -271,18 +270,17 @@ const productJsonLd = {
   <section>
     <h2>Release feed</h2>
     <p class="src-line">
-      oh-my-niu keeps its own CHANGELOG. Latest 3 versions (changelogs.json, fetched 2026-10-19; the
+      oh-my-niu keeps its own CHANGELOG. Latest 3 versions (changelogs.json{repoMeta.fetchedAt ? `, fetched ${repoMeta.fetchedAt.slice(0, 10)}` : ''}; the
       full feed lives on the <a href="/en/changelog/">changelog</a>):
     </p>
     <ul class="changelog-list">
       <li>
-        <strong>2.0.0</strong>
+        <strong>2.1.0 (2026-11-02)</strong>
         <span>
-          Renamed oh-my-winuxsh → oh-my-niu (aligned with the niubash 1.0.0 branding); bundle/plugin
-          API prefix <code>winuxsh:</code> → <code>niubash:</code>, env prefix now <code>NIU_*</code>;
-          new first-party plugins command-timer / auto-env / dirmarks / git-fetch-reminder / env-sync;
-          the git prompt segment resolves to the native Vcs segment for niubash 1.4.1+ (values
-          come from the user's own git — at most one bounded spawn per prompt pass in a repo).
+          New first-party jj (Jujutsu) pack; the framework now wires its own lifecycle onto the
+          host's PROMPT_COMMAND chain (no more prompt-core host bridge); plugin-state docs are
+          JSON throughout (plugins.json); keybinding metadata names ruline (niubash 1.5.0's line
+          editor); the winuxcmd-core table row is removed (no such plugin directory exists).
         </span>
       </li>
       <li>
@@ -313,7 +311,7 @@ const productJsonLd = {
         <ul>
           <li><a href="/en/products/niubash/">Niubash product page</a> — the host shell and plugin primitives</li>
           <li><a href="/en/products/rubash/">Rubash product page</a> — the engine that runs upstream plugins unmodified</li>
-          <li><a href="/en/products/winuxcmd/">WinuxCmd product page</a> — what winuxcmd-core completes</li>
+          <li><a href="/en/products/winuxcmd/">WinuxCmd product page</a> — the command layer that ships with niubash</li>
           <li><a href="/en/products/wpm/">wpm product page</a> — the package channel behind env packages</li>
           <li><a href="/en/docs/cli/">CLI &amp; flags reference</a> — the full niu plugin / niu env listing</li>
           <li><a href="/en/docs/">Docs home</a> · <a href="/en/changelog/">Changelog</a></li>
